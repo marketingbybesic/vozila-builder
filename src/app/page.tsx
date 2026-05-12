@@ -2,13 +2,16 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ListingCard } from "@/components/listing-card";
 import { MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
+import { getFeaturedListings } from "@/data/listings";
 import { Search, ShieldCheck, Zap, Users } from "lucide-react";
 
 export default function HomePage() {
   const popularMakes = POPULAR_MAKE_SLUGS.map(
     (slug) => MAKES.find((m) => m.slug === slug)!
   );
+  const featured = getFeaturedListings(6);
 
   return (
     <>
@@ -106,7 +109,31 @@ export default function HomePage() {
         </Container>
       </section>
 
-      <section className="py-20">
+      <section className="py-16 md:py-20">
+        <Container>
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="font-display text-3xl md:text-4xl tracking-tight">Izdvojeno tjedna</h2>
+              <p className="text-sm text-[var(--color-muted)] mt-1">
+                Ručno odabrani oglasi koje vrijedi vidjeti
+              </p>
+            </div>
+            <Link
+              href="/oglasi"
+              className="text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-accent-dark)]"
+            >
+              Svi oglasi →
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <section className="py-16 md:py-20 bg-[var(--color-surface)] border-y border-[var(--color-line)]">
         <Container>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
