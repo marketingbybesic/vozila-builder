@@ -41,25 +41,37 @@ Croatian car classifieds marketplace. Original brand (not a copy of avto.net). P
 - [x] Build passes (1.17s compile, TS clean)
 - [x] Visual proof: `.proof/home-desktop.png` (1440×900) + `.proof/home-mobile.png` (390×844)
 
-## Next (Phase 1 — Listings, browse, detail)
-- [ ] `src/data/listings.ts` — 50 realistic HR seed listings with Unsplash photos
-  - Real HR market mix: VW Golf, Audi A4, BMW 3, Škoda Octavia, Renault Clio, etc.
-  - Real HR cities + counties from `data/locations.ts`
-  - Realistic prices in EUR (HR 2026 market: VW Golf 2018 1.6 TDI ≈ €12.5k, Audi A4 2020 ≈ €25k, Tesla Model 3 2022 ≈ €34k)
-  - Mix of `Privatni` + `Trgovac`, 60/40 split
-- [ ] `ListingCard` component (4:3 photo, title, price prominent, year/km/fuel chips, save-heart, seller-type badge)
-- [ ] `FilterSidebar` component — make/model cascading select, price/year/km range sliders, multi-check fuel/transmission/body/drive/color/condition/seller, county dropdown
-- [ ] `/oglasi` page — server component reads `searchParams` (note: must `await` per Next 16), applies filters via local function, paginates 24/page
-- [ ] `/oglasi/[slug]` page — image gallery (carousel), specs table grouped, features grid by category, sticky contact card, related listings
-- [ ] Sort dropdown (newest, price asc/desc, km asc, year desc)
-- [ ] Mobile filter drawer (sheet from bottom)
-- [ ] Save listing → localStorage (cookie-free demo mode)
+## Done (Phase 1 — Listings, browse, detail)
+- [x] `src/data/listings.ts` — 52 realistic HR seed listings with Unsplash photos
+- [x] `src/lib/filter.ts` — parseFilters, applyFilters, paginate, buildQueryString, activeFilterCount
+- [x] `ListingCard` component — photo with hover lift, badges, specs row, price + city + posted time
+- [x] `SaveButton` (client) — localStorage-backed (no auth needed for v1)
+- [x] `ShareButton` (client) — Web Share API + clipboard fallback
+- [x] `FilterSidebar` (client) — search, make/model cascading, price/year/km ranges, multi-chip filters
+- [x] `SortDropdown` (client) — 5 sort modes
+- [x] `Pagination` — smart elision, accessible
+- [x] `MobileFilterToggle` — bottom sheet on mobile
+- [x] `/oglasi` — full browse with sidebar + grid + sort + pagination
+- [x] `/oglasi/[slug]` — breadcrumb, image gallery + lightbox, spec grid, description, features by category, sticky contact card with finance calc, "Prije nego što platiš" safety block, related listings
+- [x] `generateStaticParams` — all 52 detail pages prerendered as SSG
+- [x] `generateMetadata` per listing — OG title + image + description
+- [x] `ImageGallery` (client) — thumbnail strip, click-to-lightbox, prev/next nav
+- [x] Homepage updated with "Izdvojeno tjedna" featured row (6 cards)
+- [x] Build passes: 57 routes (1 home + browse + 52 details + 3 helpers), TS clean
+- [x] Visual proof: home-desktop, home-mobile, home-featured, browse, browse-mobile, detail, detail-mobile
 
-## Phase 2 — Post-a-car
+## Caught bug + learning
+- **Bug**: `onClick` on a button inside a Server Component breaks prerender ("Event handlers cannot be passed to Client Component props")
+- **Fix**: Extract any interactive element (heart, share) into its own `"use client"` component. Server Components compose with Client Components via props, not handlers.
+- **Pattern**: ListingCard stays Server (fast HTML), only the heart/share leaves are Client. RSC ftw.
+
+## Next (Phase 2 — Post-a-car + static pages)
 - [ ] `/objavi` multi-step form (5 steps: basic → specs → photos → price+description → preview)
 - [ ] Image upload UI (drag-and-drop, 10 photos max, client-side resize to 1920px)
 - [ ] Auth gate via Clerk middleware (demo mode shows mock signed-in state)
 - [ ] Server action to persist (in-memory map for now, swap to Supabase later)
+- [ ] `/prijava` + `/registracija` (Clerk components, branded)
+- [ ] `/o-nama`, `/kontakt`, `/uvjeti`, `/savjeti/*` static pages — currently 404
 
 ## Phase 3 — Auth + dashboard + messaging
 - [ ] Clerk setup with HR locale (`@clerk/localizations/hr`)
