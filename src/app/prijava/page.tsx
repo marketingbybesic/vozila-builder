@@ -1,15 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { SignInForm } from "@/components/sign-in-form";
+import { getCurrentUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Prijava",
   description: "Prijavi se na svoj Auti.hr račun i upravljaj oglasima.",
 };
 
-export default function PrijavaPage() {
+export default async function PrijavaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string; next?: string }>;
+}) {
+  const user = await getCurrentUser();
+  if (user) redirect("/moj-racun");
+  const sp = await searchParams;
+
   return (
     <Container className="py-16 md:py-24">
       <div className="mx-auto max-w-md">
@@ -21,45 +30,13 @@ export default function PrijavaPage() {
           </Link>
         </p>
 
-        <form className="mt-8 space-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-6">
-          <div>
-            <label htmlFor="email" className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
-              E-mail
-            </label>
-            <Input id="email" type="email" placeholder="ime@primjer.hr" className="mt-1.5" required />
+        {sp.reason === "expired" && (
+          <div className="mt-6 text-sm bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-md px-4 py-3 text-[var(--color-ink-soft)]">
+            <strong className="text-[var(--color-ink)]">Sesija je istekla.</strong> Prijavi se ponovno za nastavak.
           </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
-                Lozinka
-              </label>
-              <Link href="/zaboravljena-lozinka" className="text-xs text-[var(--color-ink-soft)] hover:underline">
-                Zaboravljena?
-              </Link>
-            </div>
-            <Input id="password" type="password" placeholder="••••••••" className="mt-1.5" required />
-          </div>
+        )}
 
-          <Button variant="primary" size="lg" className="w-full">
-            Prijavi se
-          </Button>
-
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[var(--color-line)]" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-[var(--color-surface)] px-2 text-[var(--color-muted)]">ili nastavi sa</span>
-            </div>
-          </div>
-
-          <Button variant="outline" size="lg" className="w-full">
-            <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-              <path fill="currentColor" d="M21.35 11.1H12v2.83h5.35c-.23 1.5-1.7 4.4-5.35 4.4-3.22 0-5.85-2.67-5.85-5.95s2.63-5.95 5.85-5.95c1.83 0 3.06.78 3.76 1.45l2.56-2.46C16.7 3.93 14.55 3 12 3 6.92 3 2.82 7.1 2.82 12.2S6.92 21.4 12 21.4c5.85 0 9.7-4.1 9.7-9.87 0-.66-.07-1.18-.18-1.7Z" />
-            </svg>
-            Nastavi s Googleom
-          </Button>
-        </form>
+        <SignInForm />
 
         <p className="mt-6 text-center text-xs text-[var(--color-muted)]">
           Prijavom prihvaćaš{" "}

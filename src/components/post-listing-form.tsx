@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -10,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { MAKES, getMake } from "@/data/makes";
 import { HR_LOCATIONS, COUNTIES } from "@/data/locations";
 import { FEATURE_CATEGORIES } from "@/data/features";
+import { createListingAction } from "@/actions/listings";
 import {
   FUEL_TYPES,
   TRANSMISSIONS,
@@ -67,9 +70,12 @@ const empty: State = {
 };
 
 export function PostListingForm() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [s, setS] = useState<State>(empty);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
+  const [submitErr, setSubmitErr] = useState<string | null>(null);
+  const [pending, start] = useTransition();
 
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
   const toggleFeature = (f: string) => set("features", s.features.includes(f) ? s.features.filter((x) => x !== f) : [...s.features, f]);
@@ -96,19 +102,54 @@ export function PostListingForm() {
         </div>
         <h2 className="font-display text-2xl mt-5">Oglas je objavljen</h2>
         <p className="mt-2 text-sm text-[var(--color-ink-soft)] max-w-md mx-auto">
-          Tvoj oglas ide na pregled. Dobit ćeš e-mail kad bude objavljen — obično unutar 30 minuta radnim danom.
+          Tvoj oglas je sada vidljiv na Auti.hr. Provjeri ga na detaljnoj stranici ili upravljaj iz svog računa.
         </p>
         <div className="mt-6 flex gap-3 justify-center">
           <Button asChild variant="outline">
-            <a href="/moj-racun/oglasi">Moji oglasi</a>
+            <Link href="/moj-racun/oglasi">Moji oglasi</Link>
           </Button>
           <Button asChild variant="primary">
-            <a href="/oglasi">Pregledaj oglase</a>
+            <Link href={`/oglasi/${submitted.slug}`}>Pogledaj oglas</Link>
           </Button>
         </div>
       </div>
     );
   }
+
+  const handleSubmit = () => {
+    setSubmitErr(null);
+    start(async () => {
+      const res = await createListingAction({
+        make: makeObj?.name ?? s.make,
+        model: s.model,
+        variant: s.variant || undefined,
+        year: s.year,
+        priceEur: s.priceEur,
+        km: s.km,
+        fuel: s.fuel,
+        transmission: s.transmission,
+        bodyType: s.bodyType,
+        drive: s.drive,
+        color: s.color,
+        condition: s.condition,
+        engineCc: s.engineCc || 0,
+        powerKw: s.powerKw,
+        doors: s.doors,
+        seats: s.seats,
+        city: s.city,
+        county: s.county,
+        description: s.description,
+        features: s.features,
+        images: s.photos,
+      });
+      if (res.ok) {
+        setSubmitted({ slug: res.slug });
+        router.refresh();
+      } else {
+        setSubmitErr(res.error);
+      }
+    });
+  };
 
   return (
     <>
@@ -378,10 +419,17 @@ export function PostListingForm() {
               <ChevronRight className="size-4" />
             </Button>
           ) : (
-            <Button variant="accent" size="lg" onClick={() => setSubmitted(true)}>
-              <Check className="size-4" />
-              Objavi oglas
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              {submitErr && (
+                <span className="text-xs text-[var(--color-danger)] bg-[var(--color-danger)]/10 px-3 py-1.5 rounded-md">
+                  {submitErr}
+                </span>
+              )}
+              <Button variant="accent" size="lg" onClick={handleSubmit} disabled={pending}>
+                <Check className="size-4" />
+                {pending ? "Objavljujem..." : "Objavi oglas"}
+              </Button>
+            </div>
           )}
         </div>
       </div>
