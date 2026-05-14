@@ -644,6 +644,21 @@ function buildListing(spec: Spec): Listing {
   const title = `${titleParts.join(" ")} · ${spec.year}.`;
   const slug = `${slugify(`${spec.make}-${spec.model}-${spec.variant ?? ""}-${spec.year}-${spec.city}`)}-${id}`;
   const createdAt = new Date(Date.now() - spec.daysAgo * 24 * 60 * 60 * 1000).toISOString();
+
+  // Deterministic demo enrichment (every 5th listing is on sale, every 3rd has full history)
+  const onSale = counter % 5 === 0;
+  const hasHistory = counter % 3 === 0;
+  const isImport = counter % 7 === 0;
+  const originalPriceEur = onSale ? Math.round((spec.priceEur * (1 + (8 + (counter % 8)) / 100)) / 100) * 100 : undefined;
+  const accidentHistory = hasHistory
+    ? counter % 9 === 0
+      ? "Lakša šteta popravljena u ovlaštenom servisu"
+      : "Bez nesreće"
+    : undefined;
+  const serviceHistory = hasHistory ? "Potpuna servisna knjižica" : undefined;
+  const importedFrom = isImport ? "Njemačka" : undefined;
+  const vinMasked = hasHistory ? `WVW***********${String(counter).padStart(4, "0")}` : undefined;
+
   return {
     id,
     slug,
@@ -653,6 +668,7 @@ function buildListing(spec: Spec): Listing {
     variant: spec.variant,
     year: spec.year,
     priceEur: spec.priceEur,
+    originalPriceEur,
     km: spec.km,
     fuel: spec.fuel,
     transmission: spec.transmission,
@@ -664,6 +680,10 @@ function buildListing(spec: Spec): Listing {
     powerKw: spec.powerKw,
     doors: spec.doors ?? (spec.bodyType === "Hatchback" || spec.bodyType === "Coupe" ? 5 : 5),
     seats: spec.seats ?? 5,
+    vinMasked,
+    accidentHistory,
+    serviceHistory,
+    importedFrom,
     city: spec.city,
     county: spec.county,
     description: spec.description,
@@ -673,6 +693,7 @@ function buildListing(spec: Spec): Listing {
     sellerType: spec.sellerType,
     sellerPhone: spec.sellerPhone,
     views: spec.views ?? Math.floor(Math.random() * 850) + 80,
+    phoneReveals: 0,
     featured: spec.featured ?? false,
     createdAt,
     registrationUntil: spec.registrationUntil,

@@ -11,9 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default async function MarkePage() {
-  const { items: all } = await db().listListings({ page: 1 });
-  // pull total counts per make via a few pages; simpler is to fetch all active and count
-  const counts = await tallyByMake();
+  let counts: Record<string, number> = {};
+  try {
+    counts = await tallyByMake();
+  } catch (err) {
+    console.warn("[marke] tallyByMake failed:", err);
+  }
 
   const grouped = MAKES.slice()
     .sort((a, b) => a.name.localeCompare(b.name, "hr"))
@@ -62,13 +65,17 @@ export default async function MarkePage() {
 
 async function tallyByMake(): Promise<Record<string, number>> {
   const counts: Record<string, number> = {};
-  for (let page = 1; page <= 12; page++) {
-    const { items, total } = await db().listListings({ page });
-    items.forEach((l) => {
-      const k = slugify(l.make);
-      counts[k] = (counts[k] ?? 0) + 1;
-    });
-    if (page * 12 >= total) break;
+  try {
+    for (let page = 1; page <= 12; page++) {
+      const { items, total } = await db().listListings({ page });
+      items.forEach((l) => {
+        const k = slugify(l.make);
+        counts[k] = (counts[k] ?? 0) + 1;
+      });
+      if (page * 12 >= total) break;
+    }
+  } catch (err) {
+    console.warn("[marke/tally] listListings failed:", err);
   }
   return counts;
 }

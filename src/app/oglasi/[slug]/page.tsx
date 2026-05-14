@@ -33,8 +33,14 @@ import {
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const rows = await db().getAllActiveSlugs();
-  return rows.map((r) => ({ slug: r.slug }));
+  try {
+    const rows = await db().getAllActiveSlugs();
+    return rows.map((r) => ({ slug: r.slug }));
+  } catch (err) {
+    // Build-time DB unreachable. Skip SSG — dynamicParams handles all routes at runtime.
+    console.warn("[generateStaticParams] getAllActiveSlugs failed, falling back to dynamic-only:", err);
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -142,6 +148,18 @@ export default async function ListingDetailPage({
               </dl>
             </section>
 
+            {(listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked) && (
+              <section>
+                <h2 className="font-display text-2xl mb-4">Povijest vozila</h2>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+                  {listing.accidentHistory && <SpecItem label="Nesreće" value={listing.accidentHistory} />}
+                  {listing.serviceHistory && <SpecItem label="Servisna knjižica" value={listing.serviceHistory} />}
+                  {listing.importedFrom && <SpecItem label="Uvezen iz" value={listing.importedFrom} />}
+                  {listing.vinMasked && <SpecItem label="VIN (skraćeno)" value={listing.vinMasked} />}
+                </dl>
+              </section>
+            )}
+
             <section>
               <h2 className="font-display text-2xl mb-4">Opis</h2>
               <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 text-[var(--color-ink-soft)] leading-relaxed whitespace-pre-line">
@@ -194,9 +212,19 @@ export default async function ListingDetailPage({
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 shadow-[var(--shadow-card)]">
               <div className="font-display text-4xl text-[var(--color-ink)] tracking-tight flex items-baseline gap-3 flex-wrap">
                 {formatPrice(listing.priceEur)}
+                {listing.originalPriceEur && listing.originalPriceEur > listing.priceEur && (
+                  <span className="text-lg text-[var(--color-muted)] line-through decoration-1 font-normal">
+                    {formatPrice(listing.originalPriceEur)}
+                  </span>
+                )}
               </div>
-              <p className="mt-1 text-xs text-[var(--color-muted)]">
+              <p className="mt-1 text-xs text-[var(--color-muted)] flex items-center gap-2">
                 Cijena s PDV-om
+                {listing.originalPriceEur && listing.originalPriceEur > listing.priceEur && (
+                  <span className="inline-flex items-center text-[10px] uppercase tracking-wider font-semibold text-[var(--color-accent-dark)] bg-[var(--color-accent)]/15 px-2 py-0.5 rounded">
+                    -{Math.round(((listing.originalPriceEur - listing.priceEur) / listing.originalPriceEur) * 100)}% snižena cijena
+                  </span>
+                )}
               </p>
 
               <div className="mt-5 space-y-2">

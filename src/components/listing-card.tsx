@@ -67,8 +67,18 @@ export function ListingCard({ listing }: { listing: Listing }) {
 
         <div className="mt-auto pt-3 border-t border-[var(--color-line)] flex items-end justify-between gap-2">
           <div>
-            <div className="font-display text-xl text-[var(--color-ink)] tracking-tight">
+            <div className="font-display text-xl text-[var(--color-ink)] tracking-tight inline-flex items-baseline gap-2 flex-wrap">
               {formatPrice(listing.priceEur)}
+              {listing.originalPriceEur && listing.originalPriceEur > listing.priceEur && (
+                <>
+                  <span className="text-sm text-[var(--color-muted)] line-through decoration-1 font-normal">
+                    {formatPrice(listing.originalPriceEur)}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--color-accent-dark)]">
+                    -{Math.round(((listing.originalPriceEur - listing.priceEur) / listing.originalPriceEur) * 100)}%
+                  </span>
+                </>
+              )}
             </div>
             <div className="text-[11px] text-[var(--color-muted)] inline-flex items-center gap-1 mt-0.5">
               <MapPin className="size-3" />

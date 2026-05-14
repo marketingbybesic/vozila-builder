@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -94,6 +95,7 @@ export function CompareButton({ slug, variant = "card" }: { slug: string; varian
 
 export function CompareBar() {
   const [slugs, setSlugs] = useState<string[]>([]);
+  const pathname = usePathname();
 
   useEffect(() => {
     const refresh = () => setSlugs(readSet());
@@ -106,7 +108,14 @@ export function CompareBar() {
     };
   }, []);
 
-  if (slugs.length < 2) return null;
+  // Hide on routes where the bar is noise: the compare page itself,
+  // admin surface, and the user's account area.
+  const hide =
+    pathname === "/usporedi" ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/moj-racun");
+
+  if (hide || slugs.length < 2) return null;
 
   const params = new URLSearchParams();
   slugs.forEach((s, i) => params.set(["a", "b", "c", "d"][i], s));

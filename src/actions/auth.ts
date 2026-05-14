@@ -58,6 +58,7 @@ export async function signInAction(_prev: AuthResult | undefined, formData: Form
   if (!user || !user.passwordHash) return { ok: false, error: "Neispravan e-mail ili lozinka" };
   const valid = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!valid) return { ok: false, error: "Neispravan e-mail ili lozinka" };
+  if (user.bannedAt) return { ok: false, error: "Račun je blokiran. Kontaktirajte podršku." };
   await createSessionCookie(user.id);
   redirect("/moj-racun");
 }

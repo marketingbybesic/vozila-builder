@@ -11,7 +11,14 @@ export async function getCurrentUser(): Promise<DbUser | null> {
   const store = await cookies();
   const token = store.get(COOKIE_NAME)?.value;
   if (!token) return null;
-  return db().getSessionUser(token);
+  const user = await db().getSessionUser(token);
+  if (user?.bannedAt) {
+    // Banned mid-session: invalidate immediately.
+    await db().deleteSession(token);
+    store.delete(COOKIE_NAME);
+    return null;
+  }
+  return user;
 }
 
 export async function requireUser(): Promise<DbUser> {
@@ -28,7 +35,11 @@ export async function requireUser(): Promise<DbUser> {
 
 export async function requireAdmin(): Promise<DbUser> {
   const user = await requireUser();
-  if (user.role !== "admin") redirect("/?reason=forbidden");
+  if (user.role !== "admin") {
+    // Don't clear the session — user is still a legitimately-logged-in non-admin.
+    // Just bounce them out of /admin/*.
+    redirect("/?reason=forbidden");
+  }
   return user;
 }
 

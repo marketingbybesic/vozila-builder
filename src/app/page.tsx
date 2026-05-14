@@ -6,12 +6,18 @@ import { ListingCard } from "@/components/listing-card";
 import { MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
 import { db } from "@/db";
 import { Search, ShieldCheck, Zap, Users } from "lucide-react";
+import type { Listing } from "@/lib/types";
 
 export default async function HomePage() {
   const popularMakes = POPULAR_MAKE_SLUGS.map(
     (slug) => MAKES.find((m) => m.slug === slug)!
   );
-  const featured = await db().getFeaturedListings(6);
+  let featured: Listing[] = [];
+  try {
+    featured = await db().getFeaturedListings(6);
+  } catch (err) {
+    console.warn("[home] getFeaturedListings failed:", err);
+  }
 
   return (
     <>

@@ -131,17 +131,18 @@ export const memoryAdapter: DbAdapter = {
   },
 
   async getUserByEmail(email) {
-    const id = store().emailIdx.get(email);
+    const id = store().emailIdx.get(email.toLowerCase());
     if (!id) return null;
     return store().users.get(id) ?? null;
   },
 
   async createUser(input) {
     const s = store();
-    if (s.emailIdx.has(input.email)) throw new Error("Email već postoji");
+    const emailKey = input.email.toLowerCase();
+    if (s.emailIdx.has(emailKey)) throw new Error("Email već postoji");
     const id = uuid();
     const initialAdmin = process.env.INITIAL_ADMIN_EMAIL;
-    const isAdmin = initialAdmin && input.email.toLowerCase() === initialAdmin.toLowerCase();
+    const isAdmin = initialAdmin && emailKey === initialAdmin.toLowerCase();
     const user: DbUser & { passwordHash: string | null } = {
       id,
       email: input.email,
@@ -160,7 +161,7 @@ export const memoryAdapter: DbAdapter = {
       createdAt: new Date().toISOString(),
     };
     s.users.set(id, user);
-    s.emailIdx.set(input.email, id);
+    s.emailIdx.set(emailKey, id);
     const { passwordHash: _p, ...rest } = user;
     return rest;
   },

@@ -10,9 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default async function NajnovijiPage() {
-  const { items } = await db().listListings({ sort: "newest", page: 1 });
-
-  // listListings paginates at 12; we want last 100 — fetch a few pages
   const allItems = await fetchUpTo100();
 
   return (
@@ -40,11 +37,15 @@ export default async function NajnovijiPage() {
 }
 
 async function fetchUpTo100() {
-  const out = [];
-  for (let page = 1; page <= 9; page++) {
-    const { items, total } = await db().listListings({ sort: "newest", page });
-    out.push(...items);
-    if (out.length >= 100 || out.length >= total) break;
+  const out: Awaited<ReturnType<ReturnType<typeof db>["listListings"]>>["items"] = [];
+  try {
+    for (let page = 1; page <= 9; page++) {
+      const { items, total } = await db().listListings({ sort: "newest", page });
+      out.push(...items);
+      if (out.length >= 100 || out.length >= total) break;
+    }
+  } catch (err) {
+    console.warn("[najnoviji] listListings failed:", err);
   }
   return out.slice(0, 100);
 }

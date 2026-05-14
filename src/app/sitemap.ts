@@ -25,7 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  const slugRows = await db().getAllActiveSlugs();
+  let slugRows: Awaited<ReturnType<ReturnType<typeof db>["getAllActiveSlugs"]>> = [];
+  try {
+    slugRows = await db().getAllActiveSlugs();
+  } catch (err) {
+    console.warn("[sitemap] getAllActiveSlugs failed:", err);
+  }
   const listingRoutes: MetadataRoute.Sitemap = slugRows.map((l) => ({
     url: `${BASE}/oglasi/${l.slug}`,
     lastModified: new Date(l.createdAt),

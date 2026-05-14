@@ -22,7 +22,15 @@ export default async function OglasiPage({
 }) {
   const sp = await searchParams;
   const filters = parseFilters(sp);
-  const { items, total } = await db().listListings(filters);
+  let items: Awaited<ReturnType<ReturnType<typeof db>["listListings"]>>["items"] = [];
+  let total = 0;
+  try {
+    const res = await db().listListings(filters);
+    items = res.items;
+    total = res.total;
+  } catch (err) {
+    console.warn("[oglasi] listListings failed:", err);
+  }
   const page = filters.page ?? 1;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const filterCount = activeFilterCount(filters);

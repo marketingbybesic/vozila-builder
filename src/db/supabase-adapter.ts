@@ -28,18 +28,41 @@ import {
   type DbListing,
 } from "./schema";
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-  throw new Error("DATABASE_URL is required when DB_DRIVER=supabase");
+// Lazy client — defer connection until first query. Avoids hard-fail at module
+// import time if DATABASE_URL is missing or wrong (which would crash `next build`).
+let _client: ReturnType<typeof postgres> | null = null;
+let _dbq: ReturnType<typeof drizzle> | null = null;
+
+function client() {
+  if (_client) return _client;
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is required when DB_DRIVER=supabase. Set it in .env.local or Vercel env vars.");
+  }
+  _client = postgres(url, {
+    prepare: false,         // required for Supabase pooler (PgBouncer transaction mode)
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+  return _client;
 }
 
-const client = postgres(DATABASE_URL, {
-  prepare: false,
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
-const dbq = drizzle(client);
+function getDbq(): ReturnType<typeof drizzle> {
+  if (_dbq) return _dbq;
+  _dbq = drizzle(client());
+  return _dbq;
+}
+
+// Proxy so `dbq.select(...)` / `dbq.insert(...)` / `dbq.update(...)` / `dbq.delete(...)`
+// each lazily resolve on first access — preserves the call-site ergonomics from before.
+const dbq = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(_t, prop) {
+    const real = getDbq() as unknown as Record<string | symbol, unknown>;
+    const v = real[prop];
+    return typeof v === "function" ? (v as (...a: unknown[]) => unknown).bind(real) : v;
+  },
+}) as ReturnType<typeof drizzle>;
 
 function rowToUser(r: typeof users.$inferSelect): DbUser {
   return {
@@ -92,6 +115,7 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     variant: r.variant ?? undefined,
     year: r.year,
     priceEur: r.priceEur,
+    originalPriceEur: r.originalPriceEur ?? undefined,
     km: r.km,
     fuel: r.fuel as Listing["fuel"],
     transmission: r.transmission as Listing["transmission"],
@@ -103,6 +127,10 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     powerKw: r.powerKw,
     doors: r.doors,
     seats: r.seats,
+    vinMasked: r.vinMasked ?? undefined,
+    accidentHistory: r.accidentHistory ?? undefined,
+    serviceHistory: r.serviceHistory ?? undefined,
+    importedFrom: r.importedFrom ?? undefined,
     firstRegistered: r.firstRegistered ?? undefined,
     registrationUntil: r.registrationUntil ?? undefined,
     city: r.city,
@@ -114,7 +142,9 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     sellerType: sellerType as Listing["sellerType"],
     sellerPhone,
     views: r.views,
+    phoneReveals: r.phoneReveals,
     featured: r.featured,
+    boostedUntil: r.boostedUntil ? r.boostedUntil.toISOString() : undefined,
     createdAt: r.createdAt.toISOString(),
   };
 }
@@ -332,6 +362,7 @@ export const supabaseAdapter: DbAdapter = {
         variant: input.variant ?? null,
         year: input.year,
         priceEur: input.priceEur,
+        originalPriceEur: input.originalPriceEur ?? null,
         km: input.km,
         fuel: input.fuel,
         transmission: input.transmission,
@@ -343,6 +374,10 @@ export const supabaseAdapter: DbAdapter = {
         powerKw: input.powerKw,
         doors: input.doors,
         seats: input.seats,
+        vinMasked: input.vinMasked ?? null,
+        accidentHistory: input.accidentHistory ?? null,
+        serviceHistory: input.serviceHistory ?? null,
+        importedFrom: input.importedFrom ?? null,
         firstRegistered: input.firstRegistered ?? null,
         registrationUntil: input.registrationUntil ?? null,
         city: input.city,
@@ -373,6 +408,7 @@ export const supabaseAdapter: DbAdapter = {
       variant: patch.variant ?? null,
       year: patch.year,
       priceEur: patch.priceEur,
+      originalPriceEur: patch.originalPriceEur ?? null,
       km: patch.km,
       fuel: patch.fuel,
       transmission: patch.transmission,
@@ -384,6 +420,10 @@ export const supabaseAdapter: DbAdapter = {
       powerKw: patch.powerKw,
       doors: patch.doors,
       seats: patch.seats,
+      vinMasked: patch.vinMasked ?? null,
+      accidentHistory: patch.accidentHistory ?? null,
+      serviceHistory: patch.serviceHistory ?? null,
+      importedFrom: patch.importedFrom ?? null,
       firstRegistered: patch.firstRegistered ?? null,
       registrationUntil: patch.registrationUntil ?? null,
       city: patch.city,

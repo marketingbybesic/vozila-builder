@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# proof screenshots (kept locally, do not bloat repo)
+/.proof
+
+# claude-flow noise
+/.claude-flow
+
+# local uploads (created by image upload stub in dev)
+/public/uploads

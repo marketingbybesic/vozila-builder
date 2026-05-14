@@ -59,6 +59,7 @@ export const Listing = z.object({
   variant: z.string().optional(),
   year: z.number().int().min(1950).max(2030),
   priceEur: z.number().int().positive(),
+  originalPriceEur: z.number().int().positive().optional(),
   km: z.number().int().nonnegative(),
   fuel: z.enum(FUEL_TYPES),
   transmission: z.enum(TRANSMISSIONS),
@@ -71,6 +72,9 @@ export const Listing = z.object({
   doors: z.number().int().min(2).max(5),
   seats: z.number().int().min(2).max(9),
   vinMasked: z.string().optional(),
+  accidentHistory: z.string().optional(),
+  serviceHistory: z.string().optional(),
+  importedFrom: z.string().optional(),
   registrationUntil: z.string().optional(),
   firstRegistered: z.string().optional(),
   city: z.string(),
@@ -83,7 +87,9 @@ export const Listing = z.object({
   sellerPhone: z.string(),
   sellerEmail: z.string().email().optional(),
   views: z.number().int().nonnegative(),
+  phoneReveals: z.number().int().nonnegative().optional(),
   featured: z.boolean(),
+  boostedUntil: z.string().optional(),
   createdAt: z.string(),
 });
 export type Listing = z.infer<typeof Listing>;
