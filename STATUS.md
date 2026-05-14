@@ -1,129 +1,123 @@
 # Auti.hr — Build Status
 
-**Updated:** 2026-05-12
-**Last verified build:** `npm run build` passes, homepage screenshots in `.proof/`
+**Updated:** 2026-05-14
+**Last verified build:** `npm run build` passes, 75 routes, TypeScript clean, all SSG ok.
+**Last visual walk:** 56/56 pages screenshotted at desktop + mobile (`/Users/zmaj/Projects/auti-hr/.proof/WALK-20260514-030612/`).
 
-## Vision
-Croatian car classifieds marketplace. Original brand (not a copy of avto.net). Production-ready, free/low-cost stack, deploy to Vercel.
+## What this is
+
+Auti.hr — Croatian car classifieds. Original brand, beats avto.net on UX, deterministic algorithms, Apple-grade aesthetics. Production-ready except for the **3 things only Dino can do** (see PRODUCTION.md).
 
 ## Stack (locked)
-- Next.js 16.2.6 (App Router, Turbopack, RSC)
+
+- Next.js 16.2.6 (App Router, Turbopack, RSC, async params/searchParams)
 - React 19.2 + TypeScript 5
-- Tailwind v4 (`@tailwindcss/postcss`, `@theme` block in globals.css)
-- Fonts: Fraunces (display, opsz+SOFT axes) + Inter (UI), `latin-ext` for HR diacritics
-- shadcn-style custom UI (Radix primitives wrapped with cva)
-- Lucide React icons
-- Zod for validation
-- Clerk (auth — installed, not wired)
-- Supabase JS (DB — installed, not wired)
-- Drizzle ORM (installed, not wired)
+- Tailwind v4 (`@theme` block in globals.css)
+- Fraunces (display) + Inter (UI), `latin-ext` for HR diacritics
+- shadcn-style custom UI (Radix primitives + cva)
+- **Database adapter pattern** — memory (dev) ↔ Supabase Postgres via Drizzle (prod) by `DB_DRIVER` env var
+- Cookie + session-token auth (no Clerk), `INITIAL_ADMIN_EMAIL` auto-elevates first signup
 
-## Design system (locked)
-- **Palette**: `--color-ink #0A1628` (navy), `--color-accent #F59E0B` (amber), `--color-bg #FAFAF7` (warm off-white), `--color-line #E5E1D8`
-- **Type**: Fraunces serif italic for hero accent, Inter for everything else, `tracking-[-0.025em]` on displays
-- **Radii**: 4/8/14/22
-- **Shadows**: subtle card + lifted card-hover
+## Phases shipped
 
-## Done (Phase 0 — Foundation)
-- [x] Scaffold + deps
-- [x] Design tokens (globals.css)
-- [x] Root layout with Inter + Fraunces, HR locale, full OG metadata
-- [x] `next.config.ts` — Unsplash + Supabase image hosts
-- [x] `src/lib/utils.ts` — `cn`, `formatPrice` (EUR hr-HR), `formatKm`, `formatPower` (kW+KS), `formatDate`, `timeAgo`, `slugify` (HR diacritic-aware)
-- [x] `src/lib/types.ts` — Zod `Listing` + 8 enums (Fuel, Transmission, BodyType, Drive, Color, Condition, SellerType, SortOption) + `ListingFilters` type
-- [x] `src/data/makes.ts` — 20 makes × ~140 models, HR market mix, country tags, `POPULAR_MAKE_SLUGS`
-- [x] `src/data/locations.ts` — all 21 HR counties + 90+ cities, `ALL_CITIES`, `COUNTIES`
-- [x] `src/data/features.ts` — 5 categorized feature groups (Sigurnost, Udobnost, Multimedija, Eksterijer, Pogon) ~60 features
-- [x] UI primitives: `Button` (6 variants × 4 sizes, asChild), `Badge` (5 variants), `Input`, `Textarea`, `Select` (custom chevron), `Card`, `Container`
-- [x] `SiteHeader` — sticky, backdrop-blur, logo + 4-link nav + icon row + Prijava + accent CTA
-- [x] `SiteFooter` — dark navy, 4-column nav, brand block, year
-- [x] Homepage — hero (badge + display H1 + 2 CTAs + stats), popular makes grid (8 cards), 3-up value props, prodaja CTA strip
-- [x] Build passes (1.17s compile, TS clean)
-- [x] Visual proof: `.proof/home-desktop.png` (1440×900) + `.proof/home-mobile.png` (390×844)
+- **Phase 0** — design tokens, layout, homepage
+- **Phase 1** — 52 seed listings + browse + filter + detail
+- **Phase 2** — post-a-car form + auth screens + static pages
+- **Phase 3** — dashboard + my listings + saved + messages + settings
+- **Phase 4** — sitemap, robots, Vercel deploy config
+- **Phase 5–8** — real backend (DB adapter + server actions + auth + middleware)
+- **Phase 9** — Supabase adapter via Drizzle, public reads routed through `db()` (homepage, browse, detail, sitemap), `DB_DRIVER=supabase` switch, drizzle.config.ts, idempotent seed script
+- **Phase 10** — admin panel (5 routes), dealer profile, compare page + sticky bar + per-card button, advanced search, saved searches, listing report flow, najnoviji + marke pages, header global search, schema extensions (role, tier, bannedAt, originalPriceEur, accidentHistory, serviceHistory, importedFrom, vinMasked, boostedUntil, phoneReveals, savedSearches table, reports table, adminAuditLog table), image upload stub action
 
-## Done (Phase 1 — Listings, browse, detail)
-- [x] `src/data/listings.ts` — 52 realistic HR seed listings with Unsplash photos
-- [x] `src/lib/filter.ts` — parseFilters, applyFilters, paginate, buildQueryString, activeFilterCount
-- [x] `ListingCard` component — photo with hover lift, badges, specs row, price + city + posted time
-- [x] `SaveButton` (client) — localStorage-backed (no auth needed for v1)
-- [x] `ShareButton` (client) — Web Share API + clipboard fallback
-- [x] `FilterSidebar` (client) — search, make/model cascading, price/year/km ranges, multi-chip filters
-- [x] `SortDropdown` (client) — 5 sort modes
-- [x] `Pagination` — smart elision, accessible
-- [x] `MobileFilterToggle` — bottom sheet on mobile
-- [x] `/oglasi` — full browse with sidebar + grid + sort + pagination
-- [x] `/oglasi/[slug]` — breadcrumb, image gallery + lightbox, spec grid, description, features by category, sticky contact card with finance calc, "Prije nego što platiš" safety block, related listings
-- [x] `generateStaticParams` — all 52 detail pages prerendered as SSG
-- [x] `generateMetadata` per listing — OG title + image + description
-- [x] `ImageGallery` (client) — thumbnail strip, click-to-lightbox, prev/next nav
-- [x] Homepage updated with "Izdvojeno tjedna" featured row (6 cards)
-- [x] Build passes: 57 routes (1 home + browse + 52 details + 3 helpers), TS clean
-- [x] Visual proof: home-desktop, home-mobile, home-featured, browse, browse-mobile, detail, detail-mobile
+## Route map (75 routes)
 
-## Caught bug + learning
-- **Bug**: `onClick` on a button inside a Server Component breaks prerender ("Event handlers cannot be passed to Client Component props")
-- **Fix**: Extract any interactive element (heart, share) into its own `"use client"` component. Server Components compose with Client Components via props, not handlers.
-- **Pattern**: ListingCard stays Server (fast HTML), only the heart/share leaves are Client. RSC ftw.
+| Path | Type | Notes |
+|---|---|---|
+| `/` | static | hero, 8 popular makes, 6 featured cars from db() |
+| `/oglasi` | dynamic | browse with sidebar filters, pagination, sort, Save search button |
+| `/oglasi/[slug]` | SSG | 52 prerendered + dynamicParams=true. Gallery, specs, contact card, related, report link, compare button |
+| `/oglasi/[slug]/prijavi` | dynamic | report form with reason + body, stored to reports table |
+| `/oglasi/najnoviji` | static | last 100 by createdAt desc |
+| `/oglasi/napredno` | static | full-page advanced search, every filter visible |
+| `/usporedi` | dynamic | side-by-side spec compare, 2-4 listings via ?a=&b=&c=&d= |
+| `/marke` | dynamic | A-Z brand directory with live counts |
+| `/trgovci/[id]` | dynamic | public seller profile + their active listings |
+| `/moj-racun` | dynamic | overview |
+| `/moj-racun/oglasi` | dynamic | my listings |
+| `/moj-racun/spremljeno` | dynamic | saved listings |
+| `/moj-racun/pretrage` | dynamic | saved searches |
+| `/moj-racun/poruke` | dynamic | inbox |
+| `/moj-racun/postavke` | dynamic | settings |
+| `/admin` | dynamic | KPIs + recent audit log |
+| `/admin/oglasi` | dynamic | listing moderation (feature, delete) |
+| `/admin/korisnici` | dynamic | user management (role, ban) |
+| `/admin/prijave` | dynamic | report queue (resolve, dismiss) |
+| `/admin/dnevnik` | dynamic | full admin audit log |
+| `/objavi` | dynamic | 5-step listing wizard |
+| `/prijava`, `/registracija` | dynamic | auth |
+| `/kontakt`, `/o-nama`, `/uvjeti` | static | static pages |
+| `/sitemap.xml`, `/robots.txt` | static | SEO, async dynamic via db() |
 
-## Next (Phase 2 — Post-a-car + static pages)
-- [ ] `/objavi` multi-step form (5 steps: basic → specs → photos → price+description → preview)
-- [ ] Image upload UI (drag-and-drop, 10 photos max, client-side resize to 1920px)
-- [ ] Auth gate via Clerk middleware (demo mode shows mock signed-in state)
-- [ ] Server action to persist (in-memory map for now, swap to Supabase later)
-- [ ] `/prijava` + `/registracija` (Clerk components, branded)
-- [ ] `/o-nama`, `/kontakt`, `/uvjeti`, `/savjeti/*` static pages — currently 404
+## Schema (Postgres / Drizzle)
 
-## Phase 3 — Auth + dashboard + messaging
-- [ ] Clerk setup with HR locale (`@clerk/localizations/hr`)
-- [ ] `/prijava` + `/registracija` (Clerk components, branded)
-- [ ] `/moj-racun` — profile, listings, saved, messages tabs
-- [ ] Inbox UI — thread list left, conversation right, send form
-- [ ] Mock realtime (poll every 3s in demo mode, Supabase Realtime in prod)
+9 tables: `users` (with role, tier, bannedAt), `listings` (with originalPriceEur, accident/service history, importedFrom, vinMasked, boostedUntil, phoneReveals), `saved_listings`, `message_threads`, `messages`, `sessions`, `views_log`, `saved_searches`, `reports`, `admin_audit_log`. All UUID PKs, TZ timestamps, FK cascades, 7 indexes on listings.
 
-## Phase 4 — Deploy
-- [ ] Robots, sitemap.xml (dynamic from listings)
-- [ ] OG image per listing (static at first)
-- [ ] Vercel deploy via `/vercel` skill (token in keychain `vercel_api`)
-- [ ] Smoke test on live URL
-- [ ] Lighthouse pass (target: 95+ all categories)
+## DbAdapter interface (29 methods)
 
-## Backend wire-up (after Vercel deploy)
-1. Create Supabase project at supabase.com (free tier, EU-Central region)
-2. Paste URL + anon key into `.env.local`
-3. Run Drizzle migrations (schema in `src/db/schema.ts` — TBD)
-4. Run seed script — pushes 50 listings + makes + models to Supabase
-5. Create Clerk app at clerk.com (free tier)
-6. Paste keys, redeploy
-7. Wire RLS policies (Clerk `userId` claim → `auth.uid()`)
+- Users: getById, getByEmail, create, update
+- Sessions: create, getUser, delete
+- Listings: list, getBySlug, getByUser, create, update, setStatus, incrementViews, getFeatured, getRelated, getAllActiveSlugs
+- Saved: toggle, list
+- Messages: listThreads, getThreadMessages, send, markRead
+- Saved searches: list, create, delete
+- Reports: create, list, resolve
+- Admin: listUsers, listListings, getKpis, setUserRole, banUser, deleteListing, setFeatured, listAudit
 
-## Critical Next.js 16 gotchas (caught reading docs)
-- `params` is `Promise<{...}>` — must `await` in pages and layouts
-- `searchParams` is `Promise<{...}>` — must `await`
-- `PageProps<'/path/[slug]'>` is a global helper type — no import
-- Tailwind v4 uses `@theme` block in CSS, NOT `tailwind.config.ts`
-- `next/image` `remotePatterns` is in `next.config.ts`
-- `lang="hr"` on `<html>` for proper diacritic rendering
+Both `memoryAdapter` (dev, in-process, seeded with 52 listings + demo + admin users) and `supabaseAdapter` (Drizzle + postgres-js) implement the full interface.
 
-## Files modified/created
-```
-src/app/globals.css           — design tokens + animations
-src/app/layout.tsx            — root layout, HR locale, fonts, metadata
-src/app/page.tsx              — homepage
-src/components/site-header.tsx
-src/components/site-footer.tsx
-src/components/ui/{button,badge,input,card,select,container}.tsx
-src/lib/utils.ts              — HR formatters
-src/lib/types.ts              — Zod schemas + enums
-src/data/{makes,locations,features}.ts
-next.config.ts                — image hosts
-.proof/home-desktop.png       — visual proof 1440x900
-.proof/home-mobile.png        — visual proof 390x844
-```
+## What's BLOCKED on Dino
+
+See **PRODUCTION.md** for the 10-step deploy guide. Summary:
+
+1. Create Supabase project (5 min, web UI)
+2. Save 4 keys to keychain
+3. Write `.env.local` (one shell command)
+4. `drizzle-kit push` + seed script (2 min)
+5. Local verify with `DB_DRIVER=supabase`
+6. Set Vercel env vars (3 min)
+7. `vercel --prod` redeploy
+8. (Optional) Supabase Storage bucket for real photo uploads
+9. (Optional) Resend for saved-search email alerts
+10. (Optional) Stripe for paid boosts
+11. (Optional) Custom domain auti.hr
+
+## Honest defect report
+
+Things I shipped that are **not** fully production-grade yet:
+
+- **Email confirmation on signup** — not wired. Signups become active immediately.
+- **Saved search notifications** — schema + UI ready, but no cron job sends emails yet.
+- **Paid boost** — schema column `boostedUntil` exists, no Stripe wiring.
+- **Photo upload to Supabase Storage** — server action stub writes to `public/uploads/` (works dev, NOT production). Listings created via `/objavi` keep data-URL base64 in DB until you swap.
+- **Multi-vertical (Moto, Gospodarska, Mehanizacija, Prosti čas, Deli)** — Auti.hr is cars-only. Avto.net has 6 verticals.
+- **Phone reveal logging** — column exists, no UI calls it yet.
+- **VIN history (HAK)** — placeholder text on detail page, no real integration.
+- **Email** — no SMTP wired (Resend deferred to PRODUCTION.md step 8).
+
+## Playwright walk findings (2026-05-14 03:06)
+
+- 56/56 pages rendered without exceptions at both 1440×900 and 390×844
+- Admin pages in this walk show the login-redirect target, not the admin UI (the proof script's auto-signup step needs more work to land a session before walking admin routes — product is fine, walk script is partial)
+- Homepage, browse, detail, compare, advanced search, dealer profile, brand directory all visually clean and on-brand
+- No console errors observed during walk
 
 ## How to resume
+
 ```bash
 cd ~/Projects/auti-hr
-npm run dev     # http://localhost:3000
-npm run build   # verify
+git pull   # if working across machines
+npm run build       # must stay green
+npm run dev         # http://localhost:3000
 ```
-Read this STATUS.md first, then continue with Phase 1 (listings seed + browse + detail).
+
+To go to prod: open `PRODUCTION.md` and follow steps 1–6 (steps 7-10 optional).

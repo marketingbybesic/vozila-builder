@@ -3,6 +3,7 @@ import Image from "next/image";
 import { MapPin, Gauge, Calendar, Fuel } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SaveButton } from "@/components/save-button";
+import { CompareButton } from "@/components/compare-button";
 import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
 
@@ -29,6 +30,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           )}
         </div>
         <SaveButton listingId={listing.id} />
+        <CompareButton slug={listing.slug} />
         <div className="absolute bottom-3 right-3">
           <Badge variant="outline" className="bg-white/90 backdrop-blur border-transparent">
             {listing.sellerType}

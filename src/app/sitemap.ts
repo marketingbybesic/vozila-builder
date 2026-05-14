@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { LISTINGS } from "@/data/listings";
+import { db } from "@/db";
 import { MAKES } from "@/data/makes";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://auti.hr";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -25,7 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  const listingRoutes: MetadataRoute.Sitemap = LISTINGS.map((l) => ({
+  const slugRows = await db().getAllActiveSlugs();
+  const listingRoutes: MetadataRoute.Sitemap = slugRows.map((l) => ({
     url: `${BASE}/oglasi/${l.slug}`,
     lastModified: new Date(l.createdAt),
     changeFrequency: "weekly" as const,

@@ -1,5 +1,15 @@
 import type { Listing, ListingFilters } from "@/lib/types";
-import type { DbAdapter, DbUser, DbMessage, DbThread, ThreadWithLatest } from "./types";
+import type {
+  DbAdapter,
+  DbUser,
+  DbMessage,
+  DbThread,
+  DbSavedSearch,
+  DbReport,
+  DbAuditLog,
+  AdminKpis,
+  ThreadWithLatest,
+} from "./types";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters, paginate } from "@/lib/filter";
 import { slugify } from "@/lib/utils";
@@ -16,6 +26,9 @@ const g = globalThis as unknown as {
     saved: Map<string, Set<string>>; // userId -> Set<listingId>
     threads: Map<string, DbThread>;
     messages: DbMessage[];
+    savedSearches: Map<string, DbSavedSearch>;
+    reports: Map<string, DbReport>;
+    audit: DbAuditLog[];
   };
 };
 
@@ -38,11 +51,35 @@ function store() {
       city: "Zagreb",
       avatarUrl: null,
       sellerType: "Privatni",
+      role: "user",
+      tier: "free",
+      bannedAt: null,
       verifiedAt: null,
       createdAt: new Date().toISOString(),
     };
     users.set(demoUser.id, demoUser);
     emailIdx.set(demoUser.email, demoUser.id);
+
+    // Seed default demo admin so /admin is reachable in dev without signup
+    const adminUser: DbUser & { passwordHash: string | null } = {
+      id: "00000000-0000-0000-0000-0000000000ad",
+      email: "admin@auti.hr",
+      passwordHash: null,
+      firstName: "Admin",
+      lastName: "Auti",
+      phone: null,
+      county: "Grad Zagreb",
+      city: "Zagreb",
+      avatarUrl: null,
+      sellerType: "Privatni",
+      role: "admin",
+      tier: "premium-dealer",
+      bannedAt: null,
+      verifiedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    users.set(adminUser.id, adminUser);
+    emailIdx.set(adminUser.email, adminUser.id);
 
     // Seed listings owned by demo user
     LISTINGS.forEach((l) => {
@@ -60,6 +97,9 @@ function store() {
       saved: new Map(),
       threads: new Map(),
       messages: [],
+      savedSearches: new Map(),
+      reports: new Map(),
+      audit: [],
     };
   }
   return g.__autiMem!;
@@ -100,7 +140,9 @@ export const memoryAdapter: DbAdapter = {
     const s = store();
     if (s.emailIdx.has(input.email)) throw new Error("Email već postoji");
     const id = uuid();
-    const user = {
+    const initialAdmin = process.env.INITIAL_ADMIN_EMAIL;
+    const isAdmin = initialAdmin && input.email.toLowerCase() === initialAdmin.toLowerCase();
+    const user: DbUser & { passwordHash: string | null } = {
       id,
       email: input.email,
       passwordHash: input.passwordHash,
@@ -111,6 +153,9 @@ export const memoryAdapter: DbAdapter = {
       city: input.city ?? null,
       avatarUrl: null,
       sellerType: (input.sellerType ?? "Privatni") as "Privatni" | "Trgovac",
+      role: isAdmin ? "admin" : "user",
+      tier: "free",
+      bannedAt: null,
       verifiedAt: null,
       createdAt: new Date().toISOString(),
     };
@@ -168,6 +213,31 @@ export const memoryAdapter: DbAdapter = {
     const l = s.listings.get(id);
     if (!l || l.status !== "active") return null;
     return stripOwner(l);
+  },
+
+  async getFeaturedListings(limit) {
+    return [...store().listings.values()]
+      .filter((l) => l.status === "active" && l.featured)
+      .slice(0, limit)
+      .map(stripOwner);
+  },
+
+  async getRelatedListings(listing, limit) {
+    return [...store().listings.values()]
+      .filter(
+        (l) =>
+          l.status === "active" &&
+          l.id !== listing.id &&
+          (l.make === listing.make || l.bodyType === listing.bodyType)
+      )
+      .slice(0, limit)
+      .map(stripOwner);
+  },
+
+  async getAllActiveSlugs() {
+    return [...store().listings.values()]
+      .filter((l) => l.status === "active")
+      .map((l) => ({ slug: l.slug, createdAt: l.createdAt }));
   },
 
   async getListingsByUser(userId) {
@@ -325,5 +395,208 @@ export const memoryAdapter: DbAdapter = {
     s.messages.forEach((m) => {
       if (m.threadId === threadId && m.fromUserId !== userId && !m.readAt) m.readAt = now;
     });
+  },
+
+  async listSavedSearches(userId) {
+    const s = store();
+    return [...s.savedSearches.values()]
+      .filter((q) => q.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async createSavedSearch(userId, input) {
+    const s = store();
+    const id = uuid();
+    const rec: DbSavedSearch = {
+      id,
+      userId,
+      name: input.name,
+      filterJson: input.filterJson,
+      notifyEmail: input.notifyEmail ?? false,
+      lastSeenCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    s.savedSearches.set(id, rec);
+    return rec;
+  },
+
+  async deleteSavedSearch(userId, id) {
+    const s = store();
+    const q = s.savedSearches.get(id);
+    if (!q || q.userId !== userId) return;
+    s.savedSearches.delete(id);
+  },
+
+  async createReport(input) {
+    const s = store();
+    if (!s.listings.has(input.listingId)) throw new Error("Oglas ne postoji");
+    const id = uuid();
+    const rec: DbReport = {
+      id,
+      listingId: input.listingId,
+      reporterId: input.reporterId,
+      reason: input.reason,
+      body: input.body,
+      status: "open",
+      resolvedAt: null,
+      resolvedBy: null,
+      createdAt: new Date().toISOString(),
+    };
+    s.reports.set(id, rec);
+    return rec;
+  },
+
+  async listReports(filters) {
+    const s = store();
+    const all = [...s.reports.values()]
+      .filter((r) => !filters?.status || r.status === filters.status)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return all.map((r) => {
+      const l = s.listings.get(r.listingId);
+      return {
+        ...r,
+        listingSlug: l?.slug ?? "",
+        listingTitle: l?.title ?? "",
+      };
+    });
+  },
+
+  async resolveReport(id, actorId, action) {
+    const s = store();
+    const r = s.reports.get(id);
+    if (!r) return;
+    r.status = action;
+    r.resolvedAt = new Date().toISOString();
+    r.resolvedBy = actorId;
+    s.reports.set(id, r);
+    s.audit.push({
+      id: uuid(),
+      actorId,
+      action: `report.${action}`,
+      targetType: "report",
+      targetId: id,
+      metadata: { listingId: r.listingId },
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async adminListUsers(filters) {
+    const s = store();
+    const q = filters?.q?.toLowerCase();
+    return [...s.users.values()]
+      .filter((u) => !filters?.role || u.role === filters.role)
+      .filter(
+        (u) =>
+          !q ||
+          u.email.toLowerCase().includes(q) ||
+          `${u.firstName} ${u.lastName}`.toLowerCase().includes(q)
+      )
+      .map(({ passwordHash: _p, ...rest }) => rest)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async adminListListings(filters) {
+    const s = store();
+    const q = filters?.q?.toLowerCase();
+    return [...s.listings.values()]
+      .filter((l) => !filters?.status || l.status === filters.status)
+      .filter(
+        (l) =>
+          !q ||
+          l.title.toLowerCase().includes(q) ||
+          `${l.make} ${l.model}`.toLowerCase().includes(q)
+      )
+      .map((l) => {
+        const owner = s.users.get(l.ownerId);
+        return { ...stripOwner(l), status: l.status, ownerEmail: owner?.email ?? "" };
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async adminGetKpis() {
+    const s = store();
+    const listings = [...s.listings.values()];
+    const reports = [...s.reports.values()];
+    return {
+      totalUsers: s.users.size,
+      totalListings: listings.length,
+      activeListings: listings.filter((l) => l.status === "active").length,
+      pendingReports: reports.filter((r) => r.status === "open").length,
+      featuredListings: listings.filter((l) => l.featured).length,
+      bannedUsers: [...s.users.values()].filter((u) => u.bannedAt).length,
+    };
+  },
+
+  async adminSetUserRole(targetId, actorId, role) {
+    const s = store();
+    const u = s.users.get(targetId);
+    if (!u) throw new Error("Korisnik ne postoji");
+    u.role = role;
+    s.users.set(targetId, u);
+    s.audit.push({
+      id: uuid(),
+      actorId,
+      action: "user.elevate",
+      targetType: "user",
+      targetId,
+      metadata: { role },
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async adminBanUser(targetId, actorId, banned) {
+    const s = store();
+    const u = s.users.get(targetId);
+    if (!u) throw new Error("Korisnik ne postoji");
+    u.bannedAt = banned ? new Date().toISOString() : null;
+    s.users.set(targetId, u);
+    s.audit.push({
+      id: uuid(),
+      actorId,
+      action: banned ? "user.ban" : "user.unban",
+      targetType: "user",
+      targetId,
+      metadata: null,
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async adminDeleteListing(listingId, actorId) {
+    const s = store();
+    const l = s.listings.get(listingId);
+    if (!l) throw new Error("Oglas ne postoji");
+    l.status = "deleted";
+    s.listings.set(listingId, l);
+    s.audit.push({
+      id: uuid(),
+      actorId,
+      action: "listing.delete",
+      targetType: "listing",
+      targetId: listingId,
+      metadata: { slug: l.slug },
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async adminSetFeatured(listingId, actorId, featured) {
+    const s = store();
+    const l = s.listings.get(listingId);
+    if (!l) throw new Error("Oglas ne postoji");
+    l.featured = featured;
+    s.listings.set(listingId, l);
+    s.audit.push({
+      id: uuid(),
+      actorId,
+      action: featured ? "listing.feature" : "listing.unfeature",
+      targetType: "listing",
+      targetId: listingId,
+      metadata: null,
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async adminListAudit(limit = 100) {
+    const s = store();
+    return [...s.audit].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit);
   },
 };

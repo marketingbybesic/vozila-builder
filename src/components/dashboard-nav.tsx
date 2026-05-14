@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Car, Heart, MessageSquare, Settings } from "lucide-react";
+import { User, Car, Heart, MessageSquare, Settings, BookmarkPlus } from "lucide-react";
 import { SignOutButton } from "@/components/sign-out-button";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ const NAV = [
   { href: "/moj-racun", label: "Pregled", icon: User, exact: true },
   { href: "/moj-racun/oglasi", label: "Moji oglasi", icon: Car },
   { href: "/moj-racun/spremljeno", label: "Spremljeno", icon: Heart },
+  { href: "/moj-racun/pretrage", label: "Pretrage", icon: BookmarkPlus },
   { href: "/moj-racun/poruke", label: "Poruke", icon: MessageSquare, badgeKey: "unreadMessages" as const },
   { href: "/moj-racun/postavke", label: "Postavke", icon: Settings },
 ];

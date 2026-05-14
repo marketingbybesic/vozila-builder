@@ -10,8 +10,52 @@ export type DbUser = {
   city: string | null;
   avatarUrl: string | null;
   sellerType: "Privatni" | "Trgovac";
+  role: "user" | "admin" | "moderator";
+  tier: "free" | "pro" | "premium-dealer";
+  bannedAt: string | null;
   verifiedAt: string | null;
   createdAt: string;
+};
+
+export type DbSavedSearch = {
+  id: string;
+  userId: string;
+  name: string;
+  filterJson: Record<string, unknown>;
+  notifyEmail: boolean;
+  lastSeenCount: number;
+  createdAt: string;
+};
+
+export type DbReport = {
+  id: string;
+  listingId: string;
+  reporterId: string | null;
+  reason: "fraud" | "duplicate" | "wrong-data" | "inappropriate" | "other";
+  body: string;
+  status: "open" | "reviewing" | "resolved" | "dismissed";
+  resolvedAt: string | null;
+  resolvedBy: string | null;
+  createdAt: string;
+};
+
+export type DbAuditLog = {
+  id: string;
+  actorId: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+};
+
+export type AdminKpis = {
+  totalUsers: number;
+  totalListings: number;
+  activeListings: number;
+  pendingReports: number;
+  featuredListings: number;
+  bannedUsers: number;
 };
 
 export type DbMessage = {
@@ -66,6 +110,9 @@ export interface DbAdapter {
   listListings(filters: ListingFilters): Promise<{ items: Listing[]; total: number }>;
   getListingBySlug(slug: string): Promise<Listing | null>;
   getListingsByUser(userId: string): Promise<(Listing & { status: string })[]>;
+  getFeaturedListings(limit: number): Promise<Listing[]>;
+  getRelatedListings(listing: Listing, limit: number): Promise<Listing[]>;
+  getAllActiveSlugs(): Promise<{ slug: string; createdAt: string }[]>;
   createListing(userId: string, input: Omit<Listing, "id" | "slug" | "title" | "views" | "createdAt" | "featured" | "sellerName" | "sellerType" | "sellerPhone">): Promise<Listing>;
   updateListing(id: string, userId: string, patch: Partial<Listing>): Promise<Listing>;
   setListingStatus(id: string, userId: string, status: "active" | "paused" | "sold" | "deleted"): Promise<void>;
@@ -80,4 +127,24 @@ export interface DbAdapter {
   getThreadMessages(threadId: string, userId: string): Promise<DbMessage[]>;
   sendMessage(input: { fromUserId: string; listingId: string; body: string; toUserId?: string }): Promise<DbMessage>;
   markThreadRead(threadId: string, userId: string): Promise<void>;
+
+  // Saved searches
+  listSavedSearches(userId: string): Promise<DbSavedSearch[]>;
+  createSavedSearch(userId: string, input: { name: string; filterJson: Record<string, unknown>; notifyEmail?: boolean }): Promise<DbSavedSearch>;
+  deleteSavedSearch(userId: string, id: string): Promise<void>;
+
+  // Reports
+  createReport(input: { listingId: string; reporterId: string | null; reason: DbReport["reason"]; body: string }): Promise<DbReport>;
+  listReports(filters?: { status?: DbReport["status"] }): Promise<(DbReport & { listingSlug: string; listingTitle: string })[]>;
+  resolveReport(id: string, actorId: string, action: "resolved" | "dismissed"): Promise<void>;
+
+  // Admin
+  adminListUsers(filters?: { q?: string; role?: string }): Promise<DbUser[]>;
+  adminListListings(filters?: { status?: string; q?: string }): Promise<(Listing & { status: string; ownerEmail: string })[]>;
+  adminGetKpis(): Promise<AdminKpis>;
+  adminSetUserRole(targetId: string, actorId: string, role: DbUser["role"]): Promise<void>;
+  adminBanUser(targetId: string, actorId: string, banned: boolean): Promise<void>;
+  adminDeleteListing(listingId: string, actorId: string): Promise<void>;
+  adminSetFeatured(listingId: string, actorId: string, featured: boolean): Promise<void>;
+  adminListAudit(limit?: number): Promise<DbAuditLog[]>;
 }

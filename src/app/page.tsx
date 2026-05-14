@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
-import { getFeaturedListings } from "@/data/listings";
+import { db } from "@/db";
 import { Search, ShieldCheck, Zap, Users } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
   const popularMakes = POPULAR_MAKE_SLUGS.map(
     (slug) => MAKES.find((m) => m.slug === slug)!
   );
-  const featured = getFeaturedListings(6);
+  const featured = await db().getFeaturedListings(6);
 
   return (
     <>

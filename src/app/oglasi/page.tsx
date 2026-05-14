@@ -4,8 +4,9 @@ import { FilterSidebar } from "@/components/filter-sidebar";
 import { SortDropdown } from "@/components/sort-dropdown";
 import { Pagination } from "@/components/pagination";
 import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
-import { LISTINGS } from "@/data/listings";
-import { applyFilters, paginate, parseFilters, activeFilterCount } from "@/lib/filter";
+import { SaveSearchButton } from "@/components/save-search-button";
+import { db } from "@/db";
+import { PAGE_SIZE, parseFilters, activeFilterCount } from "@/lib/filter";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -21,8 +22,9 @@ export default async function OglasiPage({
 }) {
   const sp = await searchParams;
   const filters = parseFilters(sp);
-  const filtered = applyFilters(LISTINGS, filters);
-  const { items, page, totalPages, total } = paginate(filtered, filters.page ?? 1);
+  const { items, total } = await db().listListings(filters);
+  const page = filters.page ?? 1;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const filterCount = activeFilterCount(filters);
 
   return (
@@ -46,9 +48,10 @@ export default async function OglasiPage({
         </div>
 
         <div>
-          <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
             <MobileFilterToggle count={filterCount} />
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex items-center gap-2 flex-wrap">
+              {filterCount > 0 && <SaveSearchButton filters={filters} />}
               <span className="hidden sm:inline text-sm text-[var(--color-muted)]">
                 Sortiraj:
               </span>

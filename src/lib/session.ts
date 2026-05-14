@@ -26,6 +26,12 @@ export async function requireUser(): Promise<DbUser> {
   return user;
 }
 
+export async function requireAdmin(): Promise<DbUser> {
+  const user = await requireUser();
+  if (user.role !== "admin") redirect("/?reason=forbidden");
+  return user;
+}
+
 export async function createSessionCookie(userId: string) {
   const { token, expiresAt } = await db().createSession(userId, SESSION_TTL_SECONDS);
   const store = await cookies();

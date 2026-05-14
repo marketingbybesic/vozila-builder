@@ -8,7 +8,8 @@ import { ImageGallery } from "@/components/image-gallery";
 import { ListingCard } from "@/components/listing-card";
 import { SaveButton } from "@/components/save-button";
 import { ShareButton } from "@/components/share-button";
-import { getListing, getRelatedListings, LISTINGS } from "@/data/listings";
+import { CompareButton } from "@/components/compare-button";
+import { db } from "@/db";
 import { FEATURE_CATEGORIES } from "@/data/features";
 import {
   formatPrice,
@@ -31,8 +32,9 @@ import {
 
 export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return LISTINGS.map((l) => ({ slug: l.slug }));
+export async function generateStaticParams() {
+  const rows = await db().getAllActiveSlugs();
+  return rows.map((r) => ({ slug: r.slug }));
 }
 
 export async function generateMetadata({
@@ -41,7 +43,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const listing = getListing(slug);
+  const listing = await db().getListingBySlug(slug);
   if (!listing) return { title: "Oglas nije pronađen" };
   return {
     title: `${listing.make} ${listing.model} ${listing.year}. — ${formatPrice(listing.priceEur)}`,
@@ -60,10 +62,10 @@ export default async function ListingDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const listing = getListing(slug);
+  const listing = await db().getListingBySlug(slug);
   if (!listing) notFound();
 
-  const related = getRelatedListings(listing, 4);
+  const related = await db().getRelatedListings(listing, 4);
 
   const featuresByCategory = FEATURE_CATEGORIES.map((cat) => ({
     name: cat.name,
@@ -190,7 +192,7 @@ export default async function ListingDetailPage({
 
           <aside className="lg:sticky lg:top-20 lg:self-start space-y-4">
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 shadow-[var(--shadow-card)]">
-              <div className="font-display text-4xl text-[var(--color-ink)] tracking-tight">
+              <div className="font-display text-4xl text-[var(--color-ink)] tracking-tight flex items-baseline gap-3 flex-wrap">
                 {formatPrice(listing.priceEur)}
               </div>
               <p className="mt-1 text-xs text-[var(--color-muted)]">
@@ -210,6 +212,9 @@ export default async function ListingDetailPage({
                   <SaveButton listingId={listing.id} variant="detail" className="w-full" />
                   <ShareButton title={`${listing.make} ${listing.model}`} />
                 </div>
+                <div className="mt-2">
+                  <CompareButton slug={listing.slug} variant="detail" />
+                </div>
               </div>
 
               <div className="mt-5 pt-5 border-t border-[var(--color-line)]">
@@ -220,6 +225,15 @@ export default async function ListingDetailPage({
                 <div className="text-xs text-[var(--color-muted)] mt-0.5">
                   {listing.sellerType} · {listing.city}
                 </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
+                <Link
+                  href={`/oglasi/${listing.slug}/prijavi`}
+                  className="text-xs text-[var(--color-muted)] hover:text-red-600 hover:underline"
+                >
+                  Prijavi oglas
+                </Link>
               </div>
             </div>
 
@@ -275,4 +289,3 @@ function SpecItem({
   );
 }
 
-export const dynamic = "force-static";
