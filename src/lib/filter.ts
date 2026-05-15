@@ -23,6 +23,8 @@ export function parseFilters(
 ): ListingFilters {
   return {
     q: asString(sp.q),
+    category: asString(sp.category) as ListingFilters["category"],
+    subcategory: asString(sp.subcategory),
     make: asString(sp.make),
     model: asString(sp.model),
     priceMin: asNumber(sp.priceMin),
@@ -70,6 +72,8 @@ export function applyFilters(
       const hay = `${l.title} ${l.make} ${l.model} ${l.variant ?? ""} ${l.description}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
+    if (f.category && l.category !== f.category) return false;
+    if (f.subcategory && l.subcategory !== f.subcategory) return false;
     if (f.make && slugify(l.make) !== f.make) return false;
     if (f.model && l.model !== f.model) return false;
     if (f.priceMin !== undefined && l.priceEur < f.priceMin) return false;

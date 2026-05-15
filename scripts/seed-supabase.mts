@@ -10,7 +10,21 @@
  * Re-running is idempotent (ON CONFLICT DO NOTHING via existence checks).
  */
 import postgres from "postgres";
-import { LISTINGS } from "../src/data/listings";
+import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
+
+// listings.ts uses @/ path aliases, which tsx doesn't resolve.
+// Bundle it on-the-fly with esbuild (already a dep) before importing.
+const bundlePath = "/tmp/auti-listings-bundled.mjs";
+const listingsSrc = path.resolve(import.meta.dirname, "../src/data/listings.ts");
+const tsconfig = path.resolve(import.meta.dirname, "../tsconfig.json");
+console.log("[seed] Bundling listings.ts via esbuild…");
+execSync(
+  `npx esbuild ${listingsSrc} --bundle --platform=node --format=esm --target=es2020 --tsconfig=${tsconfig} --outfile=${bundlePath}`,
+  { stdio: "ignore" }
+);
+const { LISTINGS } = (await import(bundlePath)) as typeof import("../src/data/listings");
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -63,21 +77,23 @@ async function main() {
     }
     await sql`
       insert into listings (
-        id, slug, user_id, title, make, model, variant, year, price_eur, km,
+        slug, user_id, title, make, model, variant, year, price_eur, original_price_eur, km,
         fuel, transmission, body_type, drive, color, condition,
         engine_cc, power_kw, doors, seats,
+        vin_masked, accident_history, service_history, imported_from,
         first_registered, registration_until,
         city, county, description, features, images,
-        status, featured, views, created_at, updated_at
+        status, featured, views, phone_reveals, created_at, updated_at
       ) values (
-        ${l.id}, ${l.slug}, ${DEMO_USER_ID}, ${l.title}, ${l.make}, ${l.model}, ${l.variant ?? null},
-        ${l.year}, ${l.priceEur}, ${l.km},
+        ${l.slug}, ${DEMO_USER_ID}, ${l.title}, ${l.make}, ${l.model}, ${l.variant ?? null},
+        ${l.year}, ${l.priceEur}, ${l.originalPriceEur ?? null}, ${l.km},
         ${l.fuel}, ${l.transmission}, ${l.bodyType}, ${l.drive}, ${l.color}, ${l.condition},
         ${l.engineCc}, ${l.powerKw}, ${l.doors}, ${l.seats},
+        ${l.vinMasked ?? null}, ${l.accidentHistory ?? null}, ${l.serviceHistory ?? null}, ${l.importedFrom ?? null},
         ${l.firstRegistered ?? null}, ${l.registrationUntil ?? null},
         ${l.city}, ${l.county}, ${l.description},
         ${sql.json(l.features)}, ${sql.json(l.images)},
-        'active', ${l.featured}, ${l.views},
+        'active', ${l.featured}, ${l.views}, ${l.phoneReveals ?? 0},
         ${l.createdAt}, ${l.createdAt}
       )
     `;

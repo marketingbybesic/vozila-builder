@@ -35,6 +35,8 @@ export const listings = pgTable(
     slug: text("slug").notNull().unique(),
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    category: text("category").notNull().default("auto"), // auto|moto|gospodarska|mehanizacija|prosti-cas|dijelovi
+    subcategory: text("subcategory"), // category-specific (e.g. "kamperi", "kamioni")
     make: text("make").notNull(),
     model: text("model").notNull(),
     variant: text("variant"),
@@ -72,6 +74,7 @@ export const listings = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
+    categoryIdx: index("listings_category_idx").on(t.category),
     makeIdx: index("listings_make_idx").on(t.make),
     modelIdx: index("listings_model_idx").on(t.model),
     priceIdx: index("listings_price_idx").on(t.priceEur),

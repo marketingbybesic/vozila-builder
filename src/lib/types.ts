@@ -50,10 +50,22 @@ export type Condition = (typeof CONDITIONS)[number];
 export const SELLER_TYPES = ["Privatni", "Trgovac"] as const;
 export type SellerType = (typeof SELLER_TYPES)[number];
 
+export const VEHICLE_CATEGORIES = [
+  "auto",
+  "moto",
+  "gospodarska",
+  "mehanizacija",
+  "prosti-cas",
+  "dijelovi",
+] as const;
+export type VehicleCategory = (typeof VEHICLE_CATEGORIES)[number];
+
 export const Listing = z.object({
   id: z.string(),
   slug: z.string(),
   title: z.string(),
+  category: z.enum(VEHICLE_CATEGORIES).default("auto"),
+  subcategory: z.string().optional(),
   make: z.string(),
   model: z.string(),
   variant: z.string().optional(),
@@ -111,6 +123,8 @@ export type SortOption =
 
 export type ListingFilters = {
   q?: string;
+  category?: VehicleCategory;
+  subcategory?: string;
   make?: string;
   model?: string;
   priceMin?: number;

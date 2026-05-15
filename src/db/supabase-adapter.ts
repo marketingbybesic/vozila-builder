@@ -110,6 +110,8 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     id: r.id,
     slug: r.slug,
     title: r.title,
+    category: (r.category ?? "auto") as Listing["category"],
+    subcategory: r.subcategory ?? undefined,
     make: r.make,
     model: r.model,
     variant: r.variant ?? undefined,
@@ -357,6 +359,8 @@ export const supabaseAdapter: DbAdapter = {
         userId,
         slug,
         title,
+        category: input.category ?? "auto",
+        subcategory: input.subcategory ?? null,
         make: input.make,
         model: input.model,
         variant: input.variant ?? null,
@@ -403,6 +407,8 @@ export const supabaseAdapter: DbAdapter = {
     // Only allow patching whitelisted Listing fields, never id/slug/userId/createdAt
     const allowed: Partial<typeof listings.$inferInsert> = {
       title: patch.title,
+      category: patch.category,
+      subcategory: patch.subcategory ?? null,
       make: patch.make,
       model: patch.model,
       variant: patch.variant ?? null,

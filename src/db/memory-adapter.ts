@@ -83,7 +83,7 @@ function store() {
 
     // Seed listings owned by demo user
     LISTINGS.forEach((l) => {
-      const stored: Stored = { ...l, ownerId: demoUser.id, status: "active" };
+      const stored: Stored = { ...l, category: l.category ?? "auto", ownerId: demoUser.id, status: "active" };
       listings.set(l.id, stored);
       slugIdx.set(l.slug, l.id);
     });

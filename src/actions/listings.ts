@@ -51,6 +51,7 @@ export async function createListingAction(input: unknown): Promise<ListingAction
   const created = await db().createListing(user.id, {
     ...parsed.data,
     variant: parsed.data.variant,
+    category: "auto",
   });
   revalidatePath("/oglasi");
   revalidatePath("/moj-racun");

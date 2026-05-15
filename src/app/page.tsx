@@ -3,9 +3,11 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
+import { HeroSearch } from "@/components/hero-search";
+import { CategoryNav } from "@/components/category-nav";
 import { MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
 import { db } from "@/db";
-import { Search, ShieldCheck, Zap, Users } from "lucide-react";
+import { ShieldCheck, Zap, Users } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
 export default async function HomePage() {
@@ -30,51 +32,41 @@ export default async function HomePage() {
               "radial-gradient(ellipse 80% 50% at 80% 0%, #F59E0B 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 0% 100%, #3B82F6 0%, transparent 60%)",
           }}
         />
-        <Container className="relative py-20 md:py-32">
-          <div className="max-w-2xl">
-            <Badge variant="accent" className="mb-6">
-              <Zap className="size-3" /> 12.847 aktivnih oglasa
-            </Badge>
-            <h1 className="font-display text-5xl md:text-7xl font-medium leading-[0.95] tracking-[-0.025em]">
-              Tvoj sljedeći auto.
-              <br />
-              <span className="text-[var(--color-accent)] italic">Bez zamki.</span>
-            </h1>
-            <p className="mt-6 text-lg md:text-xl text-white/75 max-w-xl leading-relaxed">
-              Najveće hrvatsko tržište rabljenih i novih automobila. Pretraži po
-              modelu, godini, ili pronađi posebnu ponudu u svom gradu.
-            </p>
+        <Container className="relative py-10 md:py-14">
+          <CategoryNav />
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-3">
-              <Button asChild variant="accent" size="lg" className="text-base">
-                <Link href="/oglasi">
-                  <Search className="size-4" />
-                  Pretraži oglase
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10 hover:text-white hover:border-white"
-              >
-                <Link href="/objavi">Objavi svoj oglas</Link>
-              </Button>
+          <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-10 items-start">
+            <div>
+              <Badge variant="accent" className="mb-5">
+                <Zap className="size-3" /> 12.847 aktivnih oglasa
+              </Badge>
+              <h1 className="font-display text-5xl md:text-6xl xl:text-7xl font-medium leading-[0.95] tracking-[-0.025em]">
+                Tvoj sljedeći auto.
+                <br />
+                <span className="text-[var(--color-accent)] italic">Bez zamki.</span>
+              </h1>
+              <p className="mt-5 text-base md:text-lg text-white/75 max-w-xl leading-relaxed">
+                Najveće hrvatsko tržište rabljenih i novih automobila. Pretraži, usporedi i kontaktiraj prodavača u dvije minute.
+              </p>
+
+              <div className="mt-8 grid grid-cols-3 gap-6 max-w-md">
+                <div>
+                  <div className="font-display text-2xl md:text-3xl text-white">12k+</div>
+                  <div className="text-xs text-white/60 mt-1">Aktivnih oglasa</div>
+                </div>
+                <div>
+                  <div className="font-display text-2xl md:text-3xl text-white">340+</div>
+                  <div className="text-xs text-white/60 mt-1">Trgovaca</div>
+                </div>
+                <div>
+                  <div className="font-display text-2xl md:text-3xl text-white">21</div>
+                  <div className="text-xs text-white/60 mt-1">Županija</div>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-12 grid grid-cols-3 gap-6 max-w-md">
-              <div>
-                <div className="font-display text-3xl text-white">12k+</div>
-                <div className="text-xs text-white/60 mt-1">Aktivnih oglasa</div>
-              </div>
-              <div>
-                <div className="font-display text-3xl text-white">340+</div>
-                <div className="text-xs text-white/60 mt-1">Trgovaca</div>
-              </div>
-              <div>
-                <div className="font-display text-3xl text-white">21</div>
-                <div className="text-xs text-white/60 mt-1">Županija</div>
-              </div>
+            <div>
+              <HeroSearch />
             </div>
           </div>
         </Container>
@@ -90,7 +82,7 @@ export default async function HomePage() {
               </p>
             </div>
             <Link
-              href="/oglasi"
+              href="/marke"
               className="text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-accent-dark)]"
             >
               Sve marke →
@@ -115,29 +107,31 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <section className="py-16 md:py-20">
-        <Container>
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <h2 className="font-display text-3xl md:text-4xl tracking-tight">Izdvojeno tjedna</h2>
-              <p className="text-sm text-[var(--color-muted)] mt-1">
-                Ručno odabrani oglasi koje vrijedi vidjeti
-              </p>
+      {featured.length > 0 && (
+        <section className="py-16 md:py-20">
+          <Container>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="font-display text-3xl md:text-4xl tracking-tight">Izdvojeno tjedna</h2>
+                <p className="text-sm text-[var(--color-muted)] mt-1">
+                  Ručno odabrani oglasi koje vrijedi vidjeti
+                </p>
+              </div>
+              <Link
+                href="/oglasi"
+                className="text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-accent-dark)]"
+              >
+                Svi oglasi →
+              </Link>
             </div>
-            <Link
-              href="/oglasi"
-              className="text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-accent-dark)]"
-            >
-              Svi oglasi →
-            </Link>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((l) => (
-              <ListingCard key={l.id} listing={l} />
-            ))}
-          </div>
-        </Container>
-      </section>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
 
       <section className="py-16 md:py-20 bg-[var(--color-surface)] border-y border-[var(--color-line)]">
         <Container>

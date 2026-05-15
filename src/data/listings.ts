@@ -663,6 +663,7 @@ function buildListing(spec: Spec): Listing {
     id,
     slug,
     title,
+    category: "auto" as const,
     make: spec.make,
     model: spec.model,
     variant: spec.variant,
