@@ -33,20 +33,18 @@ export default async function HomePage() {
           }}
         />
         <Container className="relative py-10 md:py-14">
-          <CategoryNav />
-
-          <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-10 items-start">
+          <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 items-start">
             <div>
               <Badge variant="accent" className="mb-5">
                 <Zap className="size-3" /> 12.847 aktivnih oglasa
               </Badge>
               <h1 className="font-display text-5xl md:text-6xl xl:text-7xl font-medium leading-[0.95] tracking-[-0.025em]">
-                Tvoj sljedeći auto.
+                Tvoje sljedeće vozilo.
                 <br />
                 <span className="text-[var(--color-accent)] italic">Bez zamki.</span>
               </h1>
               <p className="mt-5 text-base md:text-lg text-white/75 max-w-xl leading-relaxed">
-                Najveće hrvatsko tržište rabljenih i novih automobila. Pretraži, usporedi i kontaktiraj prodavača u dvije minute.
+                Najveće hrvatsko tržište vozila — auti, motori, gospodarska, mehanizacija, kamperi i dijelovi. Sve na jednom mjestu.
               </p>
 
               <div className="mt-8 grid grid-cols-3 gap-6 max-w-md">
@@ -68,6 +66,10 @@ export default async function HomePage() {
             <div>
               <HeroSearch />
             </div>
+          </div>
+
+          <div className="mt-10">
+            <CategoryNav />
           </div>
         </Container>
       </section>

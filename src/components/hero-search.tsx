@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, SlidersHorizontal } from "lucide-react";
-import { MAKES } from "@/data/makes";
+import { CATEGORIES, getCategory } from "@/data/categories";
+import { MAKES as AUTO_MAKES } from "@/data/makes";
 
 const PRICE_STEPS = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
 const YEAR_NOW = new Date().getFullYear();
@@ -13,16 +14,30 @@ const YEARS = Array.from({ length: 26 }, (_, i) => YEAR_NOW - i);
 export function HeroSearch() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [category, setCategory] = useState<string>(""); // "" = sve kategorije
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [yearMin, setYearMin] = useState("");
 
-  const selectedMake = MAKES.find((m) => m.slug === make);
+  // Switch the makes set based on chosen category.
+  const makesForCategory = useMemo(() => {
+    if (!category) {
+      // "Sve kategorije" — show auto makes by default (largest list, most recognized)
+      return AUTO_MAKES.map((m) => ({ slug: m.slug, name: m.name }));
+    }
+    return getCategory(category)?.makes ?? [];
+  }, [category]);
+
+  // Models only available when an auto make is selected (other categories don't have model lists yet)
+  const selectedAutoMake = !category || category === "auto"
+    ? AUTO_MAKES.find((m) => m.slug === make)
+    : undefined;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
+    if (category) params.set("category", category);
     if (make) params.set("make", make);
     if (model) params.set("model", model);
     if (priceMax) params.set("priceMax", priceMax);
@@ -53,6 +68,28 @@ export function HeroSearch() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="block text-xs sm:col-span-2">
+          <span className="block mb-1 font-semibold uppercase tracking-wider text-[var(--color-muted)]">
+            Kategorija
+          </span>
+          <select
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setMake("");
+              setModel("");
+            }}
+            className="w-full h-11 px-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] text-sm focus:border-[var(--color-ink)] outline-none"
+          >
+            <option value="">Sve kategorije</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="block text-xs">
           <span className="block mb-1 font-semibold uppercase tracking-wider text-[var(--color-muted)]">
             Marka
@@ -66,7 +103,7 @@ export function HeroSearch() {
             className="w-full h-11 px-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] text-sm focus:border-[var(--color-ink)] outline-none"
           >
             <option value="">Sve marke</option>
-            {MAKES.map((m) => (
+            {makesForCategory.map((m) => (
               <option key={m.slug} value={m.slug}>
                 {m.name}
               </option>
@@ -81,11 +118,18 @@ export function HeroSearch() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            disabled={!selectedMake}
+            disabled={!selectedAutoMake}
             className="w-full h-11 px-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] text-sm focus:border-[var(--color-ink)] outline-none disabled:opacity-50"
+            title={!selectedAutoMake ? "Modeli dostupni samo za kategoriju Auto" : undefined}
           >
-            <option value="">{selectedMake ? "Svi modeli" : "Odaberi marku prvo"}</option>
-            {selectedMake?.models.map((m) => (
+            <option value="">
+              {!selectedAutoMake
+                ? category && category !== "auto"
+                  ? "Nije primjenjivo"
+                  : "Odaberi marku"
+                : "Svi modeli"}
+            </option>
+            {selectedAutoMake?.models.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
