@@ -37,52 +37,53 @@ const FOOTER_NAV = [
       { href: "/kontakt", label: "Kontakt" },
       { href: "/uvjeti", label: "Uvjeti korištenja" },
       { href: "/privatnost", label: "Privatnost" },
-      { href: "/kolacici", label: "Kolačići" },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-[var(--color-line)] bg-[var(--color-ink)] text-white/85 mt-24">
-      <Container className="py-16">
-        <div className="grid gap-10 md:grid-cols-5">
-          <div className="md:col-span-1">
+    <footer className="border-t border-[var(--color-line)] bg-[var(--color-ink)] text-white/85">
+      <Container className="py-8 md:py-12">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-6">
+          {/* Logo + tagline */}
+          <div className="md:w-48 shrink-0">
             <Link href="/" className="inline-flex items-baseline">
-              <span className="font-display text-2xl font-semibold text-white">auti</span>
-              <span className="font-display text-2xl font-semibold text-[var(--color-accent)]">
-                .hr
-              </span>
+              <span className="font-display text-xl font-semibold text-white">vozila</span>
+              <span className="font-display text-xl font-semibold text-[var(--color-accent)]">.hr</span>
             </Link>
-            <p className="mt-4 text-sm text-white/60 leading-relaxed">
-              Hrvatsko tržište automobila. Od privatnih prodavača do ovlaštenih trgovaca — sve na jednom mjestu.
+            <p className="mt-2 text-xs text-white/50 leading-relaxed">
+              Hrvatsko tržište vozila. Sve na jednom mjestu.
             </p>
           </div>
 
-          {FOOTER_NAV.map((col) => (
-            <div key={col.heading}>
-              <h3 className="text-xs uppercase tracking-widest font-semibold text-white/50 mb-4">
-                {col.heading}
-              </h3>
-              <ul className="space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l.href}>
-                    <Link
-                      href={l.href}
-                      className="text-sm text-white/80 hover:text-[var(--color-accent)] transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Nav columns */}
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
+            {FOOTER_NAV.map((col) => (
+              <div key={col.heading}>
+                <h3 className="text-[10px] uppercase tracking-widest font-semibold text-white/40 mb-2">
+                  {col.heading}
+                </h3>
+                <ul className="space-y-1.5">
+                  {col.links.map((l) => (
+                    <li key={l.href}>
+                      <Link
+                        href={l.href}
+                        className="text-xs text-white/70 hover:text-[var(--color-accent)] transition-colors"
+                      >
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between text-xs text-white/50">
-          <p>© {new Date().getFullYear()} Auti.hr. Sva prava pridržana.</p>
-          <p>Napravljeno u Hrvatskoj · Plaćanje u EUR</p>
+        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between text-[10px] text-white/40">
+          <p>&copy; {new Date().getFullYear()} Vozila.hr. Sva prava pridržana.</p>
+          <p>Napravljeno u Hrvatskoj &middot; Plaćanje u EUR</p>
         </div>
       </Container>
     </footer>

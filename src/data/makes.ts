@@ -123,7 +123,7 @@ export const MAKES: CarMake[] = [
   },
 ];
 
-export const POPULAR_MAKE_SLUGS = ["volkswagen", "audi", "bmw", "mercedes-benz", "skoda", "renault", "peugeot", "toyota"];
+export const POPULAR_MAKE_SLUGS = ["volkswagen", "audi", "bmw", "mercedes-benz", "skoda", "renault", "peugeot", "toyota", "opel", "ford"];
 
 export function getMake(slug: string): CarMake | undefined {
   return MAKES.find((m) => m.slug === slug);

@@ -1,31 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import { DM_Sans, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CompareBar } from "@/components/compare-button";
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  weight: "400",
   subsets: ["latin", "latin-ext"],
   display: "swap",
-  axes: ["opsz", "SOFT"],
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://auti.hr"),
+  metadataBase: new URL("https://vozila.hr"),
   title: {
-    default: "Auti.hr — Oglasi rabljenih i novih automobila",
-    template: "%s · Auti.hr",
+    default: "Vozila.hr — Oglasi rabljenih i novih vozila",
+    template: "%s · Vozila.hr",
   },
   description:
-    "Najveće tržište automobila u Hrvatskoj. Tisuće rabljenih i novih vozila — od privatnih prodavača i ovlaštenih trgovaca. Pretraži, usporedi i kupi sigurno.",
+    "Najveće tržište vozila u Hrvatskoj. Tisuće rabljenih i novih vozila — od privatnih prodavača i ovlaštenih trgovaca. Pretraži, usporedi i kupi sigurno.",
   keywords: [
     "rabljeni automobili",
     "polovni automobili",
@@ -38,15 +38,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "hr_HR",
-    siteName: "Auti.hr",
-    title: "Auti.hr — Oglasi rabljenih i novih automobila",
+    siteName: "Vozila.hr",
+    title: "Vozila.hr — Oglasi rabljenih i novih vozila",
     description:
       "Najveće tržište automobila u Hrvatskoj. Tisuće vozila spremnih za isporuku.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Auti.hr",
-    description: "Oglasi rabljenih i novih automobila u Hrvatskoj.",
+    title: "Vozila.hr",
+    description: "Oglasi rabljenih i novih vozila u Hrvatskoj.",
   },
 };
 
@@ -56,7 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="hr"
-      className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${bebasNeue.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)]">
         <SiteHeader />
