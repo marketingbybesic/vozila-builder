@@ -1,63 +1,88 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Car, Bike, Truck, Wrench, Tent, Cog } from "lucide-react";
+import { Car, Bike, Truck, Wrench, Tent, Cog, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CATEGORIES } from "@/data/categories";
 
-type Category = {
-  slug: string;
-  label: string;
-  Icon: typeof Car;
-  href: string;
-  comingSoon?: boolean;
-};
-
-const CATEGORIES: Category[] = [
-  { slug: "auto", label: "Auto", Icon: Car, href: "/oglasi?category=auto" },
-  { slug: "moto", label: "Moto", Icon: Bike, href: "/oglasi?category=moto" },
-  { slug: "gospodarska", label: "Gospodarska", Icon: Truck, href: "/oglasi?category=gospodarska" },
-  { slug: "mehanizacija", label: "Mehanizacija", Icon: Cog, href: "/oglasi?category=mehanizacija" },
-  { slug: "prosti-cas", label: "Slobodno vrijeme", Icon: Tent, href: "/oglasi?category=prosti-cas" },
-  { slug: "dijelovi", label: "Dijelovi i oprema", Icon: Wrench, href: "/oglasi?category=dijelovi" },
-];
+const ICONS = {
+  car: Car,
+  bike: Bike,
+  truck: Truck,
+  tractor: Cog,
+  tent: Tent,
+  wrench: Wrench,
+} as const;
 
 export function CategoryNav() {
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
+
+  const openCategory = CATEGORIES.find((c) => c.slug === openSlug);
+
   return (
     <nav aria-label="Kategorije vozila">
       <ul className="grid grid-cols-3 md:grid-cols-6 gap-2">
         {CATEGORIES.map((cat) => {
-          const { Icon } = cat;
-          const disabled = !!cat.comingSoon;
+          const Icon = ICONS[cat.icon];
+          const isOpen = openSlug === cat.slug;
           return (
             <li key={cat.slug}>
-              <Link
-                href={cat.href}
-                aria-disabled={disabled}
-                tabIndex={disabled ? -1 : 0}
-                onClick={(e) => {
-                  if (disabled) e.preventDefault();
-                }}
+              <button
+                type="button"
+                onClick={() => setOpenSlug(isOpen ? null : cat.slug)}
+                aria-expanded={isOpen}
                 className={cn(
-                  "group relative flex flex-col items-center gap-1.5 px-3 py-3.5 rounded-[var(--radius-md)] border transition-all",
-                  disabled
-                    ? "border-white/10 bg-white/[0.03] text-white/40 cursor-not-allowed"
+                  "group relative flex flex-col items-center justify-center gap-1.5 w-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border transition-all",
+                  isOpen
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-white"
                     : "border-white/15 bg-white/[0.06] text-white hover:bg-white/10 hover:border-white/30"
                 )}
               >
                 <Icon className="size-5 shrink-0" />
-                <span className="text-[11px] uppercase tracking-wider font-medium whitespace-nowrap">
-                  {cat.label}
+                <span className="text-[11px] leading-tight uppercase tracking-wide font-medium text-center text-balance">
+                  {cat.name}
                 </span>
-                {disabled && (
-                  <span className="absolute top-1 right-1 text-[8px] uppercase tracking-wider font-semibold bg-[var(--color-accent)]/80 text-[var(--color-ink)] rounded px-1 py-0.5">
-                    Uskoro
-                  </span>
-                )}
-              </Link>
+                <ChevronDown
+                  className={cn(
+                    "absolute top-1.5 right-1.5 size-3 text-white/40 transition-transform",
+                    isOpen && "rotate-180 text-[var(--color-accent)]"
+                  )}
+                />
+              </button>
             </li>
           );
         })}
       </ul>
+
+      {/* Subcategory submenu — opens for the selected category */}
+      {openCategory && (
+        <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
+              {openCategory.name}
+            </span>
+            <Link
+              href={`/oglasi?category=${openCategory.slug}`}
+              className="text-[11px] font-medium text-white/70 hover:text-white"
+            >
+              Svi oglasi &rarr;
+            </Link>
+          </div>
+          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+            {openCategory.subcategories.map((sub) => (
+              <li key={sub.slug}>
+                <Link
+                  href={`/oglasi?category=${openCategory.slug}&subcategory=${sub.slug}`}
+                  className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  {sub.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 }

@@ -4,11 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, User, Plus, SlidersHorizontal, Menu, X } from "lucide-react";
+import { Heart, MessageSquare, User, Plus, SlidersHorizontal, Menu, X, ChevronDown } from "lucide-react";
 import { HeaderSearch } from "@/components/header-search";
+import { CATEGORIES } from "@/data/categories";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [openCat, setOpenCat] = useState<string | null>(null);
+
+  const closeMenu = () => {
+    setOpen(false);
+    setOpenCat(null);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-line)] bg-[var(--color-bg)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-bg)]/65">
@@ -98,54 +105,69 @@ export function SiteHeader() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-bg)] animate-slide-up">
+        <div className="md:hidden border-t border-[var(--color-line)] bg-[var(--color-bg)] animate-slide-up max-h-[80vh] overflow-y-auto">
           <Container className="py-4 flex flex-col gap-1">
-            <Link
-              href="/oglasi"
-              onClick={() => setOpen(false)}
-              className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
-            >
-              Svi oglasi
-            </Link>
-            <Link
-              href="/marke"
-              onClick={() => setOpen(false)}
-              className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
-            >
-              Marke
-            </Link>
-            <Link
-              href="/oglasi/najnoviji"
-              onClick={() => setOpen(false)}
-              className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
-            >
-              Najnoviji
-            </Link>
-            <Link
-              href="/oglasi/napredno"
-              onClick={() => setOpen(false)}
-              className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
-            >
-              Napredna pretraga
-            </Link>
-            <hr className="border-[var(--color-line)] my-1" />
+            {/* 6 main categories — each expands its subcategories */}
+            {CATEGORIES.map((cat) => {
+              const isOpen = openCat === cat.slug;
+              return (
+                <div key={cat.slug}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCat(isOpen ? null : cat.slug)}
+                    aria-expanded={isOpen}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
+                  >
+                    {cat.name}
+                    <ChevronDown
+                      className={`size-4 text-[var(--color-ink-soft)] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="pl-3 pb-1 flex flex-col">
+                      <Link
+                        href={`/oglasi?category=${cat.slug}`}
+                        onClick={closeMenu}
+                        className="px-3 py-2 rounded-md text-sm font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40"
+                      >
+                        Svi oglasi &rarr;
+                      </Link>
+                      {cat.subcategories.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/oglasi?category=${cat.slug}&subcategory=${sub.slug}`}
+                          onClick={closeMenu}
+                          className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <hr className="border-[var(--color-line)] my-2" />
+
+            {/* Account block — unchanged */}
             <Link
               href="/prijava"
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
             >
               Prijava
             </Link>
             <Link
               href="/moj-racun/spremljeno"
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
             >
               Spremljeni oglasi
             </Link>
             <Link
               href="/moj-racun/poruke"
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
             >
               Poruke

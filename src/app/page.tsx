@@ -53,7 +53,6 @@ export default async function HomePage() {
           </div>
 
           <div className="lg:hidden mt-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--color-accent)] mb-2">Premium trgovci</h3>
             <DealerShowcaseMobile />
           </div>
 
