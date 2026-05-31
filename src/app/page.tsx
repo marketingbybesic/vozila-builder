@@ -83,20 +83,18 @@ export default async function HomePage() {
               Sve marke &rarr;
             </Link>
           </div>
-          {/* Mobile: horizontal scroll. Desktop: 5-col grid */}
-          <div className="md:hidden overflow-x-auto scrollbar-thin -mx-4 px-4">
-            <div className="flex gap-2.5" style={{ width: `${popularMakes.length * 90}px` }}>
-              {popularMakes.map((make) => (
-                <Link
-                  key={make.slug}
-                  href={`/oglasi?make=${make.slug}`}
-                  className="w-[82px] shrink-0 group flex flex-col items-center justify-center gap-1.5 py-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-ink)] transition-all"
-                >
-                  <BrandLogo slug={make.slug} className="size-10" />
-                  <span className="text-[10px] font-medium text-[var(--color-ink)]">{make.name}</span>
-                </Link>
-              ))}
-            </div>
+          {/* Mobile: static 5-col grid = 2 rows of 10 makes, no horizontal scroll. */}
+          <div className="md:hidden grid grid-cols-5 gap-2">
+            {popularMakes.map((make) => (
+              <Link
+                key={make.slug}
+                href={`/oglasi?make=${make.slug}`}
+                className="group flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-ink)] transition-all"
+              >
+                <BrandLogo slug={make.slug} className="size-9" />
+                <span className="text-[9px] leading-tight font-medium text-[var(--color-ink)] text-center truncate w-full">{make.name}</span>
+              </Link>
+            ))}
           </div>
           <div className="hidden md:grid grid-cols-5 gap-4">
             {popularMakes.map((make) => (
