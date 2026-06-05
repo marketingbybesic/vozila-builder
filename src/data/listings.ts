@@ -19,6 +19,18 @@ const PHOTOS = {
   ev: ["photo-1560958089-b8a1929cea89", "photo-1617886903355-df116480e253"],
   premium: ["photo-1503376780353-7e6692767b70", "photo-1618843479313-40f8afb4b4d8"],
   van: ["photo-1612825173281-9a193378527e"],
+  // Non-auto category pools
+  moto: ["photo-1558981403-c5f9899a28bc", "photo-1568772585407-9361f9bf3a87", "photo-1591637333184-19aa84b3e01f"],
+  scooter: ["photo-1571068316344-75bc76f77890", "photo-1609630875171-b1321377ee65"],
+  truck: ["photo-1601584115197-04ecc0da31d7", "photo-1592838064575-70ed626d3a0e"],
+  bus: ["photo-1544620347-c4fd4a3d5957", "photo-1570125909232-eb263c188f7e"],
+  excavator: ["photo-1581094794329-c8112a89af12", "photo-1504307651254-35680f356dfd"],
+  tractor: ["photo-1605338803155-8b46c2f1c0c1", "photo-1599056407101-7c557a4a0144"],
+  forklift: ["photo-1605559424843-9e4c228bf1c2", "photo-1581092160562-40aa08e78837"],
+  camper: ["photo-1523987355523-c7b5b0dd90a7", "photo-1533873984035-25970ab07461", "photo-1626668893632-6f3a4466d22f"],
+  boat: ["photo-1544551763-46a013bb70d5", "photo-1567899378494-47b22a2ae96a"],
+  parts: ["photo-1486262715619-67b85e0b08d3", "photo-1530046339160-ce3e530c7d2f"],
+  tires: ["photo-1580273916550-e323be2ae537", "photo-1568659585082-21c3c5c8e3e8"],
 };
 
 function img(id: string): string {
@@ -58,6 +70,10 @@ type Spec = {
   featured?: boolean;
   daysAgo: number;
   registrationUntil?: string;
+  // Cross-category support (moto / gospodarska / mehanizacija / prosti-cas / dijelovi)
+  category?: Listing["category"];
+  subcategory?: string;
+  attributes?: Record<string, unknown>;
 };
 
 const SPECS: Spec[] = [
@@ -493,7 +509,7 @@ const SPECS: Spec[] = [
   {
     make: "Volkswagen", model: "Caddy", variant: "2.0 TDI Life",
     year: 2021, priceEur: 22900, km: 87000, fuel: "Dizel", transmission: "Ručni",
-    bodyType: "MPV", drive: "Prednji", color: "Bijela", seats: 5,
+    bodyType: "Monovolumen", drive: "Prednji", color: "Bijela", seats: 5,
     engineCc: 1968, powerKw: 90, city: "Sisak", county: "Sisačko-moslavačka županija",
     photos: pics(PHOTOS.van),
     description: "Novi Caddy Life. Praktičan za obitelj ili posao. Bočna klizna vrata.",
@@ -635,6 +651,242 @@ const SPECS: Spec[] = [
   },
 ];
 
+// ── Cross-category mock listings (moto / gospodarska / mehanizacija /
+//    prosti-cas / dijelovi). Attributes match category-filters.ts keys so
+//    the advanced search actually filters them. ──────────────────────────
+const EXTRA_SPECS: Spec[] = [
+  // ===== MOTO =====
+  {
+    category: "moto", subcategory: "motocikl",
+    make: "Yamaha", model: "MT-07", variant: "ABS",
+    year: 2021, priceEur: 7200, km: 12400, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Coupe", drive: "Stražnji", color: "Crna",
+    engineCc: 689, powerKw: 54, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.moto),
+    description: "Yamaha MT-07, prvi vlasnik, servisno održavan. Akrapovič ispuh, kvalitetne gume.",
+    features: ["ABS", "LED svjetla", "Servisna knjižica", "Prvi vlasnik"],
+    sellerName: "Moto Centar Zagreb", sellerType: "Trgovac", sellerPhone: "+385 91 222 3344",
+    daysAgo: 2, featured: true, registrationUntil: "05/2026",
+    attributes: { motoType: "motocikl", motoCategory: ["naked"], cylinders: "2", stroke: "4T", drivetrain: "lanac", licenceClass: ["A2", "A"], motoOptions: ["abs", "prvi-vlasnik", "servisna"], offerType: ["prodaja"] },
+  },
+  {
+    category: "moto", subcategory: "skuter",
+    make: "Vespa", model: "GTS 300", variant: "Super Tech",
+    year: 2022, priceEur: 5400, km: 5800, fuel: "Benzin", transmission: "Automatski",
+    bodyType: "Coupe", drive: "Stražnji", color: "Plava",
+    engineCc: 278, powerKw: 17, city: "Split", county: "Splitsko-dalmatinska županija",
+    photos: pics(PHOTOS.scooter),
+    description: "Vespa GTS 300 Super Tech. Kao nova, garažirana, TFT ekran, keyless.",
+    features: ["ABS", "Keyless", "TFT ekran", "Garažirano"],
+    sellerName: "Ana Marić", sellerType: "Privatni", sellerPhone: "+385 95 333 4455",
+    daysAgo: 4, registrationUntil: "07/2026",
+    attributes: { motoType: "skuter", cylinders: "1", stroke: "4T", drivetrain: "remen", licenceClass: ["A1", "A2", "A"], motoOptions: ["abs", "navigacija"], offerType: ["prodaja"] },
+  },
+  {
+    category: "moto", subcategory: "najam",
+    make: "BMW", model: "R 1250 GS", variant: "Adventure",
+    year: 2023, priceEur: 95, km: 8200, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Coupe", drive: "Stražnji", color: "Siva",
+    engineCc: 1254, powerKw: 100, city: "Zadar", county: "Zadarska županija",
+    photos: pics(PHOTOS.moto),
+    description: "Najam BMW GS Adventure — dnevni najam za ture po Dalmaciji. Cijena po danu, kaciga i oprema uključeni.",
+    features: ["ABS", "Tempomat", "Navigacija", "Kofer set"],
+    sellerName: "Adriatic Moto Rent", sellerType: "Trgovac", sellerPhone: "+385 23 444 5566",
+    daysAgo: 1, featured: true,
+    attributes: { motoType: "motocikl", motoCategory: ["enduro"], cylinders: "2", stroke: "4T", drivetrain: "kardan", licenceClass: ["A"], motoOptions: ["abs", "tempomat", "navigacija"], offerType: ["najam"] },
+  },
+
+  // ===== GOSPODARSKA =====
+  {
+    category: "gospodarska", subcategory: "dostavna",
+    make: "Mercedes-Benz", model: "Sprinter", variant: "316 CDI",
+    year: 2020, priceEur: 23900, km: 168000, fuel: "Dizel", transmission: "Ručni",
+    bodyType: "Pickup", drive: "Stražnji", color: "Bijela",
+    engineCc: 2143, powerKw: 120, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.van),
+    description: "MB Sprinter L2H2, redovito servisiran, 1. vlasnik, PDV se može odbiti.",
+    features: ["Klima", "Tempomat", "Bluetooth", "Servisna knjižica"],
+    sellerName: "Komercijala Zagreb", sellerType: "Trgovac", sellerPhone: "+385 1 555 6677",
+    daysAgo: 3, registrationUntil: "08/2026",
+    attributes: { priceVat: "netto", euroNorm: "EURO 6", gvwKg: "3500", payloadKg: "1200", rearDoors: "krilna", sideDoors: "klizna-d", ownership: ["prvi-vlasnik", "servisna"] },
+  },
+  {
+    category: "gospodarska", subcategory: "kamioni",
+    make: "MAN", model: "TGX", variant: "18.500",
+    year: 2019, priceEur: 48500, km: 540000, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "Stražnji", color: "Crvena",
+    engineCc: 12419, powerKw: 368, city: "Slavonski Brod", county: "Brodsko-posavska županija",
+    photos: pics(PHOTOS.truck),
+    description: "MAN TGX 18.500 tegljač, EURO 6, retarder, koža, redovni servis u MAN servisu.",
+    features: ["Retarder", "Klima", "Tempomat", "Servisna knjižica"],
+    sellerName: "Trans Logistika", sellerType: "Trgovac", sellerPhone: "+385 35 666 7788",
+    daysAgo: 5, registrationUntil: "09/2026",
+    attributes: { priceVat: "netto", euroNorm: "EURO 6", axles: "2", otherEquipment: ["retarder"], ownership: ["servisna"] },
+  },
+  {
+    category: "gospodarska", subcategory: "najam",
+    make: "Iveco", model: "Daily", variant: "35S16",
+    year: 2022, priceEur: 65, km: 42000, fuel: "Dizel", transmission: "Ručni",
+    bodyType: "Pickup", drive: "Stražnji", color: "Bijela",
+    engineCc: 2287, powerKw: 118, city: "Rijeka", county: "Primorsko-goranska županija",
+    photos: pics(PHOTOS.van),
+    description: "Najam dostavnog vozila Iveco Daily — dnevni / tjedni najam za selidbe i dostavu. Cijena po danu.",
+    features: ["Klima", "Bluetooth", "Tovarni prostor 16m³"],
+    sellerName: "Rent Komercijala Rijeka", sellerType: "Trgovac", sellerPhone: "+385 51 777 8899",
+    daysAgo: 2, featured: true,
+    attributes: { priceVat: "brutto", euroNorm: "EURO 6", gvwKg: "3500", payloadKg: "1500", offerType: ["najam"] },
+  },
+
+  // ===== MEHANIZACIJA =====
+  {
+    category: "mehanizacija", subcategory: "poljoprivredni-strojevi",
+    make: "John Deere", model: "6155R", variant: "AutoPowr",
+    year: 2018, priceEur: 78500, km: 0, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "4x4", color: "Zelena",
+    engineCc: 6800, powerKw: 114, city: "Osijek", county: "Osječko-baranjska županija",
+    photos: pics(PHOTOS.tractor),
+    description: "John Deere 6155R, 4200 radnih sati, AutoPowr mjenjač, prednji utovarivač, GPS navođenje.",
+    features: ["Klima kabina", "GPS", "Prednji utovarivač", "PTO"],
+    sellerName: "Agro Mehanizacija", sellerType: "Trgovac", sellerPhone: "+385 31 888 9900",
+    daysAgo: 4, featured: true,
+    attributes: { machineType: ["Traktor"], powerHp: "155", operatingHours: "4200", weightKg: "7200", drive4x4: true, cabin: true, frontLoader: true, gps: true, pto: true, offerType: ["prodaja"] },
+  },
+  {
+    category: "mehanizacija", subcategory: "vilicari",
+    make: "Linde", model: "H30", variant: "Diesel",
+    year: 2017, priceEur: 18900, km: 0, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "Prednji", color: "Narančasta",
+    engineCc: 2500, powerKw: 33, city: "Velika Gorica", county: "Zagrebačka županija",
+    photos: pics(PHOTOS.forklift),
+    description: "Linde H30D viličar, nosivost 3000 kg, visina dizanja 4.5m, side-shift, triplex.",
+    features: ["Triplex", "Side-shift", "Klima kabina"],
+    sellerName: "Logistika Oprema", sellerType: "Trgovac", sellerPhone: "+385 1 999 0011",
+    daysAgo: 6,
+    attributes: { machineType: ["Utovarivač"], operatingHours: "9800", liftHeightM: "4.5", liftCapacityKg: "3000", cabin: true, quickCoupler: true, offerType: ["prodaja"] },
+  },
+  {
+    category: "mehanizacija", subcategory: "sumarski-strojevi",
+    make: "Komatsu", model: "PC210", variant: "LC-11",
+    year: 2019, priceEur: 92000, km: 0, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "4x4", color: "Žuta",
+    engineCc: 6700, powerKw: 123, city: "Karlovac", county: "Karlovačka županija",
+    photos: pics(PHOTOS.excavator),
+    description: "Komatsu PC210 gusjeničar, 6500 radnih sati, brza spojka, doseg 9.7m, GPS.",
+    features: ["Klima kabina", "Brza spojka", "GPS"],
+    sellerName: "Šumarstvo Strojevi", sellerType: "Trgovac", sellerPhone: "+385 47 100 2233",
+    daysAgo: 3, featured: true,
+    attributes: { machineType: ["Bager"], operatingHours: "6500", weightKg: "21000", bucketCapacity: "0.9", reachM: "9.7", cabin: true, gps: true, quickCoupler: true, offerType: ["prodaja"] },
+  },
+  {
+    category: "mehanizacija", subcategory: "komunalni-strojevi",
+    make: "Bobcat", model: "S590", variant: "Skid-Steer",
+    year: 2020, priceEur: 34500, km: 0, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "4x4", color: "Bijela",
+    engineCc: 2400, powerKw: 49, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.excavator),
+    description: "Bobcat S590 utovarivač s priključcima (žlica, vile, metla). 2100 radnih sati.",
+    features: ["Brza spojka", "Više priključaka", "Klima"],
+    sellerName: "Komunalna Oprema", sellerType: "Trgovac", sellerPhone: "+385 1 110 3344",
+    daysAgo: 5,
+    attributes: { machineType: ["Utovarivač"], operatingHours: "2100", weightKg: "3300", liftCapacityKg: "900", drive4x4: true, quickCoupler: true, offerType: ["prodaja"] },
+  },
+  {
+    category: "mehanizacija", subcategory: "najam",
+    make: "JCB", model: "3CX", variant: "Backhoe Loader",
+    year: 2021, priceEur: 180, km: 0, fuel: "Dizel", transmission: "Automatski",
+    bodyType: "Pickup", drive: "4x4", color: "Žuta",
+    engineCc: 4400, powerKw: 81, city: "Split", county: "Splitsko-dalmatinska županija",
+    photos: pics(PHOTOS.excavator),
+    description: "Najam JCB 3CX rovokopač-utovarivač. Dnevni najam s operaterom ili bez. Cijena po danu.",
+    features: ["4x4", "Klima kabina", "Teleskopska ruka"],
+    sellerName: "Građevinski Najam Dalmacija", sellerType: "Trgovac", sellerPhone: "+385 21 120 4455",
+    daysAgo: 1, featured: true,
+    attributes: { machineType: ["Rovokopač"], operatingHours: "1800", drive4x4: true, cabin: true, frontLoader: true, offerType: ["najam"] },
+  },
+
+  // ===== PROSTI-CAS (leisure) =====
+  {
+    category: "prosti-cas", subcategory: "kamperi",
+    make: "Knaus", model: "BoxStar", variant: "600 Street",
+    year: 2021, priceEur: 58900, km: 34000, fuel: "Dizel", transmission: "Ručni",
+    bodyType: "Pickup", drive: "Prednji", color: "Siva",
+    engineCc: 2287, powerKw: 103, city: "Poreč", county: "Istarska županija",
+    photos: pics(PHOTOS.camper),
+    description: "Knaus BoxStar 600 kamper-kombi, 4 spavanja, WC, tuš, kuhinja, solarni panel, markiza.",
+    features: ["WC", "Tuš", "Kuhinja", "Solarni panel", "Markiza", "Grijanje"],
+    sellerName: "Camper Centar Istra", sellerType: "Trgovac", sellerPhone: "+385 52 130 5566",
+    daysAgo: 3, featured: true, registrationUntil: "06/2026",
+    attributes: { sleeps: "4", lengthM: "6.0", heightM: "2.6", wc: true, kitchen: true, shower: true, heating: true, solar: true, awning: true },
+  },
+  {
+    category: "prosti-cas", subcategory: "plovila",
+    make: "Quicksilver", model: "Activ 605", variant: "Cabin",
+    year: 2020, priceEur: 32500, km: 0, fuel: "Benzin", transmission: "Automatski",
+    bodyType: "Pickup", drive: "Stražnji", color: "Bijela",
+    engineCc: 0, powerKw: 85, city: "Biograd", county: "Zadarska županija",
+    photos: pics(PHOTOS.boat),
+    description: "Quicksilver Activ 605 Cabin s Mercury 115 HP. Niski sati, GRP trup, idealan za obitelj.",
+    features: ["GPS", "Kabina", "Tuš na palubi"],
+    sellerName: "Nautika Biograd", sellerType: "Trgovac", sellerPhone: "+385 23 140 6677",
+    daysAgo: 7,
+    attributes: { engineHp: "115", engineHours: "180", hullMaterial: "GRP", sleeps: "2", lengthM: "6.0", wc: true },
+  },
+
+  // ===== DIJELOVI (parts) =====
+  {
+    category: "dijelovi", subcategory: "gume",
+    make: "Michelin", model: "Pilot Sport 4", variant: "225/45 R17",
+    year: 2024, priceEur: 480, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.tires),
+    description: "Set od 4 nove ljetne gume Michelin Pilot Sport 4, 225/45 R17. DOT 2024, nekorištene.",
+    features: ["Nove", "Set 4 kom", "DOT 2024"],
+    sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
+    daysAgo: 2,
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "17", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "felge",
+    make: "BBS", model: "CH-R", variant: "8x18 5x112",
+    year: 2023, priceEur: 1200, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Siva",
+    engineCc: 0, powerKw: 0, city: "Split", county: "Splitsko-dalmatinska županija",
+    photos: pics(PHOTOS.parts),
+    description: "Set BBS CH-R alu felgi 18 cola, 5x112 (Audi/VW/Mercedes), kao nove.",
+    features: ["Aluminij", "Set 4 kom", "Bez oštećenja"],
+    sellerName: "Felge Shop", sellerType: "Trgovac", sellerPhone: "+385 21 160 8899",
+    daysAgo: 4,
+    attributes: { partType: "Vanjski", condition2: "Rabljeno", rimSize: "18", rimBoltPattern: "5x112", rimMaterial: ["alu"], shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "ulja-tekucine",
+    make: "Castrol", model: "EDGE 5W-30", variant: "5L",
+    year: 2024, priceEur: 42, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Rijeka", county: "Primorsko-goranska županija",
+    photos: pics(PHOTOS.parts),
+    description: "Castrol EDGE 5W-30 LL, 5 litara, novo zapakirano. Za VW/Audi 504/507 norme.",
+    features: ["Novo", "5L", "Dostava"],
+    sellerName: "Auto Dijelovi Rijeka", sellerType: "Trgovac", sellerPhone: "+385 51 170 9900",
+    daysAgo: 1,
+    attributes: { partType: "Filteri", condition2: "Novo", fluidType: "motorno-ulje", viscosity: "5W-30", shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "multimedija",
+    make: "Pioneer", model: "AVH-Z5200DAB", variant: "2-DIN",
+    year: 2023, priceEur: 320, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.parts),
+    description: "Pioneer 2-DIN multimedija s Apple CarPlay i Android Auto, DAB+, rabljeno, ispravno.",
+    features: ["CarPlay", "Android Auto", "DAB+"],
+    sellerName: "Car Audio Zagreb", sellerType: "Privatni", sellerPhone: "+385 98 180 1122",
+    daysAgo: 3,
+    attributes: { partType: "Elektronika", condition2: "Rabljeno", shipping: true },
+  },
+];
+
 let counter = 0;
 
 function buildListing(spec: Spec): Listing {
@@ -663,7 +915,9 @@ function buildListing(spec: Spec): Listing {
     id,
     slug,
     title,
-    category: "auto" as const,
+    category: spec.category ?? "auto",
+    subcategory: spec.subcategory,
+    attributes: spec.attributes,
     make: spec.make,
     model: spec.model,
     variant: spec.variant,
@@ -702,7 +956,7 @@ function buildListing(spec: Spec): Listing {
   };
 }
 
-export const LISTINGS: Listing[] = SPECS.map(buildListing);
+export const LISTINGS: Listing[] = [...SPECS, ...EXTRA_SPECS].map(buildListing);
 
 export function getListing(slug: string): Listing | undefined {
   return LISTINGS.find((l) => l.slug === slug);

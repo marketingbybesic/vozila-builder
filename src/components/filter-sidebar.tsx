@@ -12,12 +12,21 @@ import {
   SELLER_TYPES,
 } from "@/lib/types";
 import { MAKES, getMake } from "@/data/makes";
+import { CATEGORIES, getCategory } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
+import { getFilterDefs, groupFields, type FilterField } from "@/data/category-filters";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+
+// Column-stored keys are handled by the static blocks below.
+// Attr-stored keys render dynamically per category.
+const STATIC_KEYS = new Set([
+  "priceEur", "year", "km", "fuel", "transmission", "bodyType", "drive",
+  "color", "condition", "sellerType", "county", "make", "model",
+]);
 
 type Props = { mobile?: boolean; onClose?: () => void };
 
@@ -63,7 +72,51 @@ export function FilterSidebar({ mobile, onClose }: Props) {
     (current[key]?.split(",").filter(Boolean) ?? []).includes(value);
 
   const selectedMake = current.make;
-  const make = selectedMake ? getMake(selectedMake) : undefined;
+  const category = current.category ?? "";
+  const categoryDef = category ? getCategory(category) : undefined;
+  // Make list depends on category. For "" (all) we show car makes (largest known set).
+  const makeOptions = useMemo(() => {
+    if (!category) return MAKES.map((m) => ({ slug: m.slug, name: m.name }));
+    return categoryDef?.makes ?? [];
+  }, [category, categoryDef]);
+  const make = selectedMake && (!category || category === "auto") ? getMake(selectedMake) : undefined;
+  const filterDef = useMemo(() => getFilterDefs(category || "auto"), [category]);
+  const attrFields = useMemo(
+    () => filterDef.fields.filter((f) => f.storage === "attr" && !STATIC_KEYS.has(f.key)),
+    [filterDef]
+  );
+  const attrGroups = useMemo(() => groupFields(attrFields), [attrFields]);
+  // Subcategory options
+  const subcategoryOptions = categoryDef?.subcategories ?? [];
+
+  const attrToggle = useCallback(
+    (key: string) => {
+      const k = `a.${key}`;
+      const cur = current[k];
+      update({ [k]: cur === "1" ? null : "1" });
+    },
+    [current, update]
+  );
+
+  const attrSet = useCallback(
+    (key: string, value: string | null) => {
+      update({ [`a.${key}`]: value });
+    },
+    [update]
+  );
+
+  const attrMulti = useCallback(
+    (key: string, value: string) => {
+      const k = `a.${key}`;
+      const cur = current[k]?.split(",").filter(Boolean) ?? [];
+      const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+      update({ [k]: next });
+    },
+    [current, update]
+  );
+
+  const attrIsChecked = (key: string, value: string) =>
+    (current[`a.${key}`]?.split(",").filter(Boolean) ?? []).includes(value);
 
   const reset = () => {
     startTransition(() => router.push(pathname));
@@ -104,6 +157,30 @@ export function FilterSidebar({ mobile, onClose }: Props) {
           </button>
         )}
 
+        <FilterBlock title="Kategorija">
+          <Select
+            value={category}
+            onChange={(e) => update({ category: e.target.value || null, subcategory: null, make: null, model: null })}
+          >
+            <option value="">Sve kategorije</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.slug} value={c.slug}>{c.name}</option>
+            ))}
+          </Select>
+          {subcategoryOptions.length > 0 && (
+            <Select
+              className="mt-2"
+              value={current.subcategory ?? ""}
+              onChange={(e) => update({ subcategory: e.target.value || null })}
+            >
+              <option value="">Sve podkategorije</option>
+              {subcategoryOptions.map((sc) => (
+                <option key={sc.slug} value={sc.slug}>{sc.name}</option>
+              ))}
+            </Select>
+          )}
+        </FilterBlock>
+
         <FilterBlock title="Pretraga">
           <Input
             placeholder="Marka, model, ključna riječ..."
@@ -124,7 +201,7 @@ export function FilterSidebar({ mobile, onClose }: Props) {
             onChange={(e) => update({ make: e.target.value || null, model: null })}
           >
             <option value="">Sve marke</option>
-            {MAKES.map((m) => (
+            {makeOptions.map((m) => (
               <option key={m.slug} value={m.slug}>{m.name}</option>
             ))}
           </Select>
@@ -239,6 +316,32 @@ export function FilterSidebar({ mobile, onClose }: Props) {
           </Select>
         </FilterBlock>
 
+        {attrGroups.length > 0 && (
+          <div className="space-y-6 pt-2 border-t border-[var(--color-line)]">
+            <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-accent-dark)] pt-2">
+              Specifični filtri · {filterDef.label}
+            </div>
+            {attrGroups.map((g) => (
+              <div key={g.name} className="space-y-4">
+                <h3 className="text-[11px] uppercase tracking-widest font-semibold text-[var(--color-muted)]">
+                  {g.name}
+                </h3>
+                {g.fields.map((f) => (
+                  <AttrField
+                    key={f.key}
+                    field={f}
+                    current={current}
+                    onToggle={() => attrToggle(f.key)}
+                    onSet={(v) => attrSet(f.key, v)}
+                    onMulti={(v) => attrMulti(f.key, v)}
+                    isChecked={(v) => attrIsChecked(f.key, v)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
         {mobile && (
           <div className="sticky bottom-0 bg-[var(--color-bg)] pt-4 -mx-4 px-4 border-t border-[var(--color-line)] mt-6">
             <Button variant="primary" className="w-full" onClick={onClose}>
@@ -298,6 +401,133 @@ function RangePair({
         placeholder={placeholderMax}
         onBlur={(e) => onChange({ [maxName]: e.target.value || null })}
         inputMode="numeric"
+      />
+    </div>
+  );
+}
+
+function AttrField({
+  field,
+  current,
+  onToggle,
+  onSet,
+  onMulti,
+  isChecked,
+}: {
+  field: FilterField;
+  current: Record<string, string>;
+  onToggle: () => void;
+  onSet: (v: string | null) => void;
+  onMulti: (v: string) => void;
+  isChecked: (v: string) => boolean;
+}) {
+  const key = `a.${field.key}`;
+  const raw = current[key] ?? "";
+
+  if (field.type === "toggle") {
+    const on = raw === "1" || raw === "true";
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        className={
+          "w-full text-left text-sm px-3 py-2 rounded-[var(--radius-md)] border transition-all flex items-center justify-between " +
+          (on
+            ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+            : "bg-transparent text-[var(--color-ink-soft)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+        }
+      >
+        <span>{field.label}</span>
+        <span className={"size-2 rounded-full " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
+      </button>
+    );
+  }
+
+  if (field.type === "range") {
+    const [minS, maxS] = raw.includes("..") ? raw.split("..") : ["", ""];
+    return (
+      <div>
+        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}{field.unit ? ` (${field.unit})` : ""}</div>
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            type="number"
+            defaultValue={minS}
+            placeholder={field.min !== undefined ? String(field.min) : "Min"}
+            inputMode="numeric"
+            onBlur={(e) => {
+              const v = e.target.value;
+              const max = maxS;
+              if (!v && !max) onSet(null);
+              else onSet(`${v}..${max}`);
+            }}
+          />
+          <Input
+            type="number"
+            defaultValue={maxS}
+            placeholder={field.max !== undefined ? String(field.max) : "Max"}
+            inputMode="numeric"
+            onBlur={(e) => {
+              const v = e.target.value;
+              const min = minS;
+              if (!v && !min) onSet(null);
+              else onSet(`${min}..${v}`);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (field.type === "select") {
+    return (
+      <div>
+        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
+        <Select value={raw} onChange={(e) => onSet(e.target.value || null)}>
+          <option value="">Sve</option>
+          {field.options?.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </Select>
+      </div>
+    );
+  }
+
+  if (field.type === "multi") {
+    return (
+      <div>
+        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
+        <div className="flex flex-wrap gap-1.5">
+          {field.options?.map((o) => {
+            const active = isChecked(o.value);
+            return (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => onMulti(o.value)}
+                className={
+                  "text-xs px-2.5 py-1.5 rounded-full border transition-all " +
+                  (active
+                    ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+                    : "bg-transparent text-[var(--color-ink-soft)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+                }
+              >
+                {o.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // text fallback
+  return (
+    <div>
+      <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
+      <Input
+        defaultValue={raw}
+        placeholder={field.label}
+        onBlur={(e) => onSet(e.target.value || null)}
       />
     </div>
   );

@@ -10,7 +10,9 @@ import { FUEL_TYPES, TRANSMISSIONS, BODY_TYPES } from "@/lib/types";
 const PRICE_STEPS = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000, 150000, 200000];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000, 300000];
 const YEAR_NOW = new Date().getFullYear();
-const YEARS = Array.from({ length: 26 }, (_, i) => YEAR_NOW - i);
+// Njuškalo-style wide range: current year (incl. new cars) back to 1900 for oldtimers
+const YEAR_OLDEST = 1900;
+const YEARS = Array.from({ length: YEAR_NOW - YEAR_OLDEST + 1 }, (_, i) => YEAR_NOW - i);
 
 const selectClass =
   "w-full h-10 px-3 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] text-sm focus:border-[var(--color-ink)] outline-none";
@@ -53,7 +55,7 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={submit}
-      className="bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-6 shadow-xl border border-white/10"
+      className="flex flex-col h-full bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-6 shadow-xl border border-white/10"
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2">
@@ -69,7 +71,7 @@ export function HeroSearch() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2 content-between flex-1">
         {/* 1. Marka */}
         <label className="block text-xs">
           <span className="block mb-1 font-semibold uppercase tracking-wider text-[var(--color-muted)]">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Car, Bike, Truck, Wrench, Tent, Cog, ChevronDown } from "lucide-react";
+import { Car, Bike, Truck, Construction, Caravan, Disc3, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/data/categories";
 
@@ -10,9 +10,9 @@ const ICONS = {
   car: Car,
   bike: Bike,
   truck: Truck,
-  tractor: Cog,
-  tent: Tent,
-  wrench: Wrench,
+  excavator: Construction,
+  camper: Caravan,
+  brakedisc: Disc3,
 } as const;
 
 export function CategoryNav() {
@@ -63,17 +63,17 @@ export function CategoryNav() {
               {openCategory.name}
             </span>
             <Link
-              href={`/oglasi?category=${openCategory.slug}`}
+              href={`/oglasi/napredno?category=${openCategory.slug}`}
               className="text-[11px] font-medium text-white/70 hover:text-white"
             >
-              Svi oglasi &rarr;
+              Napredna pretraga &rarr;
             </Link>
           </div>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {openCategory.subcategories.map((sub) => (
               <li key={sub.slug}>
                 <Link
-                  href={`/oglasi?category=${openCategory.slug}&subcategory=${sub.slug}`}
+                  href={`/oglasi/napredno?category=${openCategory.slug}&subcategory=${sub.slug}`}
                   className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                 >
                   {sub.name}

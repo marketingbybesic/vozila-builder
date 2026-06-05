@@ -3,13 +3,12 @@ import { MAKES as AUTO_MAKES } from "./makes";
 export type Subcategory = {
   slug: string;
   name: string; // Croatian
-  nameOrig?: string; // Slovenian source for reference
 };
 
 export type Category = {
   slug: string;
   name: string; // Croatian display
-  icon: "car" | "bike" | "truck" | "tractor" | "tent" | "wrench";
+  icon: "car" | "bike" | "truck" | "excavator" | "camper" | "brakedisc";
   active: boolean; // false = "Uskoro" overlay
   subcategories: Subcategory[];
   // Makes are populated from per-category data files. For "auto" we reuse the
@@ -28,73 +27,76 @@ const SLUG = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-// Slovenian → Croatian translations of the subcategories scraped from avto.net.
-// Source: /tmp/avto-taxonomy/parsed.json (2026-05-15).
+// Podkategorije po rubrikama (hrvatski).
 
 const AUTO_SUBS: Subcategory[] = [
-  { slug: "rabljeni", name: "Rabljeni" },
-  { slug: "novi", name: "Novi" },
-  { slug: "eko", name: "Eko (hibrid + EV)", nameOrig: "Eko vozila" },
-  { slug: "luksuzni", name: "Luksuzni", nameOrig: "Luksuzna vozila" },
-  { slug: "oldtimer", name: "Oldtimer", nameOrig: "Oldtimerji" },
-  { slug: "karamboli", name: "Karambolirani", nameOrig: "Karambolirana vozila" },
-  { slug: "katalog-novih", name: "Katalog novih", nameOrig: "Katalog novih vozil" },
-  { slug: "najam", name: "Ponude za najam", nameOrig: "Ponudbe za najem" },
+  // "Auto oglasi" = primary entry → opens advanced auto search (avto.net logic).
+  // Novi/Rabljeni removed as separate subcats; new/used is now a filter (condition).
+  { slug: "auto-oglasi", name: "Auto oglasi" },
+  { slug: "eko", name: "Eko (hibrid + EV)" },
+  { slug: "luksuzni", name: "Luksuzni" },
+  { slug: "oldtimer", name: "Oldtimer" },
+  { slug: "karamboli", name: "Karambolirani" },
+  { slug: "najam", name: "Ponude za najam" },
 ];
 
 const MOTO_SUBS: Subcategory[] = [
-  { slug: "motocikl", name: "Motocikl", nameOrig: "Motorno kolo" },
-  { slug: "skuter", name: "Skuter", nameOrig: "Skuter, Maxi-scooter, 3-4 kolesni scooter" },
-  { slug: "moped", name: "Moped", nameOrig: "Moped, kolo z motorjem" },
-  { slug: "atv-utv", name: "ATV / UTV", nameOrig: "4-kolesnik, ATV, UTV, 3-kolesnik" },
+  { slug: "motocikl", name: "Motocikl" },
+  { slug: "skuter", name: "Skuter" },
+  { slug: "moped", name: "Moped" },
+  { slug: "atv-utv", name: "ATV / UTV" },
   { slug: "minimoto", name: "Minimoto" },
   { slug: "oldtimer", name: "Oldtimer" },
   { slug: "gokart", name: "Go-kart" },
-  { slug: "motorne-sanke", name: "Motorne sanke", nameOrig: "Motorne sani" },
-  { slug: "e-skuter", name: "E-skuter", nameOrig: "E-skiro" },
-  { slug: "e-bicikl", name: "E-bicikl", nameOrig: "E-kolo" },
+  { slug: "motorne-sanke", name: "Motorne sanke" },
+  { slug: "e-skuter", name: "E-skuter" },
+  { slug: "e-bicikl", name: "E-bicikl" },
   { slug: "e-moto", name: "E-moto" },
+  { slug: "najam", name: "Ponude za najam" },
 ];
 
 const GOSPODARSKA_SUBS: Subcategory[] = [
-  { slug: "dostavna", name: "Dostavna vozila", nameOrig: "Dostavna vozila" },
-  { slug: "kamioni", name: "Kamioni", nameOrig: "Tovorna vozila" },
-  { slug: "autobusi", name: "Autobusi", nameOrig: "Avtobusi" },
-  { slug: "prikolice", name: "Teretne prikolice", nameOrig: "Tovorne prikolice" },
+  { slug: "dostavna", name: "Dostavna vozila" },
+  { slug: "kamioni", name: "Kamioni" },
+  { slug: "autobusi", name: "Autobusi" },
+  { slug: "prikolice", name: "Teretne prikolice" },
   { slug: "utv", name: "UTV vozila" },
-  { slug: "kontejneri", name: "Kontejneri", nameOrig: "Kontejnerji" },
+  { slug: "najam", name: "Ponude za najam" },
 ];
 
 const MEHANIZACIJA_SUBS: Subcategory[] = [
-  // Source page returned no subcategories — manually curated based on industry standard
-  { slug: "traktori", name: "Traktori" },
-  { slug: "kombajni", name: "Kombajni" },
-  { slug: "bageri", name: "Bageri" },
-  { slug: "utovarivaci", name: "Utovarivači" },
-  { slug: "viljuskari", name: "Viljuškari" },
+  { slug: "poljoprivredni-strojevi", name: "Poljoprivredni strojevi" },
+  { slug: "vilicari", name: "Viličari" },
+  { slug: "sumarski-strojevi", name: "Šumarski strojevi" },
+  { slug: "komunalni-strojevi", name: "Komunalni strojevi" },
   { slug: "gradevinski-strojevi", name: "Građevinski strojevi" },
-  { slug: "prikljucni-strojevi", name: "Priključni strojevi" },
+  { slug: "najam", name: "Ponude za najam" },
 ];
 
 const PROSTI_CAS_SUBS: Subcategory[] = [
-  { slug: "kamperi", name: "Kamperi", nameOrig: "Avtodom" },
-  { slug: "kamp-prikolice", name: "Kamp prikolice", nameOrig: "Počitniška prikolica" },
-  { slug: "mobilne-kucice", name: "Mobilne kućice", nameOrig: "Mobilna hišica" },
-  { slug: "moduli-za-kamper", name: "Moduli za kamper", nameOrig: "Snemljivi bivalnik" },
-  { slug: "satorske-prikolice", name: "Šatorske prikolice", nameOrig: "Šotorska prikolica" },
-  { slug: "plovila", name: "Plovila", nameOrig: "Navtika" },
-  { slug: "e-bicikli", name: "E-bicikli", nameOrig: "E-kolo" },
-  { slug: "e-skuteri", name: "E-skuteri", nameOrig: "E-skiro" },
-  { slug: "kamping-oprema", name: "Kamping oprema", nameOrig: "Camping oprema" },
+  { slug: "kamperi", name: "Kamperi" },
+  { slug: "kamp-prikolice", name: "Kamp prikolice" },
+  { slug: "mobilne-kucice", name: "Mobilne kućice" },
+  { slug: "moduli-za-kamper", name: "Moduli za kamper" },
+  { slug: "satorske-prikolice", name: "Šatorske prikolice" },
+  { slug: "plovila", name: "Plovila" },
+  { slug: "e-bicikli", name: "E-bicikli" },
+  { slug: "e-skuteri", name: "E-skuteri" },
+  { slug: "kamping-oprema", name: "Kamping oprema" },
 ];
 
 const DIJELOVI_SUBS: Subcategory[] = [
-  { slug: "auto-dijelovi", name: "Auto dijelovi" },
-  { slug: "moto-dijelovi", name: "Moto dijelovi" },
-  { slug: "gume-felge", name: "Gume i felge" },
-  { slug: "audio-navigacija", name: "Audio i navigacija" },
-  { slug: "alati", name: "Alati i oprema" },
-  { slug: "tuning", name: "Tuning" },
+  { slug: "auto-dodatna-oprema", name: "Auto dodatna oprema" },
+  { slug: "multimedija", name: "Multimedija" },
+  { slug: "moto-dijelovi", name: "Moto dijelovi i oprema" },
+  { slug: "za-gospodarska", name: "Za gospodarska vozila" },
+  { slug: "za-gradevinske-strojeve", name: "Za građevinske strojeve" },
+  { slug: "za-poljoprivredne-strojeve", name: "Za poljoprivredne strojeve" },
+  { slug: "za-vilicare", name: "Za viličare" },
+  { slug: "servisna-oprema", name: "Servisna oprema" },
+  { slug: "gume", name: "Gume" },
+  { slug: "felge", name: "Felge" },
+  { slug: "ulja-tekucine", name: "Ulja i tekućine" },
 ];
 
 // Starter brand sets for non-auto categories. Industry-standard makes;
@@ -149,7 +151,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: "mehanizacija",
     name: "Mehanizacija",
-    icon: "tractor",
+    icon: "excavator",
     active: true,
     subcategories: MEHANIZACIJA_SUBS,
     makes: MEHANIZACIJA_MAKES_STARTER.map((n) => ({ slug: SLUG(n), name: n })),
@@ -157,7 +159,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: "prosti-cas",
     name: "Slobodno vrijeme",
-    icon: "tent",
+    icon: "camper",
     active: true,
     subcategories: PROSTI_CAS_SUBS,
     makes: PROSTI_CAS_MAKES_STARTER.map((n) => ({ slug: SLUG(n), name: n })),
@@ -165,7 +167,7 @@ export const CATEGORIES: Category[] = [
   {
     slug: "dijelovi",
     name: "Dijelovi i oprema",
-    icon: "wrench",
+    icon: "brakedisc",
     active: true,
     subcategories: DIJELOVI_SUBS,
     makes: DIJELOVI_MAKES_STARTER.map((n) => ({ slug: SLUG(n), name: n })),

@@ -4,13 +4,12 @@ export const FUEL_TYPES = [
   "Benzin",
   "Dizel",
   "Hibrid",
-  "Plug-in hibrid",
   "Električni",
   "Plin",
 ] as const;
 export type FuelType = (typeof FUEL_TYPES)[number];
 
-export const TRANSMISSIONS = ["Ručni", "Automatski", "Poluautomatski"] as const;
+export const TRANSMISSIONS = ["Ručni", "Automatski"] as const;
 export type Transmission = (typeof TRANSMISSIONS)[number];
 
 export const BODY_TYPES = [
@@ -20,10 +19,8 @@ export const BODY_TYPES = [
   "Coupe",
   "Cabrio",
   "SUV",
-  "Terenac",
-  "Kombi",
+  "Monovolumen",
   "Pickup",
-  "MPV",
 ] as const;
 export type BodyType = (typeof BODY_TYPES)[number];
 
@@ -84,6 +81,7 @@ export const Listing = z.object({
   doors: z.number().int().min(2).max(5),
   seats: z.number().int().min(2).max(9),
   vinMasked: z.string().optional(),
+  attributes: z.record(z.string(), z.unknown()).optional(),
   accidentHistory: z.string().optional(),
   serviceHistory: z.string().optional(),
   importedFrom: z.string().optional(),
@@ -143,4 +141,5 @@ export type ListingFilters = {
   county?: string;
   sort?: SortOption;
   page?: number;
+  attrs?: Record<string, string | number | boolean | string[]>;
 };

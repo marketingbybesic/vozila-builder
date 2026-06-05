@@ -43,7 +43,80 @@ export function parseFilters(
     county: asString(sp.county),
     sort: (asString(sp.sort) as SortOption) ?? "newest",
     page: asNumber(sp.page) ?? 1,
+    attrs: parseAttrs(sp),
   };
+}
+
+const RESERVED_PARAMS = new Set([
+  "q", "category", "subcategory", "make", "model",
+  "priceMin", "priceMax", "yearMin", "yearMax", "kmMin", "kmMax",
+  "fuel", "transmission", "bodyType", "drive", "color", "condition",
+  "sellerType", "county", "sort", "page",
+]);
+
+function parseAttrs(
+  sp: Record<string, string | string[] | undefined>
+): Record<string, string | number | boolean | string[]> | undefined {
+  const out: Record<string, string | number | boolean | string[]> = {};
+  let any = false;
+  for (const [key, raw] of Object.entries(sp)) {
+    if (RESERVED_PARAMS.has(key)) continue;
+    if (!key.startsWith("a.")) continue;
+    if (raw === undefined) continue;
+    const attrKey = key.slice(2);
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (value === "" || value === undefined) continue;
+    // booleans (toggles): "1" / "true"
+    if (value === "1" || value === "true") { out[attrKey] = true; any = true; continue; }
+    if (value === "0" || value === "false") { out[attrKey] = false; any = true; continue; }
+    // numeric ranges encoded as "min..max"
+    if (value.includes("..")) { out[attrKey] = value; any = true; continue; }
+    // multi-select encoded as comma list
+    if (value.includes(",")) { out[attrKey] = value.split(",").filter(Boolean); any = true; continue; }
+    const asNum = Number(value);
+    out[attrKey] = Number.isFinite(asNum) && !/^0\d/.test(value) && value.trim() !== "" && /^-?\d+(\.\d+)?$/.test(value)
+      ? asNum
+      : value;
+    any = true;
+  }
+  return any ? out : undefined;
+}
+
+function attrMatches(
+  attrs: Record<string, unknown> | null | undefined,
+  filters: Record<string, string | number | boolean | string[]>
+): boolean {
+  if (!attrs) attrs = {};
+  for (const [key, expected] of Object.entries(filters)) {
+    const actual = (attrs as Record<string, unknown>)[key];
+    if (typeof expected === "boolean") {
+      if (Boolean(actual) !== expected) return false;
+      continue;
+    }
+    if (Array.isArray(expected)) {
+      if (expected.length === 0) continue;
+      if (typeof actual !== "string") return false;
+      if (!expected.includes(actual)) return false;
+      continue;
+    }
+    if (typeof expected === "string" && expected.includes("..")) {
+      const [minS, maxS] = expected.split("..");
+      const min = minS ? Number(minS) : undefined;
+      const max = maxS ? Number(maxS) : undefined;
+      const n = typeof actual === "number" ? actual : Number(actual);
+      if (!Number.isFinite(n)) return false;
+      if (min !== undefined && n < min) return false;
+      if (max !== undefined && n > max) return false;
+      continue;
+    }
+    if (typeof expected === "number") {
+      const n = typeof actual === "number" ? actual : Number(actual);
+      if (n !== expected) return false;
+      continue;
+    }
+    if (String(actual) !== String(expected)) return false;
+  }
+  return true;
 }
 
 function compare(sort: SortOption, a: Listing, b: Listing): number {
@@ -90,6 +163,7 @@ export function applyFilters(
     if (f.condition && f.condition.length > 0 && !f.condition.includes(l.condition)) return false;
     if (f.sellerType && f.sellerType.length > 0 && !f.sellerType.includes(l.sellerType)) return false;
     if (f.county && l.county !== f.county) return false;
+    if (f.attrs && !attrMatches(l.attributes, f.attrs)) return false;
     return true;
   });
 
@@ -114,10 +188,24 @@ export function paginate(items: Listing[], page: number) {
 export function buildQueryString(f: Partial<ListingFilters>): string {
   const sp = new URLSearchParams();
   Object.entries(f).forEach(([k, v]) => {
+    if (k === "attrs") return;
     if (v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0)) return;
     if (Array.isArray(v)) sp.set(k, v.join(","));
     else sp.set(k, String(v));
   });
+  if (f.attrs) {
+    Object.entries(f.attrs).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === "") return;
+      if (Array.isArray(v)) {
+        if (v.length === 0) return;
+        sp.set(`a.${k}`, v.join(","));
+      } else if (typeof v === "boolean") {
+        if (v) sp.set(`a.${k}`, "1");
+      } else {
+        sp.set(`a.${k}`, String(v));
+      }
+    });
+  }
   const q = sp.toString();
   return q ? `?${q}` : "";
 }
@@ -141,5 +229,6 @@ export function activeFilterCount(f: ListingFilters): number {
   if (f.condition?.length) n += f.condition.length;
   if (f.sellerType?.length) n += f.sellerType.length;
   if (f.county) n++;
+  if (f.attrs) n += Object.values(f.attrs).filter((v) => v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0) && v !== false).length;
   return n;
 }

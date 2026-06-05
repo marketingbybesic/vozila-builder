@@ -65,6 +65,7 @@ export const listings = pgTable(
     serviceHistory: text("service_history"), // "Potpuna" | "Djelomična" | "Nema"
     importedFrom: text("imported_from"), // country code or text
     vinMasked: text("vin_masked"),
+    attributes: jsonb("attributes").$type<Record<string, unknown>>().notNull().default({}),
     status: text("status").notNull().default("active"), // 'active' | 'paused' | 'sold' | 'pending-review' | 'deleted'
     featured: boolean("featured").notNull().default(false),
     boostedUntil: timestamp("boosted_until", { withTimezone: true }),
