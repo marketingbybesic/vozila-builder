@@ -27,6 +27,12 @@ export type DbSavedSearch = {
   createdAt: string;
 };
 
+// Saved search joined with owner email — used by the email-alarm cron engine.
+export type SavedSearchAlert = DbSavedSearch & {
+  userEmail: string;
+  userFirstName: string;
+};
+
 export type DbReport = {
   id: string;
   listingId: string;
@@ -132,6 +138,9 @@ export interface DbAdapter {
   listSavedSearches(userId: string): Promise<DbSavedSearch[]>;
   createSavedSearch(userId: string, input: { name: string; filterJson: Record<string, unknown>; notifyEmail?: boolean }): Promise<DbSavedSearch>;
   deleteSavedSearch(userId: string, id: string): Promise<void>;
+  // Email-alarm engine: all saved searches opted into notifications, with owner email
+  listSavedSearchesForAlerts(): Promise<SavedSearchAlert[]>;
+  updateSavedSearchSeenCount(id: string, count: number): Promise<void>;
 
   // Reports
   createReport(input: { listingId: string; reporterId: string | null; reason: DbReport["reason"]; body: string }): Promise<DbReport>;

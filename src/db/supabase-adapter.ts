@@ -715,6 +715,34 @@ export const supabaseAdapter: DbAdapter = {
       .where(and(eq(savedSearches.id, id), eq(savedSearches.userId, userId)));
   },
 
+  async listSavedSearchesForAlerts() {
+    const rows = await dbq
+      .select({ s: savedSearches, u: users })
+      .from(savedSearches)
+      .leftJoin(users, eq(users.id, savedSearches.userId))
+      .where(eq(savedSearches.notifyEmail, true));
+    return rows
+      .filter((r) => r.u?.email)
+      .map((r) => ({
+        id: r.s.id,
+        userId: r.s.userId,
+        name: r.s.name,
+        filterJson: (r.s.filterJson ?? {}) as Record<string, unknown>,
+        notifyEmail: r.s.notifyEmail,
+        lastSeenCount: r.s.lastSeenCount,
+        createdAt: r.s.createdAt.toISOString(),
+        userEmail: r.u!.email,
+        userFirstName: r.u!.firstName ?? "",
+      }));
+  },
+
+  async updateSavedSearchSeenCount(id, count) {
+    await dbq
+      .update(savedSearches)
+      .set({ lastSeenCount: count })
+      .where(eq(savedSearches.id, id));
+  },
+
   async createReport(input) {
     const rows = await dbq
       .insert(reports)

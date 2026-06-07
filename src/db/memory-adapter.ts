@@ -428,6 +428,27 @@ export const memoryAdapter: DbAdapter = {
     s.savedSearches.delete(id);
   },
 
+  async listSavedSearchesForAlerts() {
+    const s = store();
+    return [...s.savedSearches.values()]
+      .filter((q) => q.notifyEmail)
+      .map((q) => {
+        const u = s.users.get(q.userId);
+        return {
+          ...q,
+          userEmail: u?.email ?? "",
+          userFirstName: u?.firstName ?? "",
+        };
+      })
+      .filter((q) => q.userEmail);
+  },
+
+  async updateSavedSearchSeenCount(id, count) {
+    const s = store();
+    const q = s.savedSearches.get(id);
+    if (q) s.savedSearches.set(id, { ...q, lastSeenCount: count });
+  },
+
   async createReport(input) {
     const s = store();
     if (!s.listings.has(input.listingId)) throw new Error("Oglas ne postoji");
