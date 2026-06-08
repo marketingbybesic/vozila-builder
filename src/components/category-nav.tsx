@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Car, Bike, Truck, Construction, Caravan, Disc3, ChevronDown } from "lucide-react";
+import { Car, Bike, Truck, Caravan, ChevronDown } from "lucide-react";
+import { Backhoe, Wheel } from "@/components/icons/tabler";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/data/categories";
 
@@ -10,9 +11,9 @@ const ICONS = {
   car: Car,
   bike: Bike,
   truck: Truck,
-  excavator: Construction,
+  excavator: Backhoe,
   camper: Caravan,
-  brakedisc: Disc3,
+  brakedisc: Wheel,
 } as const;
 
 export function CategoryNav() {
@@ -59,14 +60,11 @@ export function CategoryNav() {
       {openCategory && (
         <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
-              {openCategory.name}
-            </span>
             <Link
               href={`/oglasi/napredno?category=${openCategory.slug}`}
-              className="text-[11px] font-medium text-white/70 hover:text-white"
+              className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)] hover:text-white transition-colors"
             >
-              Napredna pretraga &rarr;
+              {openCategory.subLabel ?? openCategory.name} - Napredna pretraga
             </Link>
           </div>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
