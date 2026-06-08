@@ -72,23 +72,32 @@ async function main() {
   for (const l of LISTINGS) {
     const exists = await sql`select 1 from listings where slug = ${l.slug} limit 1`;
     if (exists.length > 0) {
+      // Postojeći redovi: ažuriraj category/subcategory/attributes (ranije seed
+      // nije mapirao te stupce → bili null). Idempotentno.
+      await sql`
+        update listings set
+          category = ${l.category ?? "auto"},
+          subcategory = ${l.subcategory ?? null},
+          attributes = ${l.attributes ? sql.json(l.attributes as Record<string, never>) : sql.json({})}
+        where slug = ${l.slug}
+      `;
       skipped++;
       continue;
     }
     await sql`
       insert into listings (
-        slug, user_id, title, make, model, variant, year, price_eur, original_price_eur, km,
+        slug, user_id, title, category, subcategory, make, model, variant, year, price_eur, original_price_eur, km,
         fuel, transmission, body_type, drive, color, condition,
-        engine_cc, power_kw, doors, seats,
+        engine_cc, power_kw, doors, seats, attributes,
         vin_masked, accident_history, service_history, imported_from,
         first_registered, registration_until,
         city, county, description, features, images,
         status, featured, views, phone_reveals, created_at, updated_at
       ) values (
-        ${l.slug}, ${DEMO_USER_ID}, ${l.title}, ${l.make}, ${l.model}, ${l.variant ?? null},
+        ${l.slug}, ${DEMO_USER_ID}, ${l.title}, ${l.category ?? "auto"}, ${l.subcategory ?? null}, ${l.make}, ${l.model}, ${l.variant ?? null},
         ${l.year}, ${l.priceEur}, ${l.originalPriceEur ?? null}, ${l.km},
         ${l.fuel}, ${l.transmission}, ${l.bodyType}, ${l.drive}, ${l.color}, ${l.condition},
-        ${l.engineCc}, ${l.powerKw}, ${l.doors}, ${l.seats},
+        ${l.engineCc}, ${l.powerKw}, ${l.doors}, ${l.seats}, ${l.attributes ? sql.json(l.attributes as Record<string, never>) : sql.json({})},
         ${l.vinMasked ?? null}, ${l.accidentHistory ?? null}, ${l.serviceHistory ?? null}, ${l.importedFrom ?? null},
         ${l.firstRegistered ?? null}, ${l.registrationUntil ?? null},
         ${l.city}, ${l.county}, ${l.description},
