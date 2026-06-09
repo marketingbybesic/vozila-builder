@@ -60,10 +60,10 @@ export function HeroSearch() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2">
           <Search className="size-4 text-[var(--color-accent-dark)]" />
-          Brza pretraga
+          Brza pretraga auta
         </h2>
         <Link
-          href="/oglasi/napredno"
+          href="/oglasi/napredno?category=auto"
           className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-accent-dark)] hover:underline"
         >
           <SlidersHorizontal className="size-3.5" />

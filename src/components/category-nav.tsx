@@ -56,22 +56,34 @@ export function CategoryNav() {
         })}
       </ul>
 
-      {/* Subcategory submenu — opens for the selected category */}
+      {/* Subcategory submenu — opens for the selected category.
+          Napredna pretraga je SAMO za auto → samo auto ima napredna-link header,
+          ostale kategorije vode podkategorije na obične rezultate (/oglasi). */}
       {openCategory && (
         <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            <Link
-              href={`/oglasi/napredno?category=${openCategory.slug}`}
-              className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)] hover:text-white transition-colors"
-            >
-              {openCategory.subLabel ?? openCategory.name} - Napredna pretraga
-            </Link>
+            {openCategory.slug === "auto" ? (
+              <Link
+                href={`/oglasi/napredno?category=auto`}
+                className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)] hover:text-white transition-colors"
+              >
+                {openCategory.subLabel ?? openCategory.name} - Napredna pretraga
+              </Link>
+            ) : (
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
+                {openCategory.name}
+              </span>
+            )}
           </div>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {openCategory.subcategories.map((sub) => (
               <li key={sub.slug}>
                 <Link
-                  href={`/oglasi/napredno?category=${openCategory.slug}&subcategory=${sub.slug}`}
+                  href={
+                    openCategory.slug === "auto"
+                      ? `/oglasi/napredno?category=auto&subcategory=${sub.slug}`
+                      : `/oglasi?category=${openCategory.slug}&subcategory=${sub.slug}`
+                  }
                   className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                 >
                   {sub.name}

@@ -125,17 +125,24 @@ export function SiteHeader() {
                   </button>
                   {isOpen && (
                     <div className="pl-3 pb-1 flex flex-col">
-                      <Link
-                        href={`/oglasi/napredno?category=${cat.slug}`}
-                        onClick={closeMenu}
-                        className="px-3 py-2 rounded-md text-sm font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40"
-                      >
-                        Napredna pretraga &rarr;
-                      </Link>
+                      {/* Napredna pretraga je SAMO za auto */}
+                      {cat.slug === "auto" && (
+                        <Link
+                          href={`/oglasi/napredno?category=auto`}
+                          onClick={closeMenu}
+                          className="px-3 py-2 rounded-md text-sm font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40"
+                        >
+                          Napredna pretraga &rarr;
+                        </Link>
+                      )}
                       {cat.subcategories.map((sub) => (
                         <Link
                           key={sub.slug}
-                          href={`/oglasi/napredno?category=${cat.slug}&subcategory=${sub.slug}`}
+                          href={
+                            cat.slug === "auto"
+                              ? `/oglasi/napredno?category=auto&subcategory=${sub.slug}`
+                              : `/oglasi?category=${cat.slug}&subcategory=${sub.slug}`
+                          }
                           onClick={closeMenu}
                           className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
                         >

@@ -6,7 +6,7 @@ import { MAKES } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { CATEGORIES, getCategory } from "@/data/categories";
+import { getCategory } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, groupFields, type FilterField } from "@/data/category-filters";
 import {
@@ -26,11 +26,10 @@ export function NaprednoForm() {
   const router = useRouter();
   const sp = useSearchParams();
   const [pending, startTransition] = useTransition();
-  // Preselect category/subcategory from URL (avto.net flow: clicking a
-  // (sub)category opens THIS form already scoped to it).
-  const initCategory = sp.get("category") ?? "";
+  // Napredna pretraga je ISKLJUČIVO za automobile (Karlo, 2026-06-09).
+  // Kategorija je uvijek "auto" — nema biranja drugih kategorija.
   const initSubcategory = sp.get("subcategory") ?? "";
-  const [category, setCategory] = useState<string>(initCategory);
+  const [category] = useState<string>("auto");
   const [subcategory, setSubcategory] = useState<string>(initSubcategory);
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
@@ -154,7 +153,7 @@ export function NaprednoForm() {
   };
 
   const reset = () => {
-    setCategory(""); setSubcategory(""); setMake(""); setModel(""); setQ("");
+    setSubcategory(""); setMake(""); setModel(""); setQ("");
     setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMax("");
     setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setColor([]); setCondition([]); setSellerType([]);
     setCounty(""); setAttrs({});
@@ -162,18 +161,8 @@ export function NaprednoForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
-      <Section title="Kategorija">
+      <Section title="Vrsta auta">
         <Row>
-          <Field label="Kategorija">
-            <select
-              value={category}
-              onChange={(e) => { setCategory(e.target.value); setSubcategory(""); setMake(""); setModel(""); setAttrs({}); }}
-              className={selectCls}
-            >
-              <option value="">Sve kategorije</option>
-              {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-            </select>
-          </Field>
           {categoryDef && categoryDef.subcategories.length > 0 && (
             <Field label="Podkategorija">
               <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)} className={selectCls}>
