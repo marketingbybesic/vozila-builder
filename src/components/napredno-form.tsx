@@ -22,6 +22,12 @@ const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000
 const EURO_NORMS = ["EURO 3", "EURO 4", "EURO 5", "EURO 6", "EURO 6d", "EURO 7"] as const;
 const DOORS_OPTS = ["2/3", "4/5"] as const;
 const SEATS_OPTS = ["2", "4", "5", "6", "7", "8", "9"] as const;
+// avto.net-style boja swatch (HR boja → hex za kvadratić)
+const COLOR_HEX: Record<string, string> = {
+  "Crna": "#1a1a1a", "Bijela": "#f5f5f5", "Siva": "#8a8a8a", "Srebrna": "#c0c4c8",
+  "Plava": "#2563aa", "Crvena": "#c0392b", "Zelena": "#2e7d4f", "Smeđa": "#6b4423",
+  "Žuta": "#e6c419", "Narančasta": "#e8742c",
+};
 const YEAR_NOW = new Date().getFullYear();
 // Njuškalo-style wide range: current year back to 1900 for oldtimers
 const YEAR_OLDEST = 1900;
@@ -368,7 +374,7 @@ export function NaprednoForm() {
 
       <Section title="Boja vozila" collapsible defaultOpen={false}>
         <Field label="Boja">
-          <CheckGroup options={COLORS} values={color} onChange={setColor} />
+          <ColorSwatchGroup options={COLORS} values={color} onChange={setColor} />
         </Field>
       </Section>
 
@@ -475,6 +481,43 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="block mb-1.5 font-medium text-[var(--color-ink)]">{label}</span>
       {children}
     </label>
+  );
+}
+
+// avto.net-style boja swatch grid — kvadratići u boji s kvačicom kad je odabrano
+function ColorSwatchGroup({
+  options, values, onChange,
+}: { options: readonly string[]; values: string[]; onChange: (v: string[]) => void }) {
+  const toggle = (o: string) => {
+    onChange(values.includes(o) ? values.filter((v) => v !== o) : [...values, o]);
+  };
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => {
+        const active = values.includes(o);
+        const hex = COLOR_HEX[o] ?? "#999";
+        return (
+          <button
+            key={o}
+            type="button"
+            onClick={() => toggle(o)}
+            title={o}
+            aria-pressed={active}
+            className={
+              "size-9 rounded-md border-2 grid place-items-center transition-all " +
+              (active ? "border-[var(--color-accent)] scale-110" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+            }
+            style={{ backgroundColor: hex }}
+          >
+            {active && (
+              <span className={"text-[13px] font-bold " + (o === "Bijela" || o === "Žuta" || o === "Srebrna" ? "text-black" : "text-white")}>
+                ✓
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
