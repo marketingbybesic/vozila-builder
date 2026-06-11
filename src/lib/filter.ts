@@ -33,11 +33,18 @@ export function parseFilters(
     yearMax: asNumber(sp.yearMax),
     kmMin: asNumber(sp.kmMin),
     kmMax: asNumber(sp.kmMax),
+    powerMin: asNumber(sp.powerMin),
+    powerMax: asNumber(sp.powerMax),
+    engineMin: asNumber(sp.engineMin),
+    engineMax: asNumber(sp.engineMax),
     fuel: asArray(sp.fuel) as ListingFilters["fuel"],
     transmission: asArray(sp.transmission) as ListingFilters["transmission"],
     bodyType: asArray(sp.bodyType) as ListingFilters["bodyType"],
     drive: asArray(sp.drive) as ListingFilters["drive"],
+    doors: asArray(sp.doors),
+    seats: asArray(sp.seats),
     color: asArray(sp.color) as ListingFilters["color"],
+    euroNorm: asArray(sp.euroNorm),
     condition: asArray(sp.condition) as ListingFilters["condition"],
     sellerType: asArray(sp.sellerType) as ListingFilters["sellerType"],
     county: asString(sp.county),
@@ -50,7 +57,9 @@ export function parseFilters(
 const RESERVED_PARAMS = new Set([
   "q", "category", "subcategory", "make", "model",
   "priceMin", "priceMax", "yearMin", "yearMax", "kmMin", "kmMax",
-  "fuel", "transmission", "bodyType", "drive", "color", "condition",
+  "powerMin", "powerMax", "engineMin", "engineMax",
+  "fuel", "transmission", "bodyType", "drive", "doors", "seats",
+  "color", "euroNorm", "condition",
   "sellerType", "county", "sort", "page",
 ]);
 
@@ -155,11 +164,25 @@ export function applyFilters(
     if (f.yearMax !== undefined && l.year > f.yearMax) return false;
     if (f.kmMin !== undefined && l.km < f.kmMin) return false;
     if (f.kmMax !== undefined && l.km > f.kmMax) return false;
+    if (f.powerMin !== undefined && l.powerKw < f.powerMin) return false;
+    if (f.powerMax !== undefined && l.powerKw > f.powerMax) return false;
+    if (f.engineMin !== undefined && l.engineCc < f.engineMin) return false;
+    if (f.engineMax !== undefined && l.engineCc > f.engineMax) return false;
     if (f.fuel && f.fuel.length > 0 && !f.fuel.includes(l.fuel)) return false;
     if (f.transmission && f.transmission.length > 0 && !f.transmission.includes(l.transmission)) return false;
     if (f.bodyType && f.bodyType.length > 0 && !f.bodyType.includes(l.bodyType)) return false;
     if (f.drive && f.drive.length > 0 && !f.drive.includes(l.drive)) return false;
+    // Vrata: avto.net grupira "2/3" i "4/5"
+    if (f.doors && f.doors.length > 0) {
+      const grp = l.doors <= 3 ? "2/3" : "4/5";
+      if (!f.doors.includes(grp)) return false;
+    }
+    if (f.seats && f.seats.length > 0 && !f.seats.includes(String(l.seats))) return false;
     if (f.color && f.color.length > 0 && !f.color.includes(l.color)) return false;
+    if (f.euroNorm && f.euroNorm.length > 0) {
+      const ln = (l.attributes?.euroNorm as string) ?? "";
+      if (!f.euroNorm.includes(ln)) return false;
+    }
     if (f.condition && f.condition.length > 0 && !f.condition.includes(l.condition)) return false;
     if (f.sellerType && f.sellerType.length > 0 && !f.sellerType.includes(l.sellerType)) return false;
     if (f.county && l.county !== f.county) return false;

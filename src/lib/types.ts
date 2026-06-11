@@ -131,11 +131,18 @@ export type ListingFilters = {
   yearMax?: number;
   kmMin?: number;
   kmMax?: number;
+  powerMin?: number;
+  powerMax?: number;
+  engineMin?: number;
+  engineMax?: number;
   fuel?: FuelType[];
   transmission?: Transmission[];
   bodyType?: BodyType[];
   drive?: Drive[];
+  doors?: string[];
+  seats?: string[];
   color?: Color[];
+  euroNorm?: string[];
   condition?: Condition[];
   sellerType?: SellerType[];
   county?: string;

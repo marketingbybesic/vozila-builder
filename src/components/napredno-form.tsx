@@ -15,6 +15,12 @@ import {
 
 const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
+// avto.net "Moč motorja" (snaga kW) i "Prostornina" (obujam ccm) koraci
+const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
+const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
+const EURO_NORMS = ["EURO 3", "EURO 4", "EURO 5", "EURO 6", "EURO 6d", "EURO 7"] as const;
+const DOORS_OPTS = ["2/3", "4/5"] as const;
+const SEATS_OPTS = ["2", "4", "5", "6", "7", "8", "9"] as const;
 const YEAR_NOW = new Date().getFullYear();
 // Njuškalo-style wide range: current year back to 1900 for oldtimers
 const YEAR_OLDEST = 1900;
@@ -38,12 +44,20 @@ export function NaprednoForm() {
   const [priceMax, setPriceMax] = useState("");
   const [yearMin, setYearMin] = useState("");
   const [yearMax, setYearMax] = useState("");
+  const [kmMin, setKmMin] = useState("");
   const [kmMax, setKmMax] = useState("");
   const [fuel, setFuel] = useState<string[]>([]);
   const [transmission, setTransmission] = useState<string[]>([]);
+  const [powerMin, setPowerMin] = useState("");
+  const [powerMax, setPowerMax] = useState("");
+  const [engineMin, setEngineMin] = useState("");
+  const [engineMax, setEngineMax] = useState("");
   const [bodyType, setBodyType] = useState<string[]>([]);
   const [drive, setDrive] = useState<string[]>([]);
+  const [doors, setDoors] = useState<string[]>([]);
+  const [seats, setSeats] = useState<string[]>([]);
   const [color, setColor] = useState<string[]>([]);
+  const [euroNorm, setEuroNorm] = useState<string[]>([]);
   const [condition, setCondition] = useState<string[]>([]);
   const [sellerType, setSellerType] = useState<string[]>([]);
   const [county, setCounty] = useState("");
@@ -86,19 +100,27 @@ export function NaprednoForm() {
       priceMax: priceMax ? Number(priceMax) : undefined,
       yearMin: yearMin ? Number(yearMin) : undefined,
       yearMax: yearMax ? Number(yearMax) : undefined,
+      kmMin: kmMin ? Number(kmMin) : undefined,
       kmMax: kmMax ? Number(kmMax) : undefined,
+      powerMin: powerMin ? Number(powerMin) : undefined,
+      powerMax: powerMax ? Number(powerMax) : undefined,
+      engineMin: engineMin ? Number(engineMin) : undefined,
+      engineMax: engineMax ? Number(engineMax) : undefined,
       fuel: fuel.length ? (fuel as ListingFilters["fuel"]) : undefined,
       transmission: transmission.length ? (transmission as ListingFilters["transmission"]) : undefined,
       bodyType: bodyType.length ? (bodyType as ListingFilters["bodyType"]) : undefined,
       drive: drive.length ? (drive as ListingFilters["drive"]) : undefined,
+      doors: doors.length ? doors : undefined,
+      seats: seats.length ? seats : undefined,
       color: color.length ? (color as ListingFilters["color"]) : undefined,
+      euroNorm: euroNorm.length ? euroNorm : undefined,
       condition: condition.length ? (condition as ListingFilters["condition"]) : undefined,
       sellerType: sellerType.length ? (sellerType as ListingFilters["sellerType"]) : undefined,
       county: county || undefined,
       attrs: Object.keys(attrsClean).length ? attrsClean : undefined,
     };
     return applyFilters(LISTINGS, f).length;
-  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMax, fuel, transmission, bodyType, drive, color, condition, sellerType, county, attrs]);
+  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, doors, seats, color, euroNorm, condition, sellerType, county, attrs]);
 
   const setAttr = (key: string, v: AttrValue) =>
     setAttrs((a) => ({ ...a, [key]: v }));
@@ -127,11 +149,17 @@ export function NaprednoForm() {
     if (priceMax) set("priceMax", priceMax);
     if (yearMin) set("yearMin", yearMin);
     if (yearMax) set("yearMax", yearMax);
+    if (kmMin) set("kmMin", kmMin);
     if (kmMax) set("kmMax", kmMax);
+    if (powerMin) set("powerMin", powerMin);
+    if (powerMax) set("powerMax", powerMax);
+    if (engineMin) set("engineMin", engineMin);
+    if (engineMax) set("engineMax", engineMax);
     if (county) set("county", county);
     for (const [name, vs] of [
       ["fuel", fuel], ["transmission", transmission], ["bodyType", bodyType],
-      ["drive", drive], ["color", color], ["condition", condition], ["sellerType", sellerType],
+      ["drive", drive], ["doors", doors], ["seats", seats], ["color", color],
+      ["euroNorm", euroNorm], ["condition", condition], ["sellerType", sellerType],
     ] as const) {
       const r = arrToQ(name, vs);
       if (r) sp.set(r[0], r[1]);
@@ -154,8 +182,10 @@ export function NaprednoForm() {
 
   const reset = () => {
     setSubcategory(""); setMake(""); setModel(""); setQ("");
-    setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMax("");
-    setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setColor([]); setCondition([]); setSellerType([]);
+    setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMin(""); setKmMax("");
+    setPowerMin(""); setPowerMax(""); setEngineMin(""); setEngineMax("");
+    setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setDoors([]); setSeats([]);
+    setColor([]); setEuroNorm([]); setCondition([]); setSellerType([]);
     setCounty(""); setAttrs({});
   };
 
@@ -213,7 +243,28 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      {/* Redoslijed identičan avto.net: Marka/Model → Godina → Cijena → Km → Karakteristike → Lokacija */}
+      {/* ── Redoslijed 1:1 kao avto.net napredna pretraga ──
+          Marka/Model → Cijena → Letnik(Godina) → Stanje → Km →
+          Motor(gorivo/mjenjač/snaga/obujam) → Karoserija(oblik/pogon/vrata/sjedala) →
+          Boja → Emisijska norma → Lokacija → Oprema */}
+
+      <Section title="Cijena (EUR)">
+        <Row>
+          <Field label="Cijena od">
+            <select value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
+            </select>
+          </Field>
+          <Field label="Cijena do">
+            <select value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
+            </select>
+          </Field>
+        </Row>
+      </Section>
+
       <Section title="Godina">
         <Row>
           <Field label="Godina od">
@@ -231,25 +282,20 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Cijena (EUR)">
-        <Row>
-          <Field label="Od">
-            <select value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
-            </select>
-          </Field>
-          <Field label="Do">
-            <select value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
-            </select>
-          </Field>
-        </Row>
+      <Section title="Stanje vozila">
+        <Field label="Stanje">
+          <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
+        </Field>
       </Section>
 
       <Section title="Kilometraža">
         <Row>
+          <Field label="Kilometri od">
+            <select value={kmMin} onChange={(e) => setKmMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {KM_STEPS.map((k) => <option key={k} value={k}>{k.toLocaleString("hr-HR")} km</option>)}
+            </select>
+          </Field>
           <Field label="Kilometri do">
             <select value={kmMax} onChange={(e) => setKmMax(e.target.value)} className={selectCls}>
               <option value="">Bez granice</option>
@@ -259,30 +305,69 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      {(!category || category === "auto" || category === "moto" || category === "gospodarska") && (
-        <Section title="Karakteristike">
-          <Field label="Gorivo">
-            <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
+      <Section title="Motor">
+        <Field label="Gorivo">
+          <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
+        </Field>
+        <Field label="Mjenjač">
+          <CheckGroup options={TRANSMISSIONS} values={transmission} onChange={setTransmission} />
+        </Field>
+        <Row>
+          <Field label="Snaga od (kW)">
+            <select value={powerMin} onChange={(e) => setPowerMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
+            </select>
           </Field>
-          <Field label="Mjenjač">
-            <CheckGroup options={TRANSMISSIONS} values={transmission} onChange={setTransmission} />
+          <Field label="Snaga do (kW)">
+            <select value={powerMax} onChange={(e) => setPowerMax(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
+            </select>
           </Field>
-          {(!category || category === "auto") && (
-            <Field label="Karoserija">
-              <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
-            </Field>
-          )}
-          <Field label="Pogon">
-            <CheckGroup options={DRIVES} values={drive} onChange={setDrive} />
+        </Row>
+        <Row>
+          <Field label="Obujam od (cm³)">
+            <select value={engineMin} onChange={(e) => setEngineMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {ENGINE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} cm³</option>)}
+            </select>
           </Field>
-          <Field label="Boja">
-            <CheckGroup options={COLORS} values={color} onChange={setColor} />
+          <Field label="Obujam do (cm³)">
+            <select value={engineMax} onChange={(e) => setEngineMax(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {ENGINE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} cm³</option>)}
+            </select>
           </Field>
-          <Field label="Stanje">
-            <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
-          </Field>
-        </Section>
-      )}
+        </Row>
+      </Section>
+
+      <Section title="Karoserija">
+        <Field label="Oblik karoserije">
+          <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
+        </Field>
+        <Field label="Pogon">
+          <CheckGroup options={DRIVES} values={drive} onChange={setDrive} />
+        </Field>
+        <Field label="Broj vrata">
+          <CheckGroup options={DOORS_OPTS} values={doors} onChange={setDoors} />
+        </Field>
+        <Field label="Broj sjedala">
+          <CheckGroup options={SEATS_OPTS} values={seats} onChange={setSeats} />
+        </Field>
+      </Section>
+
+      <Section title="Boja">
+        <Field label="Boja">
+          <CheckGroup options={COLORS} values={color} onChange={setColor} />
+        </Field>
+      </Section>
+
+      <Section title="Emisijska norma">
+        <Field label="EURO norma">
+          <CheckGroup options={EURO_NORMS} values={euroNorm} onChange={setEuroNorm} />
+        </Field>
+      </Section>
 
       <Section title="Lokacija i prodavač">
         <Row>
