@@ -9,6 +9,7 @@ import type { ListingFilters } from "@/lib/types";
 import { getCategory } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, groupFields, type FilterField } from "@/data/category-filters";
+import { ChevronDown } from "lucide-react";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, DRIVES, COLORS, CONDITIONS, SELLER_TYPES,
 } from "@/lib/types";
@@ -282,7 +283,7 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Stanje vozila">
+      <Section title="Stanje vozila" collapsible defaultOpen={false}>
         <Field label="Stanje">
           <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
         </Field>
@@ -305,7 +306,7 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Motor">
+      <Section title="Motor" collapsible defaultOpen={false}>
         <Field label="Gorivo">
           <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
         </Field>
@@ -342,7 +343,7 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Karoserija">
+      <Section title="Karoserija" collapsible defaultOpen={false}>
         <Field label="Oblik karoserije">
           <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
         </Field>
@@ -357,13 +358,13 @@ export function NaprednoForm() {
         </Field>
       </Section>
 
-      <Section title="Boja">
+      <Section title="Boja" collapsible defaultOpen={false}>
         <Field label="Boja">
           <CheckGroup options={COLORS} values={color} onChange={setColor} />
         </Field>
       </Section>
 
-      <Section title="Emisijska norma">
+      <Section title="Emisijska norma" collapsible defaultOpen={false}>
         <Field label="EURO norma">
           <CheckGroup options={EURO_NORMS} values={euroNorm} onChange={setEuroNorm} />
         </Field>
@@ -429,13 +430,34 @@ export function NaprednoForm() {
 
 const selectCls = "w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)] text-sm";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title, children, collapsible = false, defaultOpen = true,
+}: {
+  title: string; children: React.ReactNode; collapsible?: boolean; defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  if (!collapsible) {
+    return (
+      <section>
+        <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">
+          {title}
+        </h2>
+        <div className="space-y-4">{children}</div>
+      </section>
+    );
+  }
   return (
-    <section>
-      <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">
-        {title}
-      </h2>
-      <div className="space-y-4">{children}</div>
+    <section className="border-t border-[var(--color-line)] pt-4">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+        aria-expanded={open}
+      >
+        <span>{title}</span>
+        <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && <div className="space-y-4 mt-3">{children}</div>}
     </section>
   );
 }
