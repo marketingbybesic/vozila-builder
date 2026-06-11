@@ -31,26 +31,6 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-1 text-sm shrink-0">
-          <Link
-            href="/oglasi"
-            className="px-3 py-2 rounded-md text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40 transition-colors"
-          >
-            Svi oglasi
-          </Link>
-          <Link
-            href="/marke"
-            className="px-3 py-2 rounded-md text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40 transition-colors"
-          >
-            Marke
-          </Link>
-          <Link
-            href="/oglasi/najnoviji"
-            className="px-3 py-2 rounded-md text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40 transition-colors"
-          >
-            Najnoviji
-          </Link>
-        </nav>
 
         <div className="hidden md:block flex-1 max-w-md mx-auto">
           <HeaderSearch />

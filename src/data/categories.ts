@@ -33,7 +33,7 @@ const SLUG = (s: string) =>
 const AUTO_SUBS: Subcategory[] = [
   // "Auto oglasi" = primary entry → opens advanced auto search (avto.net logic).
   // Novi/Rabljeni removed as separate subcats; new/used is now a filter (condition).
-  { slug: "auto-oglasi", name: "Auto oglasi" },
+  { slug: "auto-oglasi", name: "Auto oglasi - Napredno" },
   { slug: "trkaci", name: "Trkaći auti" },
   { slug: "eko", name: "Eko (hibrid + EV)" },
   { slug: "luksuzni", name: "Luksuzni" },
@@ -88,6 +88,7 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
 ];
 
 const DIJELOVI_SUBS: Subcategory[] = [
+  { slug: "auto-dijelovi", name: "Auto dijelovi" },
   { slug: "auto-dodatna-oprema", name: "Auto dodatna oprema" },
   { slug: "multimedija", name: "Multimedija" },
   { slug: "moto-dijelovi", name: "Moto dijelovi i oprema" },

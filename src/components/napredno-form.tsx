@@ -213,6 +213,24 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
+      {/* Redoslijed identičan avto.net: Marka/Model → Godina → Cijena → Km → Karakteristike → Lokacija */}
+      <Section title="Godina">
+        <Row>
+          <Field label="Godina od">
+            <select value={yearMin} onChange={(e) => setYearMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </Field>
+          <Field label="Godina do">
+            <select value={yearMax} onChange={(e) => setYearMax(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </Field>
+        </Row>
+      </Section>
+
       <Section title="Cijena (EUR)">
         <Row>
           <Field label="Od">
@@ -230,20 +248,8 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Godina i kilometri">
+      <Section title="Kilometraža">
         <Row>
-          <Field label="Godina od">
-            <select value={yearMin} onChange={(e) => setYearMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </Field>
-          <Field label="Godina do">
-            <select value={yearMax} onChange={(e) => setYearMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </Field>
           <Field label="Kilometri do">
             <select value={kmMax} onChange={(e) => setKmMax(e.target.value)} className={selectCls}>
               <option value="">Bez granice</option>

@@ -528,6 +528,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
 
   { key: "subcategory", label: "Vrsta", type: "multi", storage: "column", group: "Vrsta",
     options: [
+      { value: "auto-dijelovi", label: "Auto dijelovi" },
       { value: "auto-dodatna-oprema", label: "Auto dodatna oprema" },
       { value: "multimedija", label: "Multimedija" },
       { value: "moto-dijelovi", label: "Moto dijelovi i oprema" },

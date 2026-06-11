@@ -62,18 +62,9 @@ export function CategoryNav() {
       {openCategory && (
         <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            {openCategory.slug === "auto" ? (
-              <Link
-                href={`/oglasi/napredno?category=auto`}
-                className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)] hover:text-white transition-colors"
-              >
-                {openCategory.subLabel ?? openCategory.name} - Napredna pretraga
-              </Link>
-            ) : (
-              <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
-                {openCategory.name}
-              </span>
-            )}
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
+              {openCategory.name}
+            </span>
           </div>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
             {openCategory.subcategories.map((sub) => (
