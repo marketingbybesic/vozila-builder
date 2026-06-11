@@ -244,29 +244,36 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      {/* ── Redoslijed 1:1 kao avto.net napredna pretraga ──
-          Marka/Model → Cijena → Letnik(Godina) → Stanje → Km →
-          Motor(gorivo/mjenjač/snaga/obujam) → Karoserija(oblik/pogon/vrata/sjedala) →
-          Boja → Emisijska norma → Lokacija → Oprema */}
+      {/* ── Redoslijed 1:1 kao avto.net napredna pretraga (vidi AVTONET-FORM-REFERENCE.md) ──
+          Stanje → Karoserija(oblik) → Marka/Model → Cijena+Godina+Km →
+          Motor(obujam→snaga→gorivo→mjenjač) → Oprema → Boja → Lokacija/prodavač */}
 
-      <Section title="Cijena (EUR)">
+      <Section title="Stanje">
+        <Field label="Stanje vozila">
+          <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
+        </Field>
+      </Section>
+
+      <Section title="Oblik karoserije">
+        <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
+      </Section>
+
+      {/* avto.net "Cena, starost, prevoženih km" — sve u jednoj sekciji */}
+      <Section title="Cijena, godina, kilometraža">
         <Row>
-          <Field label="Cijena od">
+          <Field label="Cijena od (€)">
             <select value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className={selectCls}>
               <option value="">Bez granice</option>
               {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
             </select>
           </Field>
-          <Field label="Cijena do">
+          <Field label="Cijena do (€)">
             <select value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className={selectCls}>
               <option value="">Bez granice</option>
               {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
             </select>
           </Field>
         </Row>
-      </Section>
-
-      <Section title="Godina">
         <Row>
           <Field label="Godina od">
             <select value={yearMin} onChange={(e) => setYearMin(e.target.value)} className={selectCls}>
@@ -281,15 +288,6 @@ export function NaprednoForm() {
             </select>
           </Field>
         </Row>
-      </Section>
-
-      <Section title="Stanje vozila" collapsible defaultOpen={false}>
-        <Field label="Stanje">
-          <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
-        </Field>
-      </Section>
-
-      <Section title="Kilometraža">
         <Row>
           <Field label="Kilometri od">
             <select value={kmMin} onChange={(e) => setKmMin(e.target.value)} className={selectCls}>
@@ -306,27 +304,8 @@ export function NaprednoForm() {
         </Row>
       </Section>
 
-      <Section title="Motor" collapsible defaultOpen={false}>
-        <Field label="Gorivo">
-          <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
-        </Field>
-        <Field label="Mjenjač">
-          <CheckGroup options={TRANSMISSIONS} values={transmission} onChange={setTransmission} />
-        </Field>
-        <Row>
-          <Field label="Snaga od (kW)">
-            <select value={powerMin} onChange={(e) => setPowerMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
-            </select>
-          </Field>
-          <Field label="Snaga do (kW)">
-            <select value={powerMax} onChange={(e) => setPowerMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
-            </select>
-          </Field>
-        </Row>
+      {/* avto.net "Gorivo, motor, menjalnik": Prostornina → Moč → Gorivo → Menjalnik */}
+      <Section title="Gorivo, motor, mjenjač">
         <Row>
           <Field label="Obujam od (cm³)">
             <select value={engineMin} onChange={(e) => setEngineMin(e.target.value)} className={selectCls}>
@@ -341,12 +320,30 @@ export function NaprednoForm() {
             </select>
           </Field>
         </Row>
+        <Row>
+          <Field label="Snaga od (kW)">
+            <select value={powerMin} onChange={(e) => setPowerMin(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
+            </select>
+          </Field>
+          <Field label="Snaga do (kW)">
+            <select value={powerMax} onChange={(e) => setPowerMax(e.target.value)} className={selectCls}>
+              <option value="">Bez granice</option>
+              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
+            </select>
+          </Field>
+        </Row>
+        <Field label="Vrsta goriva">
+          <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
+        </Field>
+        <Field label="Mjenjač">
+          <CheckGroup options={TRANSMISSIONS} values={transmission} onChange={setTransmission} />
+        </Field>
       </Section>
 
-      <Section title="Karoserija" collapsible defaultOpen={false}>
-        <Field label="Oblik karoserije">
-          <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
-        </Field>
+      {/* avto.net "Dodatna oprema" + pogon/vrata/sjedala + emisija */}
+      <Section title="Dodatna oprema i specifikacije" collapsible defaultOpen={false}>
         <Field label="Pogon">
           <CheckGroup options={DRIVES} values={drive} onChange={setDrive} />
         </Field>
@@ -356,29 +353,27 @@ export function NaprednoForm() {
         <Field label="Broj sjedala">
           <CheckGroup options={SEATS_OPTS} values={seats} onChange={setSeats} />
         </Field>
+        <Field label="Emisijska norma (EURO)">
+          <CheckGroup options={EURO_NORMS} values={euroNorm} onChange={setEuroNorm} />
+        </Field>
       </Section>
 
-      <Section title="Boja" collapsible defaultOpen={false}>
+      <Section title="Boja vozila" collapsible defaultOpen={false}>
         <Field label="Boja">
           <CheckGroup options={COLORS} values={color} onChange={setColor} />
         </Field>
       </Section>
 
-      <Section title="Emisijska norma" collapsible defaultOpen={false}>
-        <Field label="EURO norma">
-          <CheckGroup options={EURO_NORMS} values={euroNorm} onChange={setEuroNorm} />
-        </Field>
-      </Section>
-
+      {/* avto.net "Drugi pogoji, omejitve" — lokacija + prodavač zadnji */}
       <Section title="Lokacija i prodavač">
         <Row>
-          <Field label="Županija">
+          <Field label="Lokacija (županija)">
             <select value={county} onChange={(e) => setCounty(e.target.value)} className={selectCls}>
               <option value="">Sve županije</option>
               {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Tip prodavača">
+          <Field label="Prodavač">
             <CheckGroup options={SELLER_TYPES} values={sellerType} onChange={setSellerType} />
           </Field>
         </Row>
