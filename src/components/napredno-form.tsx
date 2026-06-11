@@ -60,6 +60,7 @@ export function NaprednoForm() {
   const [color, setColor] = useState<string[]>([]);
   const [euroNorm, setEuroNorm] = useState<string[]>([]);
   const [condition, setCondition] = useState<string[]>([]);
+  const [offerType, setOfferType] = useState<string[]>([]);
   const [sellerType, setSellerType] = useState<string[]>([]);
   const [county, setCounty] = useState("");
   const [attrs, setAttrs] = useState<Record<string, AttrValue>>({});
@@ -186,7 +187,7 @@ export function NaprednoForm() {
     setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMin(""); setKmMax("");
     setPowerMin(""); setPowerMax(""); setEngineMin(""); setEngineMax("");
     setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setDoors([]); setSeats([]);
-    setColor([]); setEuroNorm([]); setCondition([]); setSellerType([]);
+    setColor([]); setEuroNorm([]); setCondition([]); setOfferType([]); setSellerType([]);
     setCounty(""); setAttrs({});
   };
 
@@ -205,6 +206,13 @@ export function NaprednoForm() {
             </Field>
           )}
         </Row>
+      </Section>
+
+      {/* avto.net prvo polje: Tip ponudbe (prodaja/najam) */}
+      <Section title="Tip ponude">
+        <Field label="Ponuda">
+          <CheckGroup options={["Prodaja", "Najam"]} values={offerType} onChange={setOfferType} />
+        </Field>
       </Section>
 
       <Section title="Osnovno">
