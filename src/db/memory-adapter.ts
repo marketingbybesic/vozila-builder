@@ -39,11 +39,18 @@ function store() {
     const listings = new Map<string, Stored>();
     const slugIdx = new Map<string, string>();
 
+    // Demo/admin login hashes (bcrypt). Lets demo@auti.hr/demo1234 and
+    // admin@auti.hr/admin1234 sign in even on the in-memory adapter (local dev
+    // + serverless preview where DATABASE_URL isn't wired). Matches the
+    // Supabase seed in scripts/setup-demo-creds.mts.
+    const DEMO_HASH = "$2b$10$oQu3JJoiJT3kZKZsgnrkYup2MVHjNq5/LPZKuHxCE9uHU21PcS7m.";
+    const ADMIN_HASH = "$2b$10$LPs13ho2rxm.eyyfXx7J1ujP9qwWaM36j7aRgWT1eFTaxoIc0Vetq";
+
     // Seed default demo user that owns all seed listings
     const demoUser: DbUser & { passwordHash: string | null } = {
       id: "00000000-0000-0000-0000-000000000001",
       email: "demo@auti.hr",
-      passwordHash: null,
+      passwordHash: DEMO_HASH,
       firstName: "Ivan",
       lastName: "Horvat",
       phone: "+385 91 234 5678",
@@ -64,7 +71,7 @@ function store() {
     const adminUser: DbUser & { passwordHash: string | null } = {
       id: "00000000-0000-0000-0000-0000000000ad",
       email: "admin@auti.hr",
-      passwordHash: null,
+      passwordHash: ADMIN_HASH,
       firstName: "Admin",
       lastName: "Auti",
       phone: null,

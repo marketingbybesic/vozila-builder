@@ -43,10 +43,6 @@ const AUTO_SUBS: Subcategory[] = [
 ];
 
 const MOTO_SUBS: Subcategory[] = [
-  { slug: "motocikl", name: "Motocikl" },
-  { slug: "skuter", name: "Skuter" },
-  { slug: "moped", name: "Moped" },
-  { slug: "atv-utv", name: "ATV / UTV" },
   { slug: "minimoto", name: "Minimoto" },
   { slug: "oldtimer", name: "Oldtimer" },
   { slug: "gokart", name: "Go-kart" },
@@ -58,33 +54,23 @@ const MOTO_SUBS: Subcategory[] = [
 ];
 
 const GOSPODARSKA_SUBS: Subcategory[] = [
-  { slug: "dostavna", name: "Dostavna vozila" },
-  { slug: "kamioni", name: "Kamioni" },
   { slug: "autobusi", name: "Autobusi" },
-  { slug: "prikolice", name: "Teretne prikolice" },
-  { slug: "utv", name: "UTV vozila" },
   { slug: "najam", name: "Ponude za najam" },
 ];
 
 const MEHANIZACIJA_SUBS: Subcategory[] = [
-  { slug: "poljoprivredni-strojevi", name: "Poljoprivredni strojevi" },
-  { slug: "vilicari", name: "Viličari" },
   { slug: "sumarski-strojevi", name: "Šumarski strojevi" },
   { slug: "komunalni-strojevi", name: "Komunalni strojevi" },
-  { slug: "gradevinski-strojevi", name: "Građevinski strojevi" },
   { slug: "najam", name: "Ponude za najam" },
 ];
 
 const PROSTI_CAS_SUBS: Subcategory[] = [
-  { slug: "kamperi", name: "Kamperi" },
-  { slug: "kamp-prikolice", name: "Kamp prikolice" },
   { slug: "mobilne-kucice", name: "Mobilne kućice" },
   { slug: "moduli-za-kamper", name: "Moduli za kamper" },
   { slug: "satorske-prikolice", name: "Šatorske prikolice" },
-  { slug: "plovila", name: "Plovila" },
+  { slug: "najam", name: "Ponude za najam" },
   { slug: "e-bicikli", name: "E-bicikli" },
   { slug: "e-skuteri", name: "E-skuteri" },
-  { slug: "kamping-oprema", name: "Kamping oprema" },
 ];
 
 const DIJELOVI_SUBS: Subcategory[] = [
