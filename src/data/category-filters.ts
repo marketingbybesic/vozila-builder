@@ -99,18 +99,16 @@ const AUTO_FIELDS: FilterField[] = [
     ] },
   { key: "drive", label: "Pogon", type: "multi", storage: "column", group: "Karoserija",
     options: [v("Prednji"), v("Stražnji"), v("4x4")] },
+  // Karlo t.16: dodana klizna vrata
   { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Karoserija",
-    options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }] },
+    options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }, { value: "klizna", label: "Klizna vrata" }] },
+  // Karlo t.17: dodan broj 3
   { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Karoserija",
-    options: [2,4,5,7,9].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "color", label: "Boja vanjska", type: "multi", storage: "column", group: "Boja",
+    options: [2,3,4,5,7,9].map((n) => ({ value: String(n), label: `${n}` })) },
+  { key: "color", label: "Boja vozila", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Siva","Srebrna","Plava","Crvena","Zelena","Smeđa","Žuta","Narančasta"].map(v) },
 
-  // EV-specific (attr)
-  { key: "evRangeKm", label: "Doseg (EV)", type: "range", unit: "km", min: 0, max: 800, step: 25, storage: "attr", group: "Električna" },
-  { key: "batteryKwh", label: "Baterija", type: "range", unit: "kWh", min: 0, max: 150, step: 5, storage: "attr", group: "Električna" },
-  { key: "batteryCertificate", label: "Certifikat baterije", type: "toggle", storage: "attr", group: "Električna" },
-  { key: "heatPump", label: "Toplinska crpka", type: "toggle", storage: "attr", group: "Električna" },
+  // Karlo t.23: cijela rubrika "Električna" (Doseg, Baterija, Certifikat, Toplinska crpka) IZBAČENA
 
   // Climate (attr.multi)
   { key: "climate", label: "Klima", type: "multi", storage: "attr", group: "Oprema",
@@ -191,10 +189,11 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "garazirano", label: "Garažirano" },
       { value: "zamjena", label: "Moguća zamjena" },
     ] },
-  // Damage state (attr.select) — 6 options
+  // Damage state (attr.select). Karlo t.30: dodana opcija "za svoje godine primjereno"
   { key: "damageState", label: "Stanje karoserije", type: "select", storage: "attr", group: "Povijest",
     options: [
       { value: "bez-stete", label: "Bez štete" },
+      { value: "primjereno-godinama", label: "Za svoje godine primjereno" },
       { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
       { value: "ostecen-prednji", label: "Oštećen prednji dio" },
@@ -208,20 +207,12 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "da", label: "Da, sanirano" },
     ] },
 
-  // Color type (attr.multi)
-  { key: "colorType", label: "Tip boje", type: "multi", storage: "attr", group: "Boja",
-    options: [v("metalik"), v("mat")] },
-  { key: "upholsteryColor", label: "Boja unutrašnjosti", type: "select", storage: "attr", group: "Boja",
-    options: ["Crna","Bež","Smeđa","Siva","Bijela","Crvena"].map(v) },
+  // Tip boje + Boja unutrašnjosti renderiraju se u hardkodiranoj formi (sekcija "Boje"),
+  // pa ovdje ne dupliciramo. URL ključevi (a.colorType / a.upholsteryColor) ostaju isti.
 
-  // Misc (attr.toggle / attr.select)
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "warrantyProgram", label: "Program garancije", type: "select", storage: "attr", group: "Ostalo",
-    options: [
-      { value: "bmw-premium-selection", label: "BMW Premium Selection" },
-      { value: "mercedes-young-classic", label: "Mercedes Young Classic" },
-    ] },
-  { key: "inStock", label: "Na zalihi", type: "toggle", storage: "attr", group: "Ostalo" },
+  // Karlo t.32: grupa "Ostalo" — ostaje SAMO Starost oglasa.
+  // Izbačeno: Garancija (sad gornji gumb), Program garancije, Na zalihi,
+  // dupli Tip ponude, Oldtimer, Klizna vrata (sad u Broj vrata).
   { key: "adAge", label: "Starost oglasa", type: "select", storage: "attr", group: "Ostalo",
     options: [
       { value: "1d", label: "Posljednji dan" },
@@ -229,10 +220,6 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "7d", label: "Posljednji tjedan" },
       { value: "30d", label: "Posljednji mjesec" },
     ] },
-  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    options: [v("prodaja"), v("najam")] },
-  { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "slidingDoors", label: "Klizna vrata", type: "toggle", storage: "attr", group: "Ostalo" },
 ];
 
 // ── MOTO — full 26-field taxonomy from avto.net ────────────────────────

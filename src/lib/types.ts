@@ -13,6 +13,7 @@ export const TRANSMISSIONS = ["Ručni", "Automatski"] as const;
 export type Transmission = (typeof TRANSMISSIONS)[number];
 
 export const BODY_TYPES = [
+  "Microcar",
   "Limuzina",
   "Hatchback",
   "Karavan",

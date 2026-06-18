@@ -20,8 +20,10 @@ const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 2500
 const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
 const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
 const EURO_NORMS = ["EURO 3", "EURO 4", "EURO 5", "EURO 6", "EURO 6d", "EURO 7"] as const;
-const DOORS_OPTS = ["2/3", "4/5"] as const;
-const SEATS_OPTS = ["2", "4", "5", "6", "7", "8", "9"] as const;
+const DOORS_OPTS = ["2/3", "4/5", "Klizna vrata"] as const;
+const SEATS_OPTS = ["2", "3", "4", "5", "6", "7", "8", "9"] as const;
+// Karlo: stanje vozila bez Oldtimera (enum zadržava Oldtimer zbog starih oglasa)
+const CONDITIONS_FORM = CONDITIONS.filter((c) => c !== "Oldtimer");
 // avto.net-style boja swatch (HR boja → hex za kvadratić)
 const COLOR_HEX: Record<string, string> = {
   "Crna": "#1a1a1a", "Bijela": "#f5f5f5", "Siva": "#8a8a8a", "Srebrna": "#c0c4c8",
@@ -70,6 +72,9 @@ export function NaprednoForm() {
   const [sellerType, setSellerType] = useState<string[]>([]);
   const [county, setCounty] = useState("");
   const [attrs, setAttrs] = useState<Record<string, AttrValue>>({});
+  // Karlo: gumb "Prikaži oglase bez cijene" (default ON) + "Garancija"
+  const [showWithoutPrice, setShowWithoutPrice] = useState(true);
+  const [warranty, setWarranty] = useState(false);
 
   const categoryDef = category ? getCategory(category) : undefined;
   const makeOptions = useMemo(() => {
@@ -98,6 +103,7 @@ export function NaprednoForm() {
       if (Array.isArray(v) && v.length === 0) continue;
       attrsClean[k] = v as string | number | boolean | string[];
     }
+    if (warranty) attrsClean.warranty = true;
     const f: ListingFilters = {
       category: (category || undefined) as ListingFilters["category"],
       subcategory: subcategory || undefined,
@@ -128,7 +134,7 @@ export function NaprednoForm() {
       attrs: Object.keys(attrsClean).length ? attrsClean : undefined,
     };
     return applyFilters(LISTINGS, f).length;
-  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, doors, seats, color, euroNorm, condition, sellerType, county, attrs]);
+  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, doors, seats, color, euroNorm, condition, sellerType, county, attrs, warranty]);
 
   const setAttr = (key: string, v: AttrValue) =>
     setAttrs((a) => ({ ...a, [key]: v }));
@@ -164,6 +170,9 @@ export function NaprednoForm() {
     if (engineMin) set("engineMin", engineMin);
     if (engineMax) set("engineMax", engineMax);
     if (county) set("county", county);
+    // Karlo t.6: gumbi. Default ON → ne šaljemo ništa; OFF skriva oglase bez cijene.
+    if (!showWithoutPrice) set("hidePriceless", "1");
+    if (warranty) set("a.warranty", "1");
     for (const [name, vs] of [
       ["fuel", fuel], ["transmission", transmission], ["bodyType", bodyType],
       ["drive", drive], ["doors", doors], ["seats", seats], ["color", color],
@@ -195,6 +204,7 @@ export function NaprednoForm() {
     setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setDoors([]); setSeats([]);
     setColor([]); setEuroNorm([]); setCondition([]); setOfferType([]); setSellerType([]);
     setCounty(""); setAttrs({});
+    setShowWithoutPrice(true); setWarranty(false);
   };
 
   return (
@@ -221,16 +231,15 @@ export function NaprednoForm() {
         </Field>
       </Section>
 
-      <Section title="Osnovno">
-        <Field label="Pojam">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            type="text"
-            placeholder="npr. xenon, koža, automatik..."
-            className="w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)]"
-          />
+      {/* Karlo redoslijed t.3: Stanje vozila ODMAH nakon tipa ponude (bez Oldtimera) */}
+      <Section title="Stanje vozila">
+        <Field label="Stanje">
+          <CheckGroup options={CONDITIONS_FORM} values={condition} onChange={setCondition} />
         </Field>
+      </Section>
+
+      {/* Karlo t.4-5: Osnovno = Marka, Model, pa TIP (manualni upis ispod Modela) */}
+      <Section title="Osnovno">
         <Row>
           <Field label="Marka">
             <select value={make} onChange={(e) => { setMake(e.target.value); setModel(""); }} className={selectCls}>
@@ -256,17 +265,36 @@ export function NaprednoForm() {
             )}
           </Field>
         </Row>
+        <Field label="TIP">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            type="text"
+            placeholder="npr. GTI, Avant, Quattro, M Sport..."
+            className="w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)]"
+          />
+        </Field>
+      </Section>
+
+      {/* Karlo t.6: gumbi "Prikaži oglase bez cijene" (default ON) + "Garancija" */}
+      <Section title="Opcije prikaza">
+        <div className="grid sm:grid-cols-2 gap-2">
+          <ToggleButton
+            on={showWithoutPrice}
+            onClick={() => setShowWithoutPrice((s) => !s)}
+            label="Prikaži oglase bez cijene"
+          />
+          <ToggleButton
+            on={warranty}
+            onClick={() => setWarranty((s) => !s)}
+            label="Garancija"
+          />
+        </div>
       </Section>
 
       {/* ── Redoslijed 1:1 kao avto.net napredna pretraga (vidi AVTONET-FORM-REFERENCE.md) ──
           Stanje → Karoserija(oblik) → Marka/Model → Cijena+Godina+Km →
           Motor(obujam→snaga→gorivo→mjenjač) → Oprema → Boja → Lokacija/prodavač */}
-
-      <Section title="Stanje">
-        <Field label="Stanje vozila">
-          <CheckGroup options={CONDITIONS} values={condition} onChange={setCondition} />
-        </Field>
-      </Section>
 
       <Section title="Oblik karoserije">
         <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
@@ -356,8 +384,8 @@ export function NaprednoForm() {
         </Field>
       </Section>
 
-      {/* avto.net "Dodatna oprema" + pogon/vrata/sjedala + emisija */}
-      <Section title="Dodatna oprema i specifikacije" collapsible defaultOpen={false}>
+      {/* Karlo t.14: preimenovano "Dodatna oprema i specifikacije" → "Ostale opcije" */}
+      <Section title="Ostale opcije" collapsible defaultOpen={false}>
         <Field label="Pogon">
           <CheckGroup options={DRIVES} values={drive} onChange={setDrive} />
         </Field>
@@ -372,25 +400,30 @@ export function NaprednoForm() {
         </Field>
       </Section>
 
-      <Section title="Boja vozila" collapsible defaultOpen={false}>
-        <Field label="Boja">
+      {/* Karlo t.18-22: naslov "Boje"; Boja vozila + Tip boje + Boja unutrašnjosti */}
+      <Section title="Boje" collapsible defaultOpen={false}>
+        <Field label="Boja vozila">
           <ColorSwatchGroup options={COLORS} values={color} onChange={setColor} />
         </Field>
-      </Section>
-
-      {/* avto.net "Drugi pogoji, omejitve" — lokacija + prodavač zadnji */}
-      <Section title="Lokacija i prodavač">
-        <Row>
-          <Field label="Lokacija (županija)">
-            <select value={county} onChange={(e) => setCounty(e.target.value)} className={selectCls}>
-              <option value="">Sve županije</option>
-              {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Prodavač">
-            <CheckGroup options={SELLER_TYPES} values={sellerType} onChange={setSellerType} />
-          </Field>
-        </Row>
+        <Field label="Tip boje">
+          <CheckGroup
+            options={["metalik", "mat"]}
+            values={(attrs.colorType as string[] | undefined) ?? []}
+            onChange={(v) => setAttr("colorType", v)}
+          />
+        </Field>
+        <Field label="Boja unutrašnjosti">
+          <select
+            value={(attrs.upholsteryColor as string) ?? ""}
+            onChange={(e) => setAttr("upholsteryColor", e.target.value || undefined)}
+            className={selectCls}
+          >
+            <option value="">Sve</option>
+            {["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </Field>
       </Section>
 
       {attrGroups.length > 0 && (
@@ -414,6 +447,21 @@ export function NaprednoForm() {
           ))}
         </Section>
       )}
+
+      {/* Karlo t.20/24: Lokacija i prodavač PREMJEŠTENO na ZADNJU poziciju */}
+      <Section title="Lokacija i prodavač">
+        <Row>
+          <Field label="Lokacija (županija)">
+            <select value={county} onChange={(e) => setCounty(e.target.value)} className={selectCls}>
+              <option value="">Sve županije</option>
+              {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Prodavač">
+            <CheckGroup options={SELLER_TYPES} values={sellerType} onChange={setSellerType} />
+          </Field>
+        </Row>
+      </Section>
 
       <div className="flex gap-2 sticky bottom-0 z-10 bg-[var(--color-bg)] p-3 rounded-md border-t border-[var(--color-line)] -mx-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
         <button
@@ -518,6 +566,26 @@ function ColorSwatchGroup({
         );
       })}
     </div>
+  );
+}
+
+// avto.net-style on/off gumb (default-stanje kontrolira pozivatelj)
+function ToggleButton({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={
+        "h-11 px-4 rounded-md border text-sm font-medium flex items-center justify-between gap-2 transition-colors " +
+        (on
+          ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+          : "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+      }
+    >
+      <span>{label}</span>
+      <span className={"size-2.5 rounded-full shrink-0 " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
+    </button>
   );
 }
 
