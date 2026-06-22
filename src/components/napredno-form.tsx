@@ -73,6 +73,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   // ── Hardkodirani (tipizirani) filteri zajednički svim vozilima ──
   const [subcategory, setSubcategory] = useState(g("subcategory"));
+  // Podkategorija iz URL-a = kontekst stranice (ne korisnikov chip filter).
+  const contextSubcategory = g("subcategory");
   const [make, setMake] = useState(g("make"));
   const [model, setModel] = useState(g("model"));
   const [q, setQ] = useState(g("q"));
@@ -280,7 +282,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         out.push({ id: `${v}`, label: v, onRemove: () => setter(vals.filter((x) => x !== v)) })
       );
     };
-    if (subcategory) {
+    // Podkategorija je chip SAMO ako ju je korisnik promijenio (ne kontekst stranice iz URL-a).
+    if (subcategory && subcategory !== contextSubcategory) {
       const nm = categoryDef?.subcategories.find((s) => s.slug === subcategory)?.name ?? subcategory;
       out.push({ id: "sub", label: nm, onRemove: () => setSubcategory("") });
     }
@@ -317,7 +320,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (county) out.push({ id: "county", label: county, onRemove: () => setCounty("") });
     multi(sellerType, setSellerType);
     return out;
-  }, [subcategory, categoryDef, offerType, condition, make, makeOptions, model, isAuto, q,
+  }, [subcategory, contextSubcategory, categoryDef, offerType, condition, make, makeOptions, model, isAuto, q,
       priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, engineMin, engineMax, powerMin, powerMax,
       fuel, transmission, bodyType, color, warranty, attrs, county, sellerType]);
 
