@@ -5,6 +5,7 @@ import { SortDropdown } from "@/components/sort-dropdown";
 import { Pagination } from "@/components/pagination";
 import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
 import { SaveSearchButton } from "@/components/save-search-button";
+import { UrlActiveChips } from "@/components/napredno/active-filters";
 import { db } from "@/db";
 import { PAGE_SIZE, parseFilters, activeFilterCount } from "@/lib/filter";
 import type { Metadata } from "next";
@@ -66,6 +67,9 @@ export default async function OglasiPage({
               <SortDropdown />
             </div>
           </div>
+
+          {/* Chips pregled aktivnih filtera */}
+          <UrlActiveChips className="mb-6" />
 
           {items.length === 0 ? (
             <div className="text-center py-20 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)]">

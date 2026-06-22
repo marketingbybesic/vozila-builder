@@ -21,7 +21,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  Car, Gauge, Palette, ShieldCheck, Sofa, Tag, Receipt,
+  Car, Gauge, Palette, ShieldCheck, Sofa, Tag,
   History, MapPin, Settings2, Zap, Boxes, Ruler, ListFilter, Search, RotateCcw,
   Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
@@ -29,6 +29,7 @@ import {
   MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
   type Opt,
 } from "@/components/napredno/controls";
+import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
 import type { LucideIcon } from "lucide-react";
 
 const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
@@ -225,6 +226,59 @@ export function NaprednoForm() {
     setShowWithoutPrice(true); setWarranty(false); setAttrs({});
   };
 
+  // Chips pregled trenutno aktivnih filtera (uklonjivi).
+  const activeChips: Chip[] = useMemo(() => {
+    const out: Chip[] = [];
+    const single = (val: string, label: string, clear: () => void) => {
+      if (val) out.push({ id: label, label: `${label}: ${val}`, onRemove: clear });
+    };
+    const multi = (vals: string[], setter: (v: string[]) => void) => {
+      vals.forEach((v) =>
+        out.push({ id: `${v}`, label: v, onRemove: () => setter(vals.filter((x) => x !== v)) })
+      );
+    };
+    if (subcategory) {
+      const nm = categoryDef?.subcategories.find((s) => s.slug === subcategory)?.name ?? subcategory;
+      out.push({ id: "sub", label: nm, onRemove: () => setSubcategory("") });
+    }
+    multi(offerType, setOfferType);
+    multi(condition, setCondition);
+    if (make) {
+      const nm = makeOptions.find((m) => m.value === make)?.label ?? make;
+      out.push({ id: "make", label: nm, onRemove: () => { setMake(""); setModel(""); } });
+    }
+    single(model, "Model", () => setModel(""));
+    if (isAuto) single(q, "Tip", () => setQ(""));
+    single(priceMin, "Cijena od", () => setPriceMin(""));
+    single(priceMax, "Cijena do", () => setPriceMax(""));
+    single(yearMin, "Godina od", () => setYearMin(""));
+    single(yearMax, "Godina do", () => setYearMax(""));
+    single(kmMin, "km od", () => setKmMin(""));
+    single(kmMax, "km do", () => setKmMax(""));
+    single(engineMin, "Obujam od", () => setEngineMin(""));
+    single(engineMax, "Obujam do", () => setEngineMax(""));
+    single(powerMin, "Snaga od", () => setPowerMin(""));
+    single(powerMax, "Snaga do", () => setPowerMax(""));
+    multi(fuel, setFuel);
+    multi(transmission, setTransmission);
+    multi(bodyType, setBodyType);
+    multi(drive, setDrive);
+    multi(color, setColor);
+    if (warranty) out.push({ id: "garancija", label: "Garancija", onRemove: () => setWarranty(false) });
+    // dinamički atributi
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === undefined || v === "" || v === false) continue;
+      if (Array.isArray(v)) v.forEach((x) => out.push({ id: `${k}:${x}`, label: x, onRemove: () => setAttr(k, v.filter((y) => y !== x)) }));
+      else if (v === true) out.push({ id: k, label: k, onRemove: () => setAttr(k, undefined) });
+      else out.push({ id: k, label: String(v), onRemove: () => setAttr(k, undefined) });
+    }
+    if (county) out.push({ id: "county", label: county, onRemove: () => setCounty("") });
+    multi(sellerType, setSellerType);
+    return out;
+  }, [subcategory, categoryDef, offerType, condition, make, makeOptions, model, isAuto, q,
+      priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, engineMin, engineMax, powerMin, powerMax,
+      fuel, transmission, bodyType, drive, color, warranty, attrs, county, sellerType]);
+
   // Renderer za jedno dinamičko polje (attr ili neobrađeni column).
   const renderField = (f: FilterField) => {
     if (f.type === "toggle") {
@@ -297,6 +351,13 @@ export function NaprednoForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-7 pb-28">
+      {/* Chips pregled aktivnih filtera */}
+      {activeChips.length > 0 && (
+        <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-accent)]/[0.04] p-3 sm:p-4">
+          <ActiveChips chips={activeChips} onClear={reset} />
+        </div>
+      )}
+
       {/* ── 1. OSNOVNO (najvažnije, istaknuto) ── */}
       <Panel>
         {categoryDef && categoryDef.subcategories.length > 0 && (
@@ -310,6 +371,13 @@ export function NaprednoForm() {
             placeholder="Sve podkategorije"
           />
         )}
+        {/* Tip ponude + Stanje vozila ODMAH ispod Podkategorije */}
+        <div className="grid sm:grid-cols-2 gap-3">
+          <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
+            options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+          <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
+            options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
+        </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           {modelOptions.length > 0 ? (
@@ -327,18 +395,7 @@ export function NaprednoForm() {
         </div>
       </Panel>
 
-      {/* ── 2. TIP PONUDE + STANJE ── */}
-      <Panel>
-        <SectionHead icon={Receipt} title="Ponuda i stanje" />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
-            options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
-          <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
-            options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
-        </div>
-      </Panel>
-
-      {/* ── 3. CIJENA, GODINA, KILOMETRAŽA ── */}
+      {/* ── 2. CIJENA, GODINA, KILOMETRAŽA ── */}
       <Panel>
         <SectionHead icon={Tag} title="Cijena, godina, kilometraža" />
         {/* Tag ikona je jedinstvena za cjenovnu sekciju */}
