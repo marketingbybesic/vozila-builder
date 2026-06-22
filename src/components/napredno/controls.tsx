@@ -24,30 +24,100 @@ export function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Single-select native dropdown, styled. */
+/** Hook: close popover on outside-click / Escape. */
+function useDismiss(open: boolean, onClose: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open, onClose]);
+  return ref;
+}
+
+const panelCls =
+  "absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-xl border border-[var(--color-line)] " +
+  "bg-[var(--color-surface)] shadow-xl shadow-black/10 p-1.5 scrollbar-thin";
+const optionCls = (active: boolean) =>
+  "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors " +
+  (active
+    ? "bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
+    : "text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40");
+
+/**
+ * Single-select dropdown — same custom popover look as MultiSelect.
+ * Radio behavior: picking an option closes the menu.
+ */
 export function SelectField({
-  label, value, onChange, options, placeholder = "Sve",
+  label, value, onChange, options, placeholder = "Sve", icon: Icon,
 }: {
   label?: string; value: string; onChange: (v: string) => void;
-  options: Opt[]; placeholder?: string;
+  options: Opt[]; placeholder?: string; icon?: LucideIcon;
 }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const ref = useDismiss(open, () => setOpen(false));
+  const current = options.find((o) => o.value === value);
+
   return (
-    <label className="block">
+    <div ref={ref} className="block">
       {label && <Label>{label}</Label>}
       <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={fieldBase + " appearance-none pr-10 cursor-pointer"}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={id}
+          className={
+            fieldBase + " flex items-center gap-2.5 text-left cursor-pointer " +
+            (value ? "text-[var(--color-ink)]" : "text-[var(--color-muted)]")
+          }
         >
-          <option value="">{placeholder}</option>
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-[var(--color-muted)]" />
+          {Icon && (
+            <Icon className={"size-4.5 shrink-0 " + (value ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+          )}
+          <span className="truncate flex-1">{current ? current.label : placeholder}</span>
+          <ChevronDown className={"size-4 text-[var(--color-muted)] shrink-0 transition-transform " + (open ? "rotate-180" : "")} />
+        </button>
+
+        {open && (
+          <div id={id} className={panelCls}>
+            <button
+              type="button"
+              onClick={() => { onChange(""); setOpen(false); }}
+              className={optionCls(!value)}
+            >
+              <span className="size-4.5 shrink-0" />
+              {placeholder}
+            </button>
+            {options.map((o) => {
+              const active = o.value === value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => { onChange(o.value); setOpen(false); }}
+                  className={optionCls(active)}
+                >
+                  <span className="size-4.5 shrink-0 grid place-items-center">
+                    {active && <Check className="size-3.5 text-[var(--color-accent-dark)]" strokeWidth={3} />}
+                  </span>
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -62,22 +132,8 @@ export function MultiSelect({
   options: Opt[]; placeholder?: string; icon?: LucideIcon;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
   const id = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, [open]);
+  const ref = useDismiss(open, () => setOpen(false));
 
   const toggle = (v: string) =>
     onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
@@ -112,10 +168,7 @@ export function MultiSelect({
         </button>
 
         {open && (
-          <div
-            id={id}
-            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] shadow-xl shadow-black/10 p-1.5 scrollbar-thin"
-          >
+          <div id={id} className={panelCls}>
             {options.map((o) => {
               const active = values.includes(o.value);
               return (
@@ -123,12 +176,7 @@ export function MultiSelect({
                   key={o.value}
                   type="button"
                   onClick={() => toggle(o.value)}
-                  className={
-                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors " +
-                    (active
-                      ? "bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
-                      : "text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40")
-                  }
+                  className={optionCls(active)}
                 >
                   <span
                     className={

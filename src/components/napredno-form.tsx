@@ -21,8 +21,9 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  Car, Gauge, Cog, Fuel, Palette, ShieldCheck, Snowflake, Sofa, SquareParking,
-  History, MapPin, Settings2, Zap, Boxes, Ruler, Tag, ListFilter, Search, RotateCcw,
+  Car, Gauge, Palette, ShieldCheck, Sofa, Tag, Receipt,
+  History, MapPin, Settings2, Zap, Boxes, Ruler, ListFilter, Search, RotateCcw,
+  Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
 import {
   MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
@@ -42,18 +43,12 @@ type AttrValue = string | string[] | boolean | undefined;
 // Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
 const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Cijena", "Boja"]);
 
-// Ikona po nazivu grupe (vizualni indikator koji vodi oko).
+// Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
-  Vrsta: Car, Motor: Gauge, Karoserija: Car, Cijena: Tag, Boja: Palette,
+  Vrsta: Car, Motor: Gauge, Karoserija: ListFilter, Cijena: Tag, Boja: Palette,
   Specifikacije: Ruler, Električna: Zap, Oprema: Settings2, Pravno: ShieldCheck,
-  Povijest: History, Udobnost: Sofa, Dimenzije: Ruler, Detalji: ListFilter,
-  Gume: Cog, Felge: Cog, Tekućine: Fuel, Ostalo: Boxes,
-};
-// Ikona po ključu polja (leading ikona u dropdownu).
-const FIELD_ICON: Record<string, LucideIcon> = {
-  fuel: Fuel, transmission: Cog, bodyType: Car, drive: Cog, color: Palette,
-  climate: Snowflake, interior: Sofa, safety: ShieldCheck, parking: SquareParking,
-  sellerType: Tag, subcategory: Car,
+  Povijest: History, Udobnost: Sofa, Dimenzije: Scale, Detalji: FileText,
+  Gume: CircleDot, Felge: Wrench, Tekućine: Droplets, Ostalo: Boxes,
 };
 
 export function NaprednoForm() {
@@ -232,7 +227,6 @@ export function NaprednoForm() {
 
   // Renderer za jedno dinamičko polje (attr ili neobrađeni column).
   const renderField = (f: FilterField) => {
-    const Icon = FIELD_ICON[f.key];
     if (f.type === "toggle") {
       return (
         <TogglePill
@@ -281,11 +275,10 @@ export function NaprednoForm() {
       <MultiSelect
         key={f.key}
         label={f.label}
-        icon={Icon}
         values={(attrs[f.key] as string[] | undefined) ?? []}
         onChange={(v) => setAttr(f.key, v)}
         options={f.options ?? []}
-        placeholder="Odaberi"
+        placeholder="Sve"
       />
     );
   };
@@ -336,11 +329,11 @@ export function NaprednoForm() {
 
       {/* ── 2. TIP PONUDE + STANJE ── */}
       <Panel>
-        <SectionHead icon={Tag} title="Ponuda i stanje" />
+        <SectionHead icon={Receipt} title="Ponuda i stanje" />
         <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Tip ponude" icon={Tag} values={offerType} onChange={setOfferType}
+          <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
             options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
-          <MultiSelect label="Stanje vozila" icon={Car} values={condition} onChange={setCondition}
+          <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
             options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
         </div>
       </Panel>
@@ -348,6 +341,7 @@ export function NaprednoForm() {
       {/* ── 3. CIJENA, GODINA, KILOMETRAŽA ── */}
       <Panel>
         <SectionHead icon={Tag} title="Cijena, godina, kilometraža" />
+        {/* Tag ikona je jedinstvena za cjenovnu sekciju */}
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
@@ -369,15 +363,15 @@ export function NaprednoForm() {
           <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={POWER_STEPS} />
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Vrsta goriva" icon={Fuel} values={fuel} onChange={setFuel}
+          <MultiSelect label="Vrsta goriva" values={fuel} onChange={setFuel}
             options={fuelOpts(filterDef)} placeholder="Sve" />
-          <MultiSelect label="Mjenjač" icon={Cog} values={transmission} onChange={setTransmission}
+          <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
             options={[{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]} placeholder="Sve" />
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Oblik karoserije" icon={Car} values={bodyType} onChange={setBodyType}
+          <MultiSelect label="Oblik karoserije" values={bodyType} onChange={setBodyType}
             options={bodyOpts(filterDef)} placeholder="Sve" />
-          <MultiSelect label="Pogon" icon={Cog} values={drive} onChange={setDrive}
+          <MultiSelect label="Pogon" values={drive} onChange={setDrive}
             options={[{ value: "Prednji", label: "Prednji" }, { value: "Stražnji", label: "Stražnji" }, { value: "4x4", label: "4x4" }]} placeholder="Sve" />
         </div>
       </Panel>
@@ -387,7 +381,7 @@ export function NaprednoForm() {
         <SectionHead icon={Palette} title="Boje" />
         <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
         <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Tip boje" icon={Palette} values={(attrs.colorType as string[] | undefined) ?? []}
+          <MultiSelect label="Tip boje" values={(attrs.colorType as string[] | undefined) ?? []}
             onChange={(v) => setAttr("colorType", v)}
             options={[{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }]} placeholder="Sve" />
           <SelectField label="Boja unutrašnjosti" value={(attrs.upholsteryColor as string) ?? ""}
@@ -430,7 +424,7 @@ export function NaprednoForm() {
         <div className="grid sm:grid-cols-2 gap-3">
           <SelectField label="Lokacija (županija)" value={county} onChange={setCounty}
             options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
-          <MultiSelect label="Prodavač" icon={Tag} values={sellerType} onChange={setSellerType}
+          <MultiSelect label="Prodavač" values={sellerType} onChange={setSellerType}
             options={[{ value: "Privatni", label: "Privatni" }, { value: "Trgovac", label: "Trgovac" }]} placeholder="Svi" />
         </div>
       </Panel>
