@@ -120,28 +120,40 @@ const panelWrapCls =
 const panelScrollCls = "max-h-64 overflow-y-auto p-1.5 scrollbar-visible";
 
 /**
- * Popover s vidljivim scrollom: uvijek-prisutan scrollbar + fade na dnu
- * (univerzalni znak "ima još ispod", neovisno o OS overlay scrollbarima).
+ * Popover s vidljivim scrollom: sam izmjeri prelijeva li sadržaj (scrollHeight),
+ * pa pokaže elegantan fade + chevron-pill na dnu dok ima opcija ispod.
+ * Neovisno o OS overlay scrollbarima.
  */
-function Popover({ id, children, scrollable }: { id: string; children: React.ReactNode; scrollable: boolean }) {
+function Popover({ id, children }: { id: string; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [atBottom, setAtBottom] = useState(false);
-  const onScroll = () => {
+  const [overflow, setOverflow] = useState(false);
+  const [atBottom, setAtBottom] = useState(true);
+  const measure = () => {
     const el = ref.current;
     if (!el) return;
+    const canScroll = el.scrollHeight > el.clientHeight + 2;
+    setOverflow(canScroll);
     setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 4);
   };
-  useEffect(() => { onScroll(); }, []);
+  useEffect(() => { measure(); }, []);
+  const showHint = overflow && !atBottom;
   return (
     <div className={panelWrapCls}>
-      <div ref={ref} id={id} className={panelScrollCls} onScroll={onScroll}>
+      <div ref={ref} id={id} className={panelScrollCls} onScroll={measure}>
         {children}
       </div>
-      {scrollable && !atBottom && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-[var(--color-surface)] to-transparent flex items-end justify-center pb-1">
-          <ChevronDown className="size-4 text-[var(--color-muted)] animate-bounce-slow" />
-        </div>
-      )}
+      {/* Elegantan nagovještaj skrolanja: fade + chevron-pill */}
+      <div
+        className={
+          "pointer-events-none absolute inset-x-0 bottom-0 h-12 flex items-end justify-center pb-1.5 " +
+          "bg-gradient-to-t from-[var(--color-surface)] via-[var(--color-surface)]/80 to-transparent " +
+          "transition-opacity duration-200 " + (showHint ? "opacity-100" : "opacity-0")
+        }
+      >
+        <span className="grid place-items-center size-6 rounded-full bg-[var(--color-surface)] border border-[var(--color-line)] shadow-sm">
+          <ChevronDown className="size-3.5 text-[var(--color-ink-soft)] animate-bounce-slow" strokeWidth={2.5} />
+        </span>
+      </div>
     </div>
   );
 }
@@ -188,7 +200,7 @@ export function SelectField({
         </button>
 
         {open && (
-          <Popover id={id} scrollable={options.length > 6}>
+          <Popover id={id}>
             <button
               type="button"
               onClick={() => { onChange(""); setOpen(false); }}
@@ -267,7 +279,7 @@ export function MultiSelect({
         </button>
 
         {open && (
-          <Popover id={id} scrollable={options.length > 6}>
+          <Popover id={id}>
             {options.map((o) => {
               const active = values.includes(o.value);
               return (

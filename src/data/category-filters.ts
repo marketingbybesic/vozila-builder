@@ -100,10 +100,10 @@ const AUTO_FIELDS: FilterField[] = [
   { key: "drive", label: "Pogon", type: "multi", storage: "column", group: "Karoserija",
     options: [v("Prednji"), v("Stražnji"), v("4x4")] },
   // Karlo t.16: dodana klizna vrata
-  { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Karoserija",
+  { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Vrata i sjedala",
     options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }, { value: "klizna", label: "Klizna vrata" }] },
   // Karlo t.17: dodan broj 3
-  { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Karoserija",
+  { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Vrata i sjedala",
     options: [2,3,4,5,7,9].map((n) => ({ value: String(n), label: `${n}` })) },
   { key: "color", label: "Boja vozila", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Siva","Srebrna","Plava","Crvena","Zelena","Smeđa","Žuta","Narančasta"].map(v) },
@@ -599,7 +599,7 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
   }
   // Stable order: Osnovno → Vrsta → Motor → Karoserija → Specifikacije → Oprema → ...
   const order = [
-    "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Boja",
+    "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Vrata i sjedala", "Boja",
     "Specifikacije", "Električna", "Oprema", "Pravno", "Povijest",
     "Udobnost", "Dimenzije", "Detalji", "Gume", "Felge", "Tekućine", "Ostalo",
   ];

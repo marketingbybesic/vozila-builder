@@ -21,7 +21,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  Car, Gauge, Palette, ShieldCheck, Sofa, Tag,
+  Car, Gauge, Palette, ShieldCheck, Sofa, Tag, DoorOpen,
   History, MapPin, Settings2, Zap, Boxes, Ruler, ListFilter, Search, RotateCcw,
   Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
@@ -42,11 +42,11 @@ const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i
 type AttrValue = string | string[] | boolean | undefined;
 
 // Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Cijena", "Boja"]);
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja"]);
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
-  Vrsta: Car, Motor: Gauge, Karoserija: ListFilter, Cijena: Tag, Boja: Palette,
+  Vrsta: Car, Motor: Gauge, Karoserija: ListFilter, "Vrata i sjedala": DoorOpen, Cijena: Tag, Boja: Palette,
   Specifikacije: Ruler, Električna: Zap, Oprema: Settings2, Pravno: ShieldCheck,
   Povijest: History, Udobnost: Sofa, Dimenzije: Scale, Detalji: FileText,
   Gume: CircleDot, Felge: Wrench, Tekućine: Droplets, Ostalo: Boxes,
@@ -441,7 +441,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           options={bodyOpts(filterDef)} cols={3} />
       </Panel>
 
-      {/* ── 5. BOJE (uvijek vidljivo, swatch+naziv) ── */}
+      {/* ── 5. Osnovne dinamičke grupe (Vrata i sjedala, PDV, Stil...) — IZNAD Boje ── */}
+      {basicDynamic.length > 0 && (
+        <Panel>{basicDynamic.map(renderDynGroup)}</Panel>
+      )}
+
+      {/* ── 6. BOJE (uvijek vidljivo, swatch+naziv) ── */}
       <Panel>
         <SectionHead icon={Palette} title="Boje" />
         <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
@@ -454,11 +459,6 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
         </div>
       </Panel>
-
-      {/* Dodatne osnovne dinamičke grupe (npr. PDV za gospodarska, Stil za moto) */}
-      {basicDynamic.map(renderDynGroup).length > 0 && (
-        <Panel>{basicDynamic.map(renderDynGroup)}</Panel>
-      )}
 
       {/* ── 6. VIŠE FILTERA (oprema/povijest/specifikacije) ── */}
       {advancedDynamic.length > 0 && (
