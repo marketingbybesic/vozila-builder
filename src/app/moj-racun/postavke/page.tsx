@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { COUNTIES } from "@/data/locations";
+import { CountySelect } from "@/components/county-select";
 
 export const metadata: Metadata = { title: "Postavke" };
 
@@ -24,9 +23,7 @@ export default function PostavkePage() {
             <Field label="E-mail"><Input type="email" defaultValue="ivan@auti.hr" /></Field>
             <Field label="Telefon"><Input defaultValue="+385 91 234 5678" /></Field>
             <Field label="Županija">
-              <Select defaultValue="Grad Zagreb">
-                {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </Select>
+              <CountySelect defaultValue="Grad Zagreb" />
             </Field>
             <Field label="Grad"><Input defaultValue="Zagreb" /></Field>
           </div>
