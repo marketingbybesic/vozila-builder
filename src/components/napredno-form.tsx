@@ -401,15 +401,28 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         <CategoryTabs categories={CATEGORIES} value={category} onChange={changeCategory} />
       )}
 
-      {/* Kad je kategorija određena → "Svi oglasi" izlaz (bez pretrage) */}
-      {hasUrlCategory && (
-        <a
-          href={subcategory ? `/oglasi?category=${category}&subcategory=${subcategory}` : `/oglasi?category=${category}`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent-dark)] hover:underline"
-        >
-          Svi oglasi
-          <ChevronRight className="size-4" />
-        </a>
+      {/* Kontekst kategorije + "Svi oglasi" izlaz (kad je kategorija određena) */}
+      {hasUrlCategory && categoryDef && (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-ink-soft)]">
+            <span className="grid place-items-center size-7 rounded-lg bg-[var(--color-accent)]/12 text-[var(--color-accent-dark)]">
+              <Search className="size-4" />
+            </span>
+            Pretraga: {categoryDef.name}
+            {subcategory && (
+              <span className="text-[var(--color-muted)]">
+                · {categoryDef.subcategories.find((sc) => sc.slug === subcategory)?.name ?? subcategory}
+              </span>
+            )}
+          </span>
+          <a
+            href={subcategory ? `/oglasi?category=${category}&subcategory=${subcategory}` : `/oglasi?category=${category}`}
+            className="inline-flex items-center gap-1 h-9 px-3 rounded-lg border border-[var(--color-line)] text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 transition-colors"
+          >
+            Svi oglasi
+            <ChevronRight className="size-4" />
+          </a>
+        </div>
       )}
 
       {/* Chips pregled aktivnih filtera */}
