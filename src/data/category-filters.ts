@@ -43,6 +43,10 @@ export type FilterField = {
   storage: "column" | "attr";
   group?: string; // section header in sidebar (e.g. "Oprema → Sigurnost")
   shared?: boolean;
+  // Konzistentnost pretraga↔objava (sve opcionalno, additivno):
+  publishRequired?: boolean;   // objava: polje je obavezno
+  searchable?: boolean;        // pretraga: prikaži kao filter (default true ako neoznačeno)
+  scope?: string[];            // podkategorije na koje se polje odnosi (prazno = sve)
 };
 
 export type CategoryFilters = {
@@ -108,7 +112,28 @@ const AUTO_FIELDS: FilterField[] = [
   { key: "color", label: "Boja vozila", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Siva","Srebrna","Plava","Crvena","Zelena","Smeđa","Žuta","Narančasta"].map(v) },
 
-  // Karlo t.23: cijela rubrika "Električna" (Doseg, Baterija, Certifikat, Toplinska crpka) IZBAČENA
+  // Emisijska norma + registracija (domenska analiza 2026-06-22)
+  { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
+    options: ["EURO 3","EURO 4","EURO 5","EURO 6","EURO 6d","EURO 7"].map(v) },
+
+  // EV — samo eko subkategorija (domenska analiza: evRange, batteryCapacity, chargerType, hybridType, heatPump)
+  { key: "evRange", label: "Doseg (WLTP)", type: "range", unit: "km", min: 0, max: 1000, step: 10,
+    storage: "attr", group: "Električna", scope: ["eko"] },
+  { key: "batteryCapacity", label: "Kapacitet baterije", type: "range", unit: "kWh", min: 0, max: 150, step: 1,
+    storage: "attr", group: "Električna", scope: ["eko"] },
+  { key: "chargerType", label: "Tip punjača", type: "multi", storage: "attr", group: "Električna", scope: ["eko"],
+    options: [
+      { value: "type2", label: "Type 2 (AC)" },
+      { value: "ccs", label: "CCS (DC)" },
+      { value: "chademo", label: "CHAdeMO" },
+    ] },
+  { key: "hybridType", label: "Tip hibrida", type: "select", storage: "attr", group: "Električna", scope: ["eko"],
+    options: [
+      { value: "mhev", label: "Blagi hibrid (MHEV)" },
+      { value: "hev", label: "Hibrid (HEV)" },
+      { value: "phev", label: "Plug-in hibrid (PHEV)" },
+    ] },
+  { key: "heatPump", label: "Toplinska crpka", type: "toggle", storage: "attr", group: "Električna", scope: ["eko"] },
 
   // Climate (attr.multi)
   { key: "climate", label: "Klima", type: "multi", storage: "attr", group: "Oprema",
@@ -201,11 +226,55 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "ostecen-bocni", label: "Oštećen bočni dio" },
     ] },
   { key: "floodState", label: "Poplavljen", type: "select", storage: "attr", group: "Povijest",
+    scope: ["ostecen-u-kvaru"],
     options: [
       { value: "ne", label: "Ne" },
       { value: "potencijalno", label: "Potencijalno" },
       { value: "da", label: "Da, sanirano" },
     ] },
+
+  // Registracija + povijest vlasništva (domenska analiza 2026-06-22)
+  { key: "firstRegistered", label: "Prva registracija", type: "text", storage: "attr", group: "Povijest" },
+  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
+  { key: "serviceHistory", label: "Servisna evidencija", type: "select", storage: "attr", group: "Povijest",
+    options: [
+      { value: "potpuna", label: "Potpuna servisna" },
+      { value: "djelomicna", label: "Djelomična servisna" },
+      { value: "nema", label: "Bez servisne" },
+    ] },
+  { key: "numOwners", label: "Broj vlasnika", type: "select", storage: "attr", group: "Povijest",
+    options: [1,2,3,4].map((n) => ({ value: String(n), label: n === 4 ? "4+" : `${n}` })) },
+  { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest" },
+
+  // Oštećeni / u kvaru — samo ostecen-u-kvaru subkategorija (domenska analiza)
+  { key: "engineRuns", label: "Motor pali", type: "select", storage: "attr", group: "Povijest",
+    scope: ["ostecen-u-kvaru"], publishRequired: true,
+    options: [
+      { value: "da", label: "Da, pali i vozi" },
+      { value: "pali-ne-vozi", label: "Pali, ne vozi" },
+      { value: "ne", label: "Ne pali" },
+    ] },
+  { key: "damageLocation", label: "Lokacija oštećenja", type: "multi", storage: "attr", group: "Povijest",
+    scope: ["ostecen-u-kvaru"],
+    options: [
+      { value: "prednji", label: "Prednji dio" },
+      { value: "straznji", label: "Stražnji dio" },
+      { value: "bocni", label: "Bočni dio" },
+      { value: "krov", label: "Krov" },
+      { value: "mehanika", label: "Mehanika / motor" },
+      { value: "elektronika", label: "Elektronika" },
+    ] },
+
+  // Oldtimer — samo oldtimer subkategorija (domenska analiza)
+  { key: "restorationType", label: "Stupanj obnove", type: "select", storage: "attr", group: "Povijest",
+    scope: ["oldtimer"],
+    options: [
+      { value: "originalno", label: "Originalno stanje" },
+      { value: "restaurirano", label: "Restaurirano" },
+      { value: "za-obnovu", label: "Za obnovu" },
+    ] },
+  { key: "originalPaint", label: "Originalni lak", type: "toggle", storage: "attr", group: "Povijest",
+    scope: ["oldtimer"] },
 
   // Tip boje + Boja unutrašnjosti renderiraju se u hardkodiranoj formi (sekcija "Boje"),
   // pa ovdje ne dupliciramo. URL ključevi (a.colorType / a.upholsteryColor) ostaju isti.
@@ -268,6 +337,51 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "remen", label: "Remen" },
       { value: "direktan", label: "Direktan" },
     ] },
+  { key: "coolingType", label: "Hlađenje", type: "select", storage: "attr", group: "Motor",
+    options: [
+      { value: "zrak", label: "Zračno" },
+      { value: "tekucina", label: "Tekućinom" },
+      { value: "ulje", label: "Uljno" },
+    ] },
+
+  // EV moto — samo e-skuter/e-bicikl/e-moto (domenska analiza)
+  { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100,
+    storage: "attr", group: "Električna", scope: ["e-skuter", "e-bicikl", "e-moto"] },
+  { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 5000, step: 50,
+    storage: "attr", group: "Električna", scope: ["e-skuter", "e-bicikl", "e-moto"] },
+  { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 300, step: 5,
+    storage: "attr", group: "Električna", scope: ["e-skuter", "e-bicikl", "e-moto"] },
+  { key: "maxSpeedEv", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 150, step: 5,
+    storage: "attr", group: "Električna", scope: ["e-skuter", "e-bicikl", "e-moto"] },
+  { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna",
+    scope: ["e-skuter", "e-bicikl"] },
+
+  // ATV / UTV — samo atv-utv (domenska analiza)
+  { key: "driveAtvType", label: "Pogon (ATV)", type: "select", storage: "attr", group: "Specifikacije",
+    scope: ["atv-utv"],
+    options: [
+      { value: "2x4", label: "2x4" },
+      { value: "4x4", label: "4x4" },
+    ] },
+  { key: "seatsAtvCount", label: "Broj sjedala", type: "select", storage: "attr", group: "Specifikacije",
+    scope: ["atv-utv"],
+    options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
+  { key: "towingHook", label: "Vučna kuka", type: "toggle", storage: "attr", group: "Specifikacije",
+    scope: ["atv-utv"] },
+
+  // Motorne sanke — samo motorne-sanke (domenska analiza)
+  { key: "trackLength", label: "Dužina gusjenice", type: "range", unit: "mm", min: 2000, max: 4500, step: 50,
+    storage: "attr", group: "Specifikacije", scope: ["motorne-sanke"] },
+  { key: "trackWidth", label: "Širina gusjenice", type: "range", unit: "mm", min: 250, max: 700, step: 10,
+    storage: "attr", group: "Specifikacije", scope: ["motorne-sanke"] },
+
+  // Specifikacije univerzalno (domenska analiza)
+  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 600, step: 5,
+    storage: "attr", group: "Specifikacije" },
+  { key: "seatHeight", label: "Visina sjedala", type: "range", unit: "mm", min: 600, max: 950, step: 10,
+    storage: "attr", group: "Specifikacije" },
+  { key: "fuelCapacity", label: "Kapacitet spremnika", type: "range", unit: "L", min: 0, max: 40, step: 1,
+    storage: "attr", group: "Specifikacije" },
 
   { key: "licenceClass", label: "Vozačka kategorija", type: "multi", storage: "attr", group: "Pravno",
     options: ["AM","A1","A2","A","B"].map(v) },
@@ -283,9 +397,11 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "el-ovjes", label: "Električno podesiv ovjes" },
       { value: "tempomat", label: "Tempomat" },
       { value: "navigacija", label: "Navigacija" },
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
-      { value: "servisna", label: "Servisna knjižica" },
-      { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
+      { value: "led-svjetla", label: "LED svjetla" },
+      { value: "grijane-rucke", label: "Grijane ručke" },
+      { value: "vjetrobran", label: "Vjetrobran" },
+      { value: "kofer", label: "Bočni kuferi" },
+      { value: "quickshifter", label: "Quickshifter" },
       { value: "zamjena", label: "Moguća zamjena" },
     ] },
 
@@ -295,6 +411,14 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
     ] },
+  { key: "ownership", label: "Povijest", type: "multi", storage: "attr", group: "Povijest",
+    options: [
+      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
+      { value: "servisna", label: "Servisna knjižica" },
+      { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
+      { value: "garazirano", label: "Garažirano" },
+    ] },
+  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
     options: [v("prodaja"), v("najam")] },
@@ -357,6 +481,25 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "axles", label: "Broj osovina", type: "select", storage: "attr", group: "Specifikacije",
     options: [2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })) },
   { key: "wheelbaseMm", label: "Međuosovinski razmak", type: "range", unit: "mm", min: 2000, max: 7500, step: 50, storage: "attr", group: "Specifikacije" },
+  { key: "axleConfiguration", label: "Konfiguracija osovina", type: "select", storage: "attr", group: "Specifikacije",
+    scope: ["kamioni", "autobusi"],
+    options: ["4x2","4x4","6x2","6x4","6x6","8x4"].map(v) },
+  { key: "cargoVolumeCbm", label: "Volumen tovarnog prostora", type: "range", unit: "m³", min: 0, max: 120, step: 1,
+    storage: "attr", group: "Specifikacije", scope: ["dostavna", "kamioni", "prikolice"] },
+  { key: "cargoLengthM", label: "Dužina tovarnog prostora", type: "range", unit: "m", min: 0, max: 18, step: 0.1,
+    storage: "attr", group: "Specifikacije", scope: ["dostavna", "kamioni", "prikolice"] },
+  { key: "brakes", label: "Kočni sustav", type: "select", storage: "attr", group: "Specifikacije",
+    options: [
+      { value: "abs", label: "ABS" },
+      { value: "ebs", label: "EBS" },
+      { value: "abs-ebs", label: "ABS + EBS" },
+    ] },
+
+  // Autobusi — kapacitet (domenska analiza)
+  { key: "seatingCapacity", label: "Broj sjedećih mjesta", type: "range", min: 1, max: 80, step: 1,
+    storage: "attr", group: "Specifikacije", scope: ["autobusi"] },
+  { key: "standingCapacity", label: "Broj stajaćih mjesta", type: "range", min: 0, max: 120, step: 1,
+    storage: "attr", group: "Specifikacije", scope: ["autobusi"] },
 
   // Equipment groups (same as AUTO trimmed)
   { key: "climate", label: "Klima", type: "multi", storage: "attr", group: "Oprema",
@@ -401,7 +544,17 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "produljeni-meduosovinski", label: "Produljen međuosovinski razmak" },
       { value: "povisen-krov", label: "Povišen krov kabine" },
       { value: "retarder", label: "Retarder" },
+      { value: "tahograf", label: "Tahograf" },
+      { value: "dizalica", label: "Dizalica / kran" },
+      { value: "utovarna-rampa", label: "Utovarna rampa" },
+      { value: "adr", label: "ADR (opasne tvari)" },
     ] },
+  { key: "craneCapacity", label: "Nosivost dizalice", type: "range", unit: "t", min: 0, max: 100, step: 1,
+    storage: "attr", group: "Oprema", scope: ["kamioni"] },
+  // Autobusi — udobnost (domenska analiza)
+  { key: "busWc", label: "WC", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
+  { key: "busTv", label: "TV / multimedija", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
+
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     options: [
       { value: "prvi-vlasnik", label: "Prvi vlasnik" },
@@ -415,9 +568,15 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
     ] },
+  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
+  { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest" },
 
   { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Bijela","Plava","Crvena","Crna","Siva","Žuta","Zelena","Narančasta"].map(v) },
+
+  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
+    options: [v("prodaja"), v("najam")] },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
 ];
 
 // ── MEHANIZACIJA (machinery) — auto.net stub, our taxonomy ─────────────
@@ -445,25 +604,79 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
     options: ["Dizel","Električni","Hibrid","Plin"].map(v) },
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
-    options: [v("Ručni"), v("Automatski")] },
+    options: [v("Ručni"), v("Automatski"), { value: "hidrostatski", label: "Hidrostatski" }] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
   { key: "powerHp", label: "Snaga", type: "range", unit: "KS", min: 0, max: 800, step: 5, storage: "attr", group: "Motor" },
 
-  { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije" },
+  // Univerzalno (domenska analiza: operatingHours KLJUČNO, weightKg)
+  { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", publishRequired: true },
   { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije" },
-  { key: "bucketCapacity", label: "Kapacitet žlice", type: "range", unit: "m³", min: 0, max: 5, step: 0.1, storage: "attr", group: "Specifikacije" },
-  { key: "liftHeightM", label: "Visina dizanja", type: "range", unit: "m", min: 0, max: 15, step: 0.1, storage: "attr", group: "Specifikacije" },
-  { key: "liftCapacityKg", label: "Nosivost", type: "range", unit: "kg", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije" },
-  { key: "workingWidthM", label: "Radna širina", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije" },
-  { key: "reachM", label: "Doseg", type: "range", unit: "m", min: 0, max: 25, step: 0.5, storage: "attr", group: "Specifikacije" },
 
-  { key: "drive4x4", label: "Pogon 4x4", type: "toggle", storage: "attr", group: "Oprema" },
+  // Građevinski strojevi / bagri (domenska analiza)
+  { key: "bucketCapacity", label: "Kapacitet žlice", type: "range", unit: "m³", min: 0, max: 5, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
+  { key: "diggingDepthM", label: "Dubina kopanja", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
+  { key: "reachM", label: "Doseg", type: "range", unit: "m", min: 0, max: 25, step: 0.5, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
+  { key: "undercarriage", label: "Podvozje", type: "select", storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"],
+    options: [
+      { value: "gusjenice", label: "Gusjenice" },
+      { value: "kotaci", label: "Kotači" },
+    ] },
+
+  // Utovarivač / viličar (domenska analiza)
+  { key: "liftCapacityKg", label: "Nosivost", type: "range", unit: "kg", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", scope: ["vilicari", "gradevinski-strojevi"] },
+  { key: "liftHeightM", label: "Visina dizanja", type: "range", unit: "m", min: 0, max: 15, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["vilicari", "gradevinski-strojevi"] },
+  { key: "mastHeightRaisedM", label: "Visina jarbola (podignut)", type: "range", unit: "m", min: 0, max: 15, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["vilicari"] },
+  { key: "tireType", label: "Vrsta guma", type: "select", storage: "attr", group: "Specifikacije", scope: ["vilicari"],
+    options: [
+      { value: "pneumatske", label: "Pneumatske" },
+      { value: "pune", label: "Pune (super-elastik)" },
+    ] },
+
+  // Kombajn / poljoprivredni (domenska analiza)
+  { key: "workingWidthM", label: "Radni zahvat", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["poljoprivredni-strojevi"] },
+  { key: "bunkerCapacityL", label: "Kapacitet bunkera", type: "range", unit: "L", min: 0, max: 15000, step: 100, storage: "attr", group: "Specifikacije", scope: ["poljoprivredni-strojevi"] },
+
+  // Šumarski strojevi (domenska analiza)
+  { key: "craneReachM", label: "Doseg dizalice", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["sumarski-strojevi"] },
+  { key: "winchCapacityKg", label: "Nosivost vitla", type: "range", unit: "kg", min: 0, max: 20000, step: 100, storage: "attr", group: "Specifikacije", scope: ["sumarski-strojevi"] },
+
+  // Komunalni strojevi (domenska analiza)
+  { key: "containerCapacityL", label: "Kapacitet spremnika", type: "range", unit: "L", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", scope: ["komunalni-strojevi"] },
+  { key: "sweepingWidthM", label: "Širina čišćenja", type: "range", unit: "m", min: 0, max: 6, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["komunalni-strojevi"] },
+
+  // Traktor — priključci (domenska analiza)
+  { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Oprema" },
+  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Oprema", scope: ["poljoprivredni-strojevi"] },
+  { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Oprema", scope: ["poljoprivredni-strojevi"] },
+  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Oprema", scope: ["poljoprivredni-strojevi"] },
   { key: "cabin", label: "Klimatizirana kabina", type: "toggle", storage: "attr", group: "Oprema" },
-  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Oprema" },
+  { key: "rops", label: "ROPS (zaštita od prevrtanja)", type: "toggle", storage: "attr", group: "Oprema" },
+  { key: "fops", label: "FOPS (zaštita od pada predmeta)", type: "toggle", storage: "attr", group: "Oprema" },
   { key: "gps", label: "GPS / Telematika", type: "toggle", storage: "attr", group: "Oprema" },
   { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Oprema" },
-  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Oprema" },
   { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Oprema" },
+
+  // Povijest (domenska analiza)
+  { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
+    options: [
+      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
+      { value: "servisna", label: "Servisna knjižica" },
+      { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
+    ] },
+  { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Povijest",
+    options: [
+      { value: "bez-stete", label: "Bez štete / ispravno" },
+      { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
+      { value: "za-dijelove", label: "Za dijelove / popravak" },
+    ] },
+  { key: "registeredForRoad", label: "Registriran za cestu", type: "toggle", storage: "attr", group: "Povijest" },
+
+  // Najam — samo najam subkategorija (domenska analiza)
+  { key: "dailyRate", label: "Dnevna cijena najma", type: "range", unit: "€", min: 0, max: 5000, step: 10, storage: "attr", group: "Ostalo", scope: ["najam"] },
+  { key: "minRentalDays", label: "Min. dana najma", type: "select", storage: "attr", group: "Ostalo", scope: ["najam"],
+    options: [1,3,7,14,30].map((n) => ({ value: String(n), label: `${n}` })) },
+  { key: "operator", label: "S operaterom", type: "toggle", storage: "attr", group: "Ostalo", scope: ["najam"] },
+  { key: "delivery", label: "Dostava na lokaciju", type: "toggle", storage: "attr", group: "Ostalo", scope: ["najam"] },
 
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
     options: [v("prodaja"), v("najam")] },
@@ -488,25 +701,113 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "kamping-oprema", label: "Kamping oprema" },
     ] },
 
+  // Tip — po subkategoriji (domenska analiza)
+  { key: "boatType", label: "Tip plovila", type: "multi", storage: "attr", group: "Vrsta", scope: ["plovila"],
+    options: [
+      { value: "gliser", label: "Gliser" },
+      { value: "jedrilica", label: "Jedrilica" },
+      { value: "gumenjak", label: "Gumenjak" },
+      { value: "kabinski", label: "Kabinski" },
+      { value: "jahta", label: "Jahta" },
+      { value: "radni", label: "Radni brod" },
+    ] },
+  { key: "camperLayout", label: "Raspored kampera", type: "select", storage: "attr", group: "Vrsta", scope: ["kamperi"],
+    options: [
+      { value: "poluintegralni", label: "Poluintegralni" },
+      { value: "integralni", label: "Integralni" },
+      { value: "alkoven", label: "Alkoven" },
+      { value: "buscamper", label: "Bus camper / van" },
+    ] },
+  { key: "eBikeType", label: "Tip e-bicikla", type: "select", storage: "attr", group: "Vrsta", scope: ["e-bicikli"],
+    options: [
+      { value: "city", label: "Gradski" },
+      { value: "mtb", label: "MTB" },
+      { value: "trekking", label: "Trekking" },
+      { value: "cargo", label: "Cargo" },
+      { value: "sklopivi", label: "Sklopivi" },
+    ] },
+
   { key: "sleeps", label: "Broj spavanja", type: "select", storage: "attr", group: "Dimenzije",
+    scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "satorske-prikolice", "plovila"],
     options: [2,3,4,5,6,7,8].map((n) => ({ value: String(n), label: `${n}` })) },
   { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1, storage: "attr", group: "Dimenzije" },
   { key: "widthM", label: "Širina", type: "range", unit: "m", min: 1.5, max: 5, step: 0.1, storage: "attr", group: "Dimenzije" },
   { key: "heightM", label: "Visina", type: "range", unit: "m", min: 1.5, max: 4, step: 0.1, storage: "attr", group: "Dimenzije" },
+  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 7500, step: 50, storage: "attr", group: "Dimenzije" },
+  { key: "axles", label: "Broj osovina", type: "select", storage: "attr", group: "Dimenzije",
+    scope: ["kamp-prikolice", "satorske-prikolice"],
+    options: [1,2,3].map((n) => ({ value: String(n), label: `${n}` })) },
 
-  { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor" },
-  { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor" },
-  { key: "hullMaterial", label: "Materijal trupa", type: "select", storage: "attr", group: "Motor",
+  // Motor kamper — samo kamperi/mobilne (domenska analiza)
+  { key: "km", label: "Kilometri", type: "range", unit: "km", min: 0, max: 500000, step: 5000, storage: "column", group: "Motor",
+    scope: ["kamperi", "mobilne-kucice"] },
+  { key: "fuel", label: "Gorivo", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice"],
+    options: ["Dizel","Benzin"].map(v) },
+  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice"],
+    options: [v("Ručni"), v("Automatski")] },
+  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 300, step: 5, storage: "column", group: "Motor",
+    scope: ["kamperi", "mobilne-kucice"] },
+
+  // Motor plovila — samo plovila (domenska analiza)
+  { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
+    options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
+  { key: "engineType", label: "Tip motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
+    options: [
+      { value: "vanbrodski", label: "Vanbrodski" },
+      { value: "unutarbrodski", label: "Unutarbrodski (inboard)" },
+      { value: "z-pogon", label: "Z-pogon (sterndrive)" },
+      { value: "bez-motora", label: "Bez motora" },
+    ] },
+  { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"] },
+  { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"] },
+  { key: "hullMaterial", label: "Materijal trupa", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
     options: ["GRP","Aluminij","Drvo","Čelik","PVC"].map(v) },
+  { key: "boatRegistered", label: "Registriran / upisan", type: "toggle", storage: "attr", group: "Motor", scope: ["plovila"] },
 
+  // E-bicikli / e-skuteri (domenska analiza)
+  { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 2000, step: 25, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 200, step: 5, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "wheelSizeInch", label: "Promjer kotača", type: "select", storage: "attr", group: "Električna", scope: ["e-bicikli"],
+    options: [16,20,24,26,27.5,28,29].map((n) => ({ value: String(n), label: `${n}"` })) },
+
+  // Udobnost (domenska analiza)
   { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost" },
   { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost" },
   { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost" },
+  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost" },
   { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "heating", label: "Grijanje", type: "toggle", storage: "attr", group: "Udobnost" },
+  { key: "heating", label: "Grijanje", type: "select", storage: "attr", group: "Udobnost",
+    options: [
+      { value: "plin", label: "Plinsko" },
+      { value: "dizel", label: "Dizelsko" },
+      { value: "truma", label: "Truma" },
+      { value: "webasto", label: "Webasto" },
+    ] },
   { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost" },
   { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost" },
   { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost" },
+  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost" },
+  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost" },
+  { key: "mover", label: "Mover (manevarski pogon)", type: "toggle", storage: "attr", group: "Udobnost", scope: ["kamp-prikolice"] },
+
+  // Plovila — navigacija (domenska analiza)
+  { key: "boatGps", label: "GPS / ploter", type: "toggle", storage: "attr", group: "Oprema", scope: ["plovila"] },
+  { key: "autopilot", label: "Autopilot", type: "toggle", storage: "attr", group: "Oprema", scope: ["plovila"] },
+  { key: "windlass", label: "Sidreno vitlo", type: "toggle", storage: "attr", group: "Oprema", scope: ["plovila"] },
+
+  // Ostalo (domenska analiza)
+  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
+    options: [v("prodaja"), v("najam")] },
+  { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
+    options: [
+      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
+      { value: "servisna", label: "Servisna evidencija" },
+      { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
+    ] },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
@@ -539,29 +840,43 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "compatibleWith", label: "Kompatibilno s (marka/model)", type: "text", storage: "attr", group: "Detalji" },
   { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji" },
   { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji" },
+  { key: "quantity", label: "Količina (kom)", type: "select", storage: "attr", group: "Detalji",
+    options: [1,2,3,4,5].map((n) => ({ value: String(n), label: n === 5 ? "5+" : `${n}` })) },
 
-  // Gume (tires)
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Gume",
+  // Gume (tires) — scope gume
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
     options: [155,165,175,185,195,205,215,225,235,245,255,265,275,285,295,305].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Gume",
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
     options: [30,35,40,45,50,55,60,65,70,75,80].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Gume",
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
     options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `R${n}` })) },
-  { key: "tireSeason", label: "Sezona", type: "multi", storage: "attr", group: "Gume",
+  { key: "tireSeason", label: "Sezona", type: "multi", storage: "attr", group: "Gume", scope: ["gume"],
     options: [v("Ljetne"), v("Zimske"), { value: "all-season", label: "Cjelogodišnje" }] },
-  { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Gume",
+  { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Gume", scope: ["gume"],
     options: [{ value: "osobne", label: "Osobne" }, { value: "teretne", label: "Teretne" }, v("Moto"), { value: "off-road", label: "Off-road" }] },
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Gume", scope: ["gume"] },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
+    options: ["T","H","V","W","Y"].map(v) },
+  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Gume", scope: ["gume"] },
 
-  // Felge (wheels)
-  { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge",
+  // Felge (wheels) — scope felge
+  { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
     options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `${n}"` })) },
-  { key: "rimBoltPattern", label: "Razmak rupa (PCD)", type: "select", storage: "attr", group: "Felge",
+  { key: "rimWidth", label: "Širina felge (J)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
+    options: [5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10].map((n) => ({ value: String(n), label: `${n}J` })) },
+  { key: "rimBoltPattern", label: "Razmak rupa (PCD)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
     options: ["4x100","4x108","5x100","5x108","5x112","5x114.3","5x120","6x139.7"].map(v) },
-  { key: "rimMaterial", label: "Materijal", type: "multi", storage: "attr", group: "Felge",
+  { key: "rimET", label: "ET (offset)", type: "text", storage: "attr", group: "Felge", scope: ["felge"] },
+  { key: "rimLugHoles", label: "Broj rupa", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
+    options: [4,5,6].map((n) => ({ value: String(n), label: `${n}` })) },
+  { key: "rimMaterial", label: "Materijal", type: "multi", storage: "attr", group: "Felge", scope: ["felge"],
     options: [{ value: "alu", label: "Aluminij" }, { value: "celik", label: "Čelik" }] },
+  { key: "rimColor", label: "Boja felge", type: "text", storage: "attr", group: "Felge", scope: ["felge"] },
+  { key: "rimQuantity", label: "Količina (kom)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
+    options: [1,2,4].map((n) => ({ value: String(n), label: `${n}` })) },
 
-  // Ulja i tekućine (oils/fluids)
-  { key: "fluidType", label: "Vrsta tekućine", type: "select", storage: "attr", group: "Tekućine",
+  // Ulja i tekućine (oils/fluids) — scope ulja-tekucine
+  { key: "fluidType", label: "Vrsta tekućine", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
     options: [
       { value: "motorno-ulje", label: "Motorno ulje" },
       { value: "ulje-mjenjac", label: "Ulje za mjenjač" },
@@ -569,8 +884,36 @@ const DIJELOVI_FIELDS: FilterField[] = [
       { value: "kocnice", label: "Kočiona tekućina" },
       { value: "adblue", label: "AdBlue" },
     ] },
-  { key: "viscosity", label: "Viskozitet", type: "select", storage: "attr", group: "Tekućine",
+  { key: "viscosity", label: "Viskozitet", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
     options: ["0W-20","0W-30","5W-30","5W-40","10W-40","15W-40"].map(v) },
+  { key: "oilSpecification", label: "Specifikacija", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
+  { key: "oilSynthetic", label: "Tip", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
+    options: [
+      { value: "sintetsko", label: "Sintetsko" },
+      { value: "polusintetsko", label: "Polusintetsko" },
+      { value: "mineralno", label: "Mineralno" },
+    ] },
+  { key: "oilVolume", label: "Volumen", type: "range", unit: "L", min: 0, max: 60, step: 1, storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
+  { key: "oilBrand", label: "Proizvođač", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
+
+  // Multimedija — scope multimedija
+  { key: "mediaType", label: "Vrsta uređaja", type: "select", storage: "attr", group: "Detalji", scope: ["multimedija"],
+    options: [
+      { value: "radio", label: "Radio / glavna jedinica" },
+      { value: "zvucnici", label: "Zvučnici" },
+      { value: "pojacalo", label: "Pojačalo" },
+      { value: "subwoofer", label: "Subwoofer" },
+      { value: "navigacija", label: "Navigacija" },
+      { value: "kamera", label: "Kamera" },
+    ] },
+  { key: "mediaConnectivity", label: "Povezivost", type: "multi", storage: "attr", group: "Detalji", scope: ["multimedija"],
+    options: [
+      { value: "bluetooth", label: "Bluetooth" },
+      { value: "carplay", label: "Apple CarPlay" },
+      { value: "androidauto", label: "Android Auto" },
+      { value: "usb", label: "USB" },
+      { value: "dab", label: "DAB+" },
+    ] },
 
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
   { key: "shipping", label: "Dostava moguća", type: "toggle", storage: "attr", group: "Ostalo" },
