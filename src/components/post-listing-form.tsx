@@ -3,7 +3,7 @@
 import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  SelectField, MultiSelect, RangeInput, BodyTypePicker,
+  SelectField, MultiSelect, NumberField, BodyTypePicker,
   ColorPicker, CategoryCards, SubcategoryButtons, TogglePill, TextField, type Opt,
 } from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
@@ -36,11 +36,6 @@ const STEPS = [
   { id: 5, title: "Cijena i opis", subtitle: "Detalji oglasa" },
   { id: 6, title: "Pregled", subtitle: "Provjera i objava" },
 ];
-
-// Steps za range-kontrole (kao u naprednoj pretrazi).
-const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000, 300000];
-const POWER_STEPS = [22, 44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300, 400, 600];
-const ENGINE_STEPS = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 8000];
 
 // Stupci koji se mapiraju na tipizirana State polja (ostalo → attributes).
 const COLUMN_KEYS = new Set([
@@ -321,19 +316,17 @@ export function PostListingForm() {
         );
       }
       if (f.type === "range") {
-        // km/powerKw/engineCc → jedinstvena vrijednost (objava), select sa steps
-        const steps = f.key === "km" ? KM_STEPS : f.key === "powerKw" ? POWER_STEPS : ENGINE_STEPS;
+        // km/powerKw/engineCc → RUČNI brojčani unos (precizno), ne dropdown sa steps.
         return (
-          <div key={f.key}>
-            <SelectField
-              label={`${f.label}${f.unit ? ` (${f.unit})` : ""}`}
-              required={req}
-              value={colVal}
-              onChange={setCol}
-              placeholder="Odaberi"
-              options={steps.map((n) => ({ value: String(n), label: n.toLocaleString("hr-HR") + (f.unit ? ` ${f.unit}` : "") }))}
-            />
-          </div>
+          <NumberField
+            key={f.key}
+            label={f.label}
+            unit={f.unit}
+            required={req}
+            value={colVal}
+            onChange={setCol}
+            placeholder={f.key === "km" ? "npr. 95000" : f.key === "powerKw" ? "npr. 110" : "npr. 1968"}
+          />
         );
       }
       // multi/select column (fuel/transmission/drive/doors/seats) → single SelectField
@@ -362,14 +355,16 @@ export function PostListingForm() {
       );
     }
     if (f.type === "range") {
+      // attr range (radni sati, težina, nosivost, dimenzije...) → RUČNI brojčani unos.
       return (
-        <RangeInput
+        <NumberField
           key={f.key}
           label={f.label}
-          required={req}
           unit={f.unit}
-          value={s.attributes[f.key] as string | undefined}
-          onSet={(v) => setAttr(f.key, v)}
+          required={req}
+          value={(s.attributes[f.key] as string) ?? ""}
+          onChange={(v) => setAttr(f.key, v || undefined)}
+          placeholder="Upiši broj"
         />
       );
     }
@@ -767,6 +762,21 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
   };
 
   const removeAt = (i: number) => onChange(photos.filter((_, idx) => idx !== i));
+  const makeMain = (i: number) => {
+    if (i === 0) return;
+    const next = [...photos];
+    const [pic] = next.splice(i, 1);
+    next.unshift(pic);
+    onChange(next);
+  };
+  const move = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= photos.length) return;
+    const next = [...photos];
+    const [pic] = next.splice(from, 1);
+    next.splice(to, 0, pic);
+    onChange(next);
+  };
+  const [dragI, setDragI] = useState<number | null>(null);
 
   return (
     <div>
@@ -790,27 +800,62 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
       </label>
 
       {photos.length > 0 && (
-        <div className="mt-4 grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {photos.map((p, i) => (
-            <div key={i} className="relative aspect-[4/3] rounded-md overflow-hidden bg-[var(--color-line)] group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p} alt="" className="w-full h-full object-cover" />
-              {i === 0 && (
-                <Badge variant="accent" className="absolute top-1 left-1 text-[10px] px-1.5 py-0">
-                  Naslovna
-                </Badge>
-              )}
-              <button
-                type="button"
-                onClick={() => removeAt(i)}
-                className="absolute top-1 right-1 size-6 rounded-full bg-black/70 text-white grid place-items-center hover:bg-[var(--color-danger)] transition-colors opacity-0 group-hover:opacity-100"
-                aria-label="Ukloni fotografiju"
+        <>
+          <div className="mt-4 flex items-center gap-2 text-xs text-[var(--color-ink-soft)]">
+            <GripVertical className="size-3.5 text-[var(--color-muted)]" />
+            Povuci za promjenu redoslijeda · prva slika je naslovna · klikni zvjezdicu da postaviš naslovnu
+          </div>
+          <div className="mt-2.5 grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+            {photos.map((p, i) => (
+              <div
+                key={i}
+                draggable
+                onDragStart={() => setDragI(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => { if (dragI !== null) move(dragI, i); setDragI(null); }}
+                onDragEnd={() => setDragI(null)}
+                className={
+                  "relative aspect-[4/3] rounded-lg overflow-hidden bg-[var(--color-line)] group cursor-grab active:cursor-grabbing border-2 transition-all " +
+                  (i === 0 ? "border-[var(--color-accent)]" : "border-transparent") +
+                  (dragI === i ? " opacity-50 scale-95" : "")
+                }
               >
-                <X className="size-3" />
-              </button>
-            </div>
-          ))}
-        </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p} alt="" className="w-full h-full object-cover pointer-events-none" />
+
+                {/* Numeracija (redni broj) */}
+                <span className="absolute bottom-1 left-1 size-5 rounded-full bg-black/65 text-white text-[11px] font-semibold grid place-items-center">
+                  {i + 1}
+                </span>
+
+                {i === 0 ? (
+                  <Badge variant="accent" className="absolute top-1 left-1 text-[10px] px-1.5 py-0">
+                    Naslovna
+                  </Badge>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => makeMain(i)}
+                    title="Postavi kao naslovnu"
+                    aria-label="Postavi kao naslovnu sliku"
+                    className="absolute top-1 left-1 size-6 rounded-full bg-black/55 text-white grid place-items-center hover:bg-[var(--color-accent)] hover:text-[var(--color-ink)] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Star className="size-3" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => removeAt(i)}
+                  className="absolute top-1 right-1 size-6 rounded-full bg-black/65 text-white grid place-items-center hover:bg-[var(--color-danger)] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Ukloni fotografiju"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

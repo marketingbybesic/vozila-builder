@@ -481,6 +481,44 @@ export function TextField({
   );
 }
 
+/**
+ * Brojčani unos (precizan ručni upis) — za km, kW, cm³, radne sate, težinu...
+ * Sprema čisti broj (string bez razmaka); prikazuje grupirano (95.473) + sufiks jedinice.
+ * Filteri ostaju raspon; ovo je samo za objavu (jedna točna vrijednost).
+ */
+export function NumberField({
+  label, required, optional, value, onChange, unit, placeholder = "npr. 95000",
+}: {
+  label?: string; required?: boolean; optional?: boolean;
+  value: string; onChange: (v: string) => void;
+  unit?: string; placeholder?: string;
+}) {
+  const grouped = value ? Number(value).toLocaleString("hr-HR") : "";
+  return (
+    <label className="block">
+      {label && <Label required={required} optional={optional}>{label}</Label>}
+      <div className="relative">
+        <input
+          inputMode="numeric"
+          value={grouped}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^\d]/g, "");
+            onChange(digits);
+          }}
+          type="text"
+          placeholder={placeholder}
+          className={fieldBase + (unit ? " pr-14" : "")}
+        />
+        {unit && (
+          <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--color-muted)]">
+            {unit}
+          </span>
+        )}
+      </div>
+    </label>
+  );
+}
+
 /** Izbornik glavnih kategorija (kućice s ikonom) — dinamička zamjena polja ispod. */
 const CAT_ICON: Record<string, LucideIcon> = {
   car: Car, bike: Bike, truck: Truck, excavator: Tractor, camper: Caravan, brakedisc: Disc3,
