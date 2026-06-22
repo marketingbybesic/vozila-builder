@@ -7,7 +7,8 @@ import { CompareButton } from "@/components/compare-button";
 import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
 
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({ listing, variant = "grid" }: { listing: Listing; variant?: "grid" | "list" }) {
+  if (variant === "list") return <ListingRow listing={listing} />;
   return (
     <Link
       href={`/oglasi/${listing.slug}`}
@@ -88,6 +89,57 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <span className="text-[11px] text-[var(--color-muted)]">
             {timeAgo(listing.createdAt)}
           </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/** List (redak) prikaz — slika lijevo, detalji desno. */
+function ListingRow({ listing }: { listing: Listing }) {
+  return (
+    <Link
+      href={`/oglasi/${listing.slug}`}
+      className="group relative flex bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden transition-all duration-200 hover:border-[var(--color-ink-soft)] hover:shadow-[var(--shadow-card-hover)]"
+    >
+      <div className="relative w-32 sm:w-52 shrink-0 self-stretch min-h-[112px] bg-[var(--color-line)] overflow-hidden">
+        <Image
+          src={listing.images[0]}
+          alt={listing.title}
+          fill
+          sizes="(max-width: 640px) 128px, 208px"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
+        {listing.featured && (
+          <Badge variant="accent" className="absolute top-2 left-2 shadow-sm text-[10px]">Izdvojeno</Badge>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-base sm:text-lg leading-tight line-clamp-1 group-hover:text-[var(--color-accent-dark)] transition-colors">
+            {listing.make} {listing.model}
+          </h3>
+          {listing.variant && (
+            <p className="text-xs text-[var(--color-muted)] line-clamp-1 mt-0.5">{listing.variant}</p>
+          )}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--color-ink-soft)] mt-1.5">
+            <span className="inline-flex items-center gap-1"><Calendar className="size-3" />{listing.year}.</span>
+            <span className="inline-flex items-center gap-1"><Gauge className="size-3" />{formatKm(listing.km)}</span>
+            <span className="inline-flex items-center gap-1"><Fuel className="size-3" />{listing.fuel}</span>
+            <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{listing.city}</span>
+          </div>
+        </div>
+        <div className="shrink-0 sm:text-right">
+          <div className="font-display text-lg sm:text-xl text-[var(--color-ink)] tracking-tight">
+            {formatPrice(listing.priceEur)}
+          </div>
+          {listing.originalPriceEur && listing.originalPriceEur > listing.priceEur && (
+            <div className="text-xs text-[var(--color-muted)] line-through">
+              {formatPrice(listing.originalPriceEur)}
+            </div>
+          )}
+          <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{timeAgo(listing.createdAt)}</div>
         </div>
       </div>
     </Link>

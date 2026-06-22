@@ -6,6 +6,7 @@ import { Pagination } from "@/components/pagination";
 import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
 import { SaveSearchButton } from "@/components/save-search-button";
 import { UrlActiveChips } from "@/components/napredno/active-filters";
+import { ViewToggle } from "@/components/view-toggle";
 import { db } from "@/db";
 import { PAGE_SIZE, parseFilters, activeFilterCount } from "@/lib/filter";
 import type { Metadata } from "next";
@@ -23,6 +24,7 @@ export default async function OglasiPage({
 }) {
   const sp = await searchParams;
   const filters = parseFilters(sp);
+  const view = sp.view === "list" ? "list" : "grid";
   let items: Awaited<ReturnType<ReturnType<typeof db>["listListings"]>>["items"] = [];
   let total = 0;
   try {
@@ -61,6 +63,7 @@ export default async function OglasiPage({
             <MobileFilterToggle count={filterCount} />
             <div className="ml-auto flex items-center gap-2 flex-wrap">
               {filterCount > 0 && <SaveSearchButton filters={filters} />}
+              <ViewToggle />
               <span className="hidden sm:inline text-sm text-[var(--color-muted)]">
                 Sortiraj:
               </span>
@@ -77,6 +80,12 @@ export default async function OglasiPage({
               <p className="text-sm text-[var(--color-muted)] max-w-sm mx-auto">
                 Pokušaj proširiti raspon cijene ili godine, ili poništi pojedine filtre.
               </p>
+            </div>
+          ) : view === "list" ? (
+            <div className="flex flex-col gap-3">
+              {items.map((l) => (
+                <ListingCard key={l.id} listing={l} variant="list" />
+              ))}
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">

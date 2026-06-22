@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageSquare, User, Plus, SlidersHorizontal, Menu, X, ChevronDown } from "lucide-react";
 import { HeaderSearch } from "@/components/header-search";
-import { CATEGORIES } from "@/data/categories";
+import { CATEGORIES, subcategoryHref } from "@/data/categories";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -111,7 +111,7 @@ export function SiteHeader() {
                           href={
                             cat.slug === "auto" && sub.slug === "auto-oglasi"
                               ? `/oglasi/napredno?category=auto`
-                              : `/oglasi/napredno?category=${cat.slug}&subcategory=${sub.slug}`
+                              : subcategoryHref(cat.slug, sub.slug)
                           }
                           onClick={closeMenu}
                           className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"

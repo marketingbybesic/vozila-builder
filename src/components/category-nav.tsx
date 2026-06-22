@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Car, Bike, Truck, Caravan, ChevronDown } from "lucide-react";
 import { Backhoe, Wheel } from "@/components/icons/tabler";
 import { cn } from "@/lib/utils";
-import { CATEGORIES } from "@/data/categories";
+import { CATEGORIES, subcategoryHref } from "@/data/categories";
 
 const ICONS = {
   car: Car,
@@ -73,7 +73,7 @@ export function CategoryNav() {
                   href={
                     openCategory.slug === "auto" && sub.slug === "auto-oglasi"
                       ? `/oglasi/napredno?category=auto`
-                      : `/oglasi/napredno?category=${openCategory.slug}&subcategory=${sub.slug}`
+                      : subcategoryHref(openCategory.slug, sub.slug)
                   }
                   className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                 >

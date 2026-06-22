@@ -185,3 +185,30 @@ export function getCategory(slug: string): Category | undefined {
 export function getDefaultCategory(): Category {
   return CATEGORIES[0];
 }
+
+/**
+ * Podkategorije koje vode na NAPREDNU pretragu (Dinov izbor).
+ * Sve ostale podkategorije → odmah rezultati (/oglasi).
+ * auto: "auto-oglasi" (Napredno) tretira se posebno u nav-u.
+ */
+export const ADVANCED_SUBCATEGORIES: Record<string, string[]> = {
+  auto: ["auto-oglasi"],
+  moto: ["motocikl"],
+  gospodarska: ["dostavna", "kamioni"],
+  mehanizacija: ["gradevinski-strojevi", "poljoprivredni-strojevi", "vilicari"],
+  "prosti-cas": ["kamperi", "kamp-prikolice"],
+  dijelovi: [],
+};
+
+/** Vodi li (kategorija, podkategorija) na naprednu pretragu? */
+export function subcategoryUsesAdvanced(categorySlug: string, subSlug: string): boolean {
+  return (ADVANCED_SUBCATEGORIES[categorySlug] ?? []).includes(subSlug);
+}
+
+/** Link za klik na podkategoriju iz homepage/header submenu. */
+export function subcategoryHref(categorySlug: string, subSlug: string): string {
+  if (subcategoryUsesAdvanced(categorySlug, subSlug)) {
+    return `/oglasi/napredno?category=${categorySlug}&subcategory=${subSlug}`;
+  }
+  return `/oglasi?category=${categorySlug}&subcategory=${subSlug}`;
+}

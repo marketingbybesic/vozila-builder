@@ -57,7 +57,7 @@ const KEY_LABEL: Record<string, string> = {
   fuel: "Gorivo", transmission: "Mjenjač", bodyType: "Karoserija", drive: "Pogon",
   color: "Boja", condition: "Stanje", sellerType: "Prodavač", offerType: "Ponuda",
 };
-const IGNORED = new Set(["sort", "page", "category"]);
+const IGNORED = new Set(["sort", "page", "category", "view", "hidePriceless"]);
 
 /** Čita aktivne filtere iz URL-a; klik na chip ga uklanja (live, scroll:false). */
 export function UrlActiveChips({ className = "" }: { className?: string }) {

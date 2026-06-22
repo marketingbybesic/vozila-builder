@@ -574,30 +574,29 @@ export function SubcategoryButtons({
   value: string;
   onChange: (slug: string) => void;
 }) {
-  // Jedan red, horizontalni scroll na uskim ekranima (uredno u svakom prikazu).
+  // Wrap u 1-2 reda (bez horizontalnog scrolla); kompaktni pillovi da sve stane,
+  // i na mobitelu sve vidljivo bez scrollanja.
   return (
-    <div className="-mx-1 px-1 overflow-x-auto scrollbar-thin">
-      <div className="flex gap-2 w-max">
-        {options.map((o) => {
-          const active = o.value === value;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => onChange(active ? "" : o.value)}
-              aria-pressed={active}
-              className={
-                "h-10 px-3.5 rounded-full border text-[13px] font-medium whitespace-nowrap shrink-0 transition-all " +
-                (active
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
-                  : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
-              }
-            >
-              {o.label}
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(active ? "" : o.value)}
+            aria-pressed={active}
+            className={
+              "h-9 px-3 rounded-full border text-[13px] font-medium whitespace-nowrap transition-all " +
+              (active
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
+                : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
