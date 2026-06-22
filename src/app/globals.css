@@ -65,8 +65,34 @@ h1, h2, h3, h4, .display {
 .animate-slide-up { animation: slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .animate-fade-in { animation: fade-in 0.4s ease-out; }
 
+@keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+.animate-bounce-slow { animation: bounce-slow 1.4s ease-in-out infinite; }
+
 .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 3px; }
+
+/* Uvijek vidljiv scrollbar u dropdownima (korisnik zna da može skrolati). */
+.scrollbar-visible {
+  scrollbar-width: thin;                                  /* Firefox */
+  scrollbar-color: var(--color-ink-soft) var(--color-line);
+}
+.scrollbar-visible::-webkit-scrollbar { width: 10px; }
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: var(--color-line);
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: var(--color-ink-soft);
+  border: 2px solid var(--color-line);
+  border-radius: 6px;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb:hover { background: var(--color-ink); }
+
+/* Fade na dnu liste = vizualni nagovještaj da ima još ispod. */
+.scroll-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
+}
 
 input, select, textarea, button {
   font-family: inherit;

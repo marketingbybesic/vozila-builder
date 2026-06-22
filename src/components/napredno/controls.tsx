@@ -16,7 +16,9 @@ export type Opt = { value: string; label: string };
 
 /**
  * Ikona po obliku karoserije (radi za sve kategorije: auto/gospodarska/...).
- * Fallback je Car. Mapira se po nazivu (label) jer su to čitljive HR oznake.
+ * PRIVREMENO: lucide nema točne bočne siluete karoserija pa auto-podtipovi
+ * (Limuzina/SUV/Coupe/...) dijele Car. Vehicle-type ikone (Truck/Bus/Caravan/
+ * Forklift) SU točne. TODO: zamijeniti pravim SVG siluetama (vidi memory).
  */
 const BODY_ICON: Record<string, LucideIcon> = {
   // auto
@@ -112,9 +114,37 @@ function useDismiss(open: boolean, onClose: () => void) {
   return ref;
 }
 
-const panelCls =
-  "absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-xl border border-[var(--color-line)] " +
-  "bg-[var(--color-surface)] shadow-xl shadow-black/10 p-1.5 scrollbar-thin";
+const panelWrapCls =
+  "absolute z-30 mt-2 w-full rounded-xl border border-[var(--color-line)] " +
+  "bg-[var(--color-surface)] shadow-xl shadow-black/10 overflow-hidden";
+const panelScrollCls = "max-h-64 overflow-y-auto p-1.5 scrollbar-visible";
+
+/**
+ * Popover s vidljivim scrollom: uvijek-prisutan scrollbar + fade na dnu
+ * (univerzalni znak "ima još ispod", neovisno o OS overlay scrollbarima).
+ */
+function Popover({ id, children, scrollable }: { id: string; children: React.ReactNode; scrollable: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [atBottom, setAtBottom] = useState(false);
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 4);
+  };
+  useEffect(() => { onScroll(); }, []);
+  return (
+    <div className={panelWrapCls}>
+      <div ref={ref} id={id} className={panelScrollCls} onScroll={onScroll}>
+        {children}
+      </div>
+      {scrollable && !atBottom && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-[var(--color-surface)] to-transparent flex items-end justify-center pb-1">
+          <ChevronDown className="size-4 text-[var(--color-muted)] animate-bounce-slow" />
+        </div>
+      )}
+    </div>
+  );
+}
 const optionCls = (active: boolean) =>
   "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors " +
   (active
@@ -158,7 +188,7 @@ export function SelectField({
         </button>
 
         {open && (
-          <div id={id} className={panelCls}>
+          <Popover id={id} scrollable={options.length > 6}>
             <button
               type="button"
               onClick={() => { onChange(""); setOpen(false); }}
@@ -183,7 +213,7 @@ export function SelectField({
                 </button>
               );
             })}
-          </div>
+          </Popover>
         )}
       </div>
     </div>
@@ -237,7 +267,7 @@ export function MultiSelect({
         </button>
 
         {open && (
-          <div id={id} className={panelCls}>
+          <Popover id={id} scrollable={options.length > 6}>
             {options.map((o) => {
               const active = values.includes(o.value);
               return (
@@ -261,7 +291,7 @@ export function MultiSelect({
                 </button>
               );
             })}
-          </div>
+          </Popover>
         )}
       </div>
 
