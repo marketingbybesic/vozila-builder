@@ -73,7 +73,7 @@ export function CategoryNav() {
                   href={
                     openCategory.slug === "auto" && sub.slug === "auto-oglasi"
                       ? `/oglasi/napredno?category=auto`
-                      : `/oglasi?category=${openCategory.slug}&subcategory=${sub.slug}`
+                      : `/oglasi/napredno?category=${openCategory.slug}&subcategory=${sub.slug}`
                   }
                   className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                 >

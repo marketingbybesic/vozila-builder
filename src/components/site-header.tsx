@@ -111,7 +111,7 @@ export function SiteHeader() {
                           href={
                             cat.slug === "auto" && sub.slug === "auto-oglasi"
                               ? `/oglasi/napredno?category=auto`
-                              : `/oglasi?category=${cat.slug}&subcategory=${sub.slug}`
+                              : `/oglasi/napredno?category=${cat.slug}&subcategory=${sub.slug}`
                           }
                           onClick={closeMenu}
                           className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"

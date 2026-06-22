@@ -59,9 +59,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   const initCategory = sp.get("category") ?? "auto";
   const [category, setCategoryState] = useState<string>(initCategory);
-  // Picker se prikazuje samo kad NEMA subcategory iz URL-a (ulaz preko ikone).
-  // Kad dolazi iz homepage submenu (subcategory set) → fokus na tu podkat, bez pickera.
-  const cameFromSubmenu = !!sp.get("subcategory");
+  // Picker glavnih kategorija SAMO na čistom /oglasi/napredno (bez ?category=).
+  // Čim je kategorija određena (mehanizacija, moto, ili iz submenu-a) → bez pickera,
+  // samo prilagođena polja za tu kategoriju.
+  const hasUrlCategory = !!sp.get("category");
+  const showCategoryPicker = !hasUrlCategory;
   const categoryDef = getCategory(category);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category), [category]);
 
@@ -391,15 +393,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   return (
     <form onSubmit={onSubmit} className="space-y-7 pb-28">
-      {/* Izbornik glavnih kategorija (samo kad NEMA subcategory iz submenu-a) */}
-      {!cameFromSubmenu && (
+      {/* Izbornik glavnih kategorija SAMO na čistom /oglasi/napredno (bez ?category=) */}
+      {showCategoryPicker && (
         <CategoryTabs categories={CATEGORIES} value={category} onChange={changeCategory} />
       )}
 
-      {/* Kad dolazi iz submenu (fokus na podkategoriju) → "Svi oglasi" izlaz */}
-      {cameFromSubmenu && (
+      {/* Kad je kategorija određena → "Svi oglasi" izlaz (bez pretrage) */}
+      {hasUrlCategory && (
         <a
-          href={`/oglasi?category=${category}`}
+          href={subcategory ? `/oglasi?category=${category}&subcategory=${subcategory}` : `/oglasi?category=${category}`}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent-dark)] hover:underline"
         >
           Svi oglasi
