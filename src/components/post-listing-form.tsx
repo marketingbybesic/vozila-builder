@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MAKES, getMake } from "@/data/makes";
+import { getMake } from "@/data/makes";
 import { HR_LOCATIONS, COUNTIES } from "@/data/locations";
-import { FEATURE_CATEGORIES } from "@/data/features";
 import { createListingAction } from "@/actions/listings";
 import {
   FUEL_TYPES,
@@ -21,22 +18,51 @@ import {
   COLORS,
   CONDITIONS,
 } from "@/lib/types";
+import { CATEGORIES, getCategory } from "@/data/categories";
+import {
+  getFilterDefs, groupFields, type FilterField, type CategoryFilters,
+} from "@/data/category-filters";
+import {
+  SelectField, MultiSelect, RangeSelect, RangeInput, BodyTypePicker,
+  ColorPicker, CategoryTabs, TogglePill, TextField, type Opt,
+} from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
 
 const STEPS = [
-  { id: 1, title: "Osnovno", subtitle: "Marka, model, godina" },
-  { id: 2, title: "Tehnički", subtitle: "Specifikacije i oprema" },
+  { id: 1, title: "Kategorija i osnovno", subtitle: "Vrsta, marka, model" },
+  { id: 2, title: "Specifikacije", subtitle: "Tehnički podaci i oprema" },
   { id: 3, title: "Fotografije", subtitle: "Slike vozila" },
   { id: 4, title: "Cijena i opis", subtitle: "Detalji oglasa" },
   { id: 5, title: "Pregled", subtitle: "Provjera i objava" },
 ];
 
+// Steps za range-kontrole (kao u naprednoj pretrazi).
+const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000, 300000];
+const POWER_STEPS = [22, 44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300, 400, 600];
+const ENGINE_STEPS = [800, 1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 8000];
+
+// Stupci koji se mapiraju na tipizirana State polja (ostalo → attributes).
+const COLUMN_KEYS = new Set([
+  "fuel", "transmission", "bodyType", "drive", "color",
+  "engineCc", "powerKw", "doors", "seats", "km",
+]);
+// Polja koja prva 1. korak već pokriva (marka/model/godina/stanje/podkategorija)
+// ili se ovdje ne prikazuju kao spec (cijena/županija/prodavač/starost oglasa idu drugdje).
+const SKIP_KEYS = new Set([
+  "priceEur", "year", "county", "sellerType", "condition", "subcategory", "adAge",
+]);
+
+type Attrs = Record<string, string | string[] | boolean | undefined>;
+
 type State = {
+  category: string;
+  subcategory: string;
   make: string;
   model: string;
   variant: string;
   year: string;
   condition: string;
+  // tipizirani stupci (mogu biti prazni za kategorije koje ih ne koriste)
   fuel: string;
   transmission: string;
   bodyType: string;
@@ -47,7 +73,8 @@ type State = {
   powerKw: string;
   doors: string;
   seats: string;
-  features: string[];
+  // dinamički atributi (jsonb) iz sheme
+  attributes: Attrs;
   photos: string[];
   priceEur: string;
   description: string;
@@ -60,14 +87,24 @@ type State = {
 };
 
 const empty: State = {
+  category: "auto", subcategory: "",
   make: "", model: "", variant: "", year: "", condition: "Rabljeno",
   fuel: "", transmission: "", bodyType: "", drive: "", color: "",
   km: "", engineCc: "", powerKw: "", doors: "5", seats: "5",
-  features: [], photos: [],
+  attributes: {},
+  photos: [],
   priceEur: "", description: "",
   county: "", city: "",
   firstName: "", lastName: "", phone: "", email: "",
 };
+
+// Safe enum default — za kategorije koje nemaju neki obavezni enum stupac,
+// akcija (zod) i dalje traži valjanu vrijednost; pošalji prvu valjanu opciju.
+const firstFuel = FUEL_TYPES[0];
+const firstTransmission = TRANSMISSIONS[0];
+const firstBody = BODY_TYPES[0];
+const firstDrive = DRIVES[0];
+const firstColor = COLORS[0];
 
 export function PostListingForm() {
   const router = useRouter();
@@ -78,21 +115,94 @@ export function PostListingForm() {
   const [pending, start] = useTransition();
 
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
-  const toggleFeature = (f: string) => set("features", s.features.includes(f) ? s.features.filter((x) => x !== f) : [...s.features, f]);
+  const setAttr = (key: string, v: State["attributes"][string]) =>
+    setS((p) => ({ ...p, attributes: { ...p.attributes, [key]: v } }));
 
-  const makeObj = s.make ? getMake(s.make) : undefined;
+  const categoryDef = getCategory(s.category);
+  const filterDef: CategoryFilters = useMemo(() => getFilterDefs(s.category), [s.category]);
+
+  // Marka po kategoriji (kao napredno-form): categoryDef.makes.
+  const makeOptions: Opt[] = useMemo(
+    () => (categoryDef?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })),
+    [categoryDef]
+  );
+  // Modeli postoje samo za auto (MAKES.models); ostale kategorije → tekst.
+  const makeObj = s.category === "auto" && s.make ? getMake(s.make) : undefined;
+  const modelOptions: Opt[] = useMemo(
+    () => (makeObj?.models ?? []).map((m) => ({ value: m, label: m })),
+    [makeObj]
+  );
+
   const cities = useMemo(() => {
     const loc = HR_LOCATIONS.find((l) => l.county === s.county);
     return loc?.cities ?? [];
   }, [s.county]);
 
+  // hasField gating (mirror napredno-form).
+  const hasField = (key: string) => filterDef.fields.some((f) => f.key === key);
+
+  // Spec polja koja se renderiraju u koraku 2 (schema-driven), uz scope filtriranje.
+  const specFields = useMemo(
+    () => filterDef.fields.filter((f) => {
+      if (SKIP_KEYS.has(f.key)) return false;
+      if (f.scope && f.scope.length > 0) {
+        return s.subcategory ? f.scope.includes(s.subcategory) : false;
+      }
+      return true;
+    }),
+    [filterDef, s.subcategory]
+  );
+  const specGroups = useMemo(() => groupFields(specFields), [specFields]);
+
+  // Promjena kategorije → reset kategorija-ovisnih polja.
+  const changeCategory = (slug: string) => {
+    setS((p) => ({
+      ...p,
+      category: slug, subcategory: "",
+      make: "", model: "",
+      fuel: "", transmission: "", bodyType: "", drive: "", color: "",
+      km: "", engineCc: "", powerKw: "",
+      attributes: {},
+    }));
+  };
+
+  // Obavezna spec polja po kategoriji (ne hardkodiraj auto za sve).
+  const requiredSpecKeys = useMemo(() => {
+    // 1) publishRequired iz sheme (npr. operatingHours za mehanizaciju)
+    const fromSchema = filterDef.fields
+      .filter((f) => f.publishRequired && !(f.scope && f.scope.length > 0 && (!s.subcategory || !f.scope.includes(s.subcategory))))
+      .map((f) => f.key);
+    // 2) sensible per-category essentials (samo ako kategorija to polje ima)
+    const essentials: Record<string, string[]> = {
+      auto: ["fuel", "transmission", "bodyType", "km", "powerKw"],
+      moto: ["fuel", "powerKw"],
+      gospodarska: ["fuel", "transmission", "powerKw"],
+      mehanizacija: ["fuel", "powerKw"],
+      "prosti-cas": [],
+      dijelovi: [],
+    };
+    const base = (essentials[s.category] ?? []).filter((k) => hasField(k));
+    return Array.from(new Set([...fromSchema, ...base]));
+  }, [filterDef, s.category, s.subcategory]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Vrijednost obaveznog ključa (column → State, attr → attributes).
+  const specValueFilled = (key: string): boolean => {
+    if (COLUMN_KEYS.has(key)) {
+      const v = s[key as keyof State];
+      return typeof v === "string" ? v.trim().length > 0 : !!v;
+    }
+    const a = s.attributes[key];
+    if (Array.isArray(a)) return a.length > 0;
+    return a !== undefined && a !== "" && a !== false;
+  };
+
   const stepValid = useMemo(() => {
-    if (step === 1) return !!(s.make && s.model && s.year && s.condition);
-    if (step === 2) return !!(s.fuel && s.transmission && s.bodyType && s.drive && s.color && s.km && s.powerKw);
+    if (step === 1) return !!(s.category && s.make && s.model && s.year && s.condition);
+    if (step === 2) return requiredSpecKeys.every(specValueFilled);
     if (step === 3) return s.photos.length >= 1;
     if (step === 4) return !!(s.priceEur && s.description.length >= 30 && s.county && s.city && s.firstName && s.phone);
     return true;
-  }, [step, s]);
+  }, [step, s, requiredSpecKeys]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (submitted) {
     return (
@@ -118,28 +228,41 @@ export function PostListingForm() {
 
   const handleSubmit = () => {
     setSubmitErr(null);
+    // Prikupi sva attr polja koja su trenutno relevantna (scope) i ne-stupci.
+    const attributes: Attrs = { ...s.attributes };
+    // Subcategory ide u attributes (akcija ga ne prima kao stupac).
+    if (s.subcategory) attributes.subcategory = s.subcategory;
+
     start(async () => {
       const res = await createListingAction({
-        make: makeObj?.name ?? s.make,
+        // — kategorija/podkategorija (akcija ih trenutno ne koristi za sve, ali
+        //   ne škodi — zod strip-a nepoznate ključeve, a buduća verzija ih čita) —
+        category: s.category,
+        subcategory: s.subcategory || undefined,
+        make: makeOptions.find((m) => m.value === s.make)?.label ?? s.make,
         model: s.model,
         variant: s.variant || undefined,
         year: s.year,
         priceEur: s.priceEur,
-        km: s.km,
-        fuel: s.fuel,
-        transmission: s.transmission,
-        bodyType: s.bodyType,
-        drive: s.drive,
-        color: s.color,
+        // — tipizirani stupci: za kategorije bez polja pošalji valjani default —
+        km: hasField("km") ? (s.km || 0) : 0,
+        fuel: hasField("fuel") ? (s.fuel || firstFuel) : firstFuel,
+        transmission: hasField("transmission") ? (s.transmission || firstTransmission) : firstTransmission,
+        bodyType: hasField("bodyType") ? (s.bodyType || firstBody) : firstBody,
+        drive: hasField("drive") ? (s.drive || firstDrive) : firstDrive,
+        color: hasField("color") ? (s.color || firstColor) : firstColor,
         condition: s.condition,
         engineCc: s.engineCc || 0,
-        powerKw: s.powerKw,
-        doors: s.doors,
-        seats: s.seats,
+        powerKw: hasField("powerKw") ? (s.powerKw || 0) : 0,
+        doors: hasField("doors") ? (s.doors || 5) : 5,
+        seats: hasField("seats") ? (s.seats || 5) : 5,
         city: s.city,
         county: s.county,
         description: s.description,
-        features: s.features,
+        // Oprema/atributi → akcija prima `features` (string[]); zadrži kompatibilnost
+        // šaljući flat listu odabranih attr-multi vrijednosti, a strukturu u attributes.
+        features: collectFeatureLabels(s.attributes),
+        attributes,
         images: s.photos,
       });
       if (res.ok) {
@@ -149,6 +272,141 @@ export function PostListingForm() {
         setSubmitErr(res.error);
       }
     });
+  };
+
+  // Renderer za jedno spec polje iz sheme (mirror napredno-form, ali single-value
+  // za column polja i edit za attr polja).
+  const renderSpecField = (f: FilterField) => {
+    const isColumn = COLUMN_KEYS.has(f.key);
+
+    // ── COLUMN polja (tipizirana, single-value u objavi) ──
+    if (isColumn) {
+      const colVal = (s[f.key as keyof State] as string) ?? "";
+      const setCol = (v: string) => set(f.key as keyof State, v as never);
+
+      if (f.key === "bodyType") {
+        return (
+          <BodyTypePicker
+            key={f.key}
+            label={f.label}
+            values={colVal ? [colVal] : []}
+            onChange={(vals) => setCol(vals.length ? vals[vals.length - 1] : "")}
+            options={f.options ?? []}
+            cols={3}
+          />
+        );
+      }
+      if (f.key === "color") {
+        return (
+          <ColorPicker
+            key={f.key}
+            label={f.label}
+            values={colVal ? [colVal] : []}
+            onChange={(vals) => setCol(vals.length ? vals[vals.length - 1] : "")}
+            options={(f.options ?? []).map((o) => o.label)}
+          />
+        );
+      }
+      if (f.type === "range") {
+        // km/powerKw/engineCc → jedinstvena vrijednost (objava), select sa steps
+        const steps = f.key === "km" ? KM_STEPS : f.key === "powerKw" ? POWER_STEPS : ENGINE_STEPS;
+        return (
+          <div key={f.key}>
+            <SelectField
+              label={`${f.label}${f.unit ? ` (${f.unit})` : ""}`}
+              value={colVal}
+              onChange={setCol}
+              placeholder="Odaberi"
+              options={steps.map((n) => ({ value: String(n), label: n.toLocaleString("hr-HR") + (f.unit ? ` ${f.unit}` : "") }))}
+            />
+          </div>
+        );
+      }
+      // multi/select column (fuel/transmission/drive/doors/seats) → single SelectField
+      return (
+        <SelectField
+          key={f.key}
+          label={f.label}
+          value={colVal}
+          onChange={setCol}
+          placeholder="Odaberi"
+          options={f.options ?? []}
+        />
+      );
+    }
+
+    // ── ATTR polja (jsonb) ──
+    if (f.type === "toggle") {
+      return (
+        <TogglePill
+          key={f.key}
+          on={Boolean(s.attributes[f.key])}
+          onClick={() => setAttr(f.key, !s.attributes[f.key])}
+          label={f.label}
+        />
+      );
+    }
+    if (f.type === "range") {
+      return (
+        <RangeInput
+          key={f.key}
+          label={f.label}
+          unit={f.unit}
+          value={s.attributes[f.key] as string | undefined}
+          onSet={(v) => setAttr(f.key, v)}
+        />
+      );
+    }
+    if (f.type === "select") {
+      return (
+        <SelectField
+          key={f.key}
+          label={f.label}
+          value={(s.attributes[f.key] as string) ?? ""}
+          onChange={(v) => setAttr(f.key, v || undefined)}
+          options={f.options ?? []}
+          placeholder="Odaberi"
+        />
+      );
+    }
+    if (f.type === "text") {
+      return (
+        <TextField
+          key={f.key}
+          label={f.label}
+          value={(s.attributes[f.key] as string) ?? ""}
+          onChange={(v) => setAttr(f.key, v || undefined)}
+          placeholder={f.label}
+        />
+      );
+    }
+    // multi
+    return (
+      <MultiSelect
+        key={f.key}
+        label={f.label}
+        values={(s.attributes[f.key] as string[] | undefined) ?? []}
+        onChange={(v) => setAttr(f.key, v)}
+        options={f.options ?? []}
+        placeholder="Odaberi"
+      />
+    );
+  };
+
+  // Toggle-grupe (npr. Oprema/Udobnost s mnogo togglova) — kompaktni grid.
+  const renderSpecGroup = (g: { name: string; fields: FilterField[] }) => {
+    const allToggle = g.fields.every((f) => f.type === "toggle" && !COLUMN_KEYS.has(f.key));
+    const allBodyOrColor = g.fields.every((f) => f.key === "bodyType" || f.key === "color");
+    return (
+      <div key={g.name} className="space-y-3">
+        <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
+          {g.name}
+        </div>
+        <div className={allBodyOrColor ? "space-y-4" : (allToggle ? "grid sm:grid-cols-2 gap-2" : "grid sm:grid-cols-2 gap-4")}>
+          {g.fields.map(renderSpecField)}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -191,29 +449,58 @@ export function PostListingForm() {
       <div className="mt-8 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-6 md:p-8 animate-fade-in" key={step}>
         {step === 1 && (
           <div className="space-y-5">
-            <FormHeader title="Osnovni podaci" desc="Što prodaješ?" />
+            <FormHeader title="Kategorija i osnovno" desc="Što prodaješ?" />
+            <Field label="Kategorija">
+              <CategoryTabs categories={CATEGORIES} value={s.category} onChange={changeCategory} />
+            </Field>
+            {categoryDef && categoryDef.subcategories.length > 0 && (
+              <SelectField
+                label="Podkategorija"
+                value={s.subcategory}
+                onChange={(v) => set("subcategory", v)}
+                placeholder="Odaberi podkategoriju"
+                options={categoryDef.subcategories
+                  .filter((sc) => sc.slug !== "auto-oglasi")
+                  .map((sc) => ({ value: sc.slug, label: sc.name }))}
+              />
+            )}
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Marka">
-                <Select value={s.make} onChange={(e) => { set("make", e.target.value); set("model", ""); }}>
-                  <option value="">Odaberi marku</option>
-                  {MAKES.map((m) => <option key={m.slug} value={m.slug}>{m.name}</option>)}
-                </Select>
-              </Field>
-              <Field label="Model">
-                <Select value={s.model} onChange={(e) => set("model", e.target.value)} disabled={!makeObj}>
-                  <option value="">{makeObj ? "Odaberi model" : "Prvo odaberi marku"}</option>
-                  {makeObj?.models.map((m) => <option key={m} value={m}>{m}</option>)}
-                </Select>
-              </Field>
-              <Field label="Izvedba (opcionalno)">
-                <Input value={s.variant} onChange={(e) => set("variant", e.target.value)} placeholder="npr. 2.0 TDI Style DSG" />
-              </Field>
-              <Field label="Godina proizvodnje">
-                <Select value={s.year} onChange={(e) => set("year", e.target.value)}>
-                  <option value="">Odaberi godinu</option>
-                  {Array.from({ length: 37 }, (_, i) => 2026 - i).map((y) => <option key={y} value={y}>{y}.</option>)}
-                </Select>
-              </Field>
+              <SelectField
+                label="Marka"
+                value={s.make}
+                onChange={(v) => { set("make", v); set("model", ""); }}
+                placeholder="Odaberi marku"
+                options={makeOptions}
+              />
+              {modelOptions.length > 0 ? (
+                <SelectField
+                  label="Model"
+                  value={s.model}
+                  onChange={(v) => set("model", v)}
+                  placeholder={s.make ? "Odaberi model" : "Prvo odaberi marku"}
+                  options={modelOptions}
+                />
+              ) : (
+                <TextField
+                  label="Model"
+                  value={s.model}
+                  onChange={(v) => set("model", v)}
+                  placeholder={s.make ? "Upiši model" : "Prvo odaberi marku"}
+                />
+              )}
+              <TextField
+                label="Izvedba (opcionalno)"
+                value={s.variant}
+                onChange={(v) => set("variant", v)}
+                placeholder="npr. 2.0 TDI Style DSG"
+              />
+              <SelectField
+                label="Godina proizvodnje"
+                value={s.year}
+                onChange={(v) => set("year", v)}
+                placeholder="Odaberi godinu"
+                options={Array.from({ length: 37 }, (_, i) => 2026 - i).map((y) => ({ value: String(y), label: `${y}.` }))}
+              />
             </div>
             <Field label="Stanje">
               <div className="grid grid-cols-3 gap-2">
@@ -234,86 +521,14 @@ export function PostListingForm() {
 
         {step === 2 && (
           <div className="space-y-6">
-            <FormHeader title="Tehnički podaci" desc="Što imaš pod haubom?" />
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Gorivo">
-                <Select value={s.fuel} onChange={(e) => set("fuel", e.target.value)}>
-                  <option value="">Odaberi</option>
-                  {FUEL_TYPES.map((f) => <option key={f} value={f}>{f}</option>)}
-                </Select>
-              </Field>
-              <Field label="Mjenjač">
-                <Select value={s.transmission} onChange={(e) => set("transmission", e.target.value)}>
-                  <option value="">Odaberi</option>
-                  {TRANSMISSIONS.map((f) => <option key={f} value={f}>{f}</option>)}
-                </Select>
-              </Field>
-              <Field label="Karoserija">
-                <Select value={s.bodyType} onChange={(e) => set("bodyType", e.target.value)}>
-                  <option value="">Odaberi</option>
-                  {BODY_TYPES.map((f) => <option key={f} value={f}>{f}</option>)}
-                </Select>
-              </Field>
-              <Field label="Pogon">
-                <Select value={s.drive} onChange={(e) => set("drive", e.target.value)}>
-                  <option value="">Odaberi</option>
-                  {DRIVES.map((f) => <option key={f} value={f}>{f}</option>)}
-                </Select>
-              </Field>
-              <Field label="Boja">
-                <Select value={s.color} onChange={(e) => set("color", e.target.value)}>
-                  <option value="">Odaberi</option>
-                  {COLORS.map((f) => <option key={f} value={f}>{f}</option>)}
-                </Select>
-              </Field>
-              <Field label="Kilometraža (km)">
-                <Input type="number" inputMode="numeric" value={s.km} onChange={(e) => set("km", e.target.value)} placeholder="npr. 95000" />
-              </Field>
-              <Field label="Obujam motora (cm³)">
-                <Input type="number" inputMode="numeric" value={s.engineCc} onChange={(e) => set("engineCc", e.target.value)} placeholder="npr. 1968" />
-              </Field>
-              <Field label="Snaga (kW)">
-                <Input type="number" inputMode="numeric" value={s.powerKw} onChange={(e) => set("powerKw", e.target.value)} placeholder="npr. 110" />
-              </Field>
-              <Field label="Broj vrata">
-                <Select value={s.doors} onChange={(e) => set("doors", e.target.value)}>
-                  {[2, 3, 4, 5].map((d) => <option key={d} value={d}>{d}</option>)}
-                </Select>
-              </Field>
-              <Field label="Broj sjedala">
-                <Select value={s.seats} onChange={(e) => set("seats", e.target.value)}>
-                  {[2, 4, 5, 6, 7, 8, 9].map((d) => <option key={d} value={d}>{d}</option>)}
-                </Select>
-              </Field>
-            </div>
-
-            <div>
-              <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">
-                Oprema ({s.features.length} odabrano)
+            <FormHeader title="Specifikacije" desc={`Tehnički podaci za: ${categoryDef?.name ?? s.category}`} />
+            {specGroups.length === 0 ? (
+              <p className="text-sm text-[var(--color-muted)]">Za ovu kategoriju nema dodatnih specifikacija. Nastavi dalje.</p>
+            ) : (
+              <div className="space-y-6">
+                {specGroups.map(renderSpecGroup)}
               </div>
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-1 scrollbar-thin">
-                {FEATURE_CATEGORIES.map((cat) => (
-                  <div key={cat.name}>
-                    <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-2">{cat.name}</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {cat.items.map((it) => {
-                        const active = s.features.includes(it);
-                        return (
-                          <button
-                            type="button"
-                            key={it}
-                            onClick={() => toggleFeature(it)}
-                            className={"text-xs px-2.5 py-1.5 rounded-full border transition-all " + (active ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "bg-transparent text-[var(--color-ink-soft)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
-                          >
-                            {it}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -355,18 +570,29 @@ export function PostListingForm() {
             <div className="border-t border-[var(--color-line)] pt-5">
               <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">Lokacija</div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Županija">
-                  <Select value={s.county} onChange={(e) => { set("county", e.target.value); set("city", ""); }}>
-                    <option value="">Odaberi županiju</option>
-                    {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </Field>
-                <Field label="Grad">
-                  <Select value={s.city} onChange={(e) => set("city", e.target.value)} disabled={!s.county}>
-                    <option value="">{s.county ? "Odaberi grad" : "Prvo odaberi županiju"}</option>
-                    {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </Select>
-                </Field>
+                <SelectField
+                  label="Županija"
+                  value={s.county}
+                  onChange={(v) => { set("county", v); set("city", ""); }}
+                  placeholder="Odaberi županiju"
+                  options={COUNTIES.map((c) => ({ value: c, label: c }))}
+                />
+                {cities.length > 0 ? (
+                  <SelectField
+                    label="Grad"
+                    value={s.city}
+                    onChange={(v) => set("city", v)}
+                    placeholder={s.county ? "Odaberi grad" : "Prvo odaberi županiju"}
+                    options={cities.map((c) => ({ value: c, label: c }))}
+                  />
+                ) : (
+                  <TextField
+                    label="Grad"
+                    value={s.city}
+                    onChange={(v) => set("city", v)}
+                    placeholder={s.county ? "Upiši grad" : "Prvo odaberi županiju"}
+                  />
+                )}
               </div>
             </div>
 
@@ -393,7 +619,7 @@ export function PostListingForm() {
         {step === 5 && (
           <div className="space-y-5">
             <FormHeader title="Pregled prije objave" desc="Provjeri sve podatke" icon={<Sparkles className="size-5" />} />
-            <ReviewPreview state={s} />
+            <ReviewPreview state={s} makeLabel={makeOptions.find((m) => m.value === s.make)?.label ?? s.make} />
             <div className="bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-md p-4 text-sm">
               <div className="font-medium text-[var(--color-ink)] mb-1">Prvi oglas — besplatno</div>
               <p className="text-[var(--color-ink-soft)] text-xs leading-relaxed">
@@ -435,6 +661,17 @@ export function PostListingForm() {
       </div>
     </>
   );
+}
+
+// Skupi sve odabrane attr-multi/-select labele u flat listu (za `features`).
+function collectFeatureLabels(attrs: Attrs): string[] {
+  const out: string[] = [];
+  for (const v of Object.values(attrs)) {
+    if (Array.isArray(v)) out.push(...v);
+    else if (typeof v === "string" && v) out.push(v);
+    else if (v === true) { /* toggle bez labele — preskoči */ }
+  }
+  return out;
 }
 
 function FormHeader({ title, desc, icon }: { title: string; desc: string; icon?: React.ReactNode }) {
@@ -540,10 +777,11 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
   );
 }
 
-function ReviewPreview({ state: s }: { state: State }) {
+function ReviewPreview({ state: s, makeLabel }: { state: State; makeLabel: string }) {
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
   const km = s.km ? formatKm(Number(s.km)) : "—";
-  const make = s.make ? getMake(s.make)?.name ?? s.make : "—";
+  const make = makeLabel || "—";
+  const featureLabels = collectFeatureLabels(s.attributes);
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden">
@@ -560,22 +798,22 @@ function ReviewPreview({ state: s }: { state: State }) {
         </div>
         <div className="font-display text-3xl">{price}</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs pt-3 border-t border-[var(--color-line)]">
-          <Spec k="Kilometraža" v={km} />
-          <Spec k="Gorivo" v={s.fuel || "—"} />
-          <Spec k="Mjenjač" v={s.transmission || "—"} />
-          <Spec k="Karoserija" v={s.bodyType || "—"} />
-          <Spec k="Pogon" v={s.drive || "—"} />
-          <Spec k="Snaga" v={s.powerKw ? `${s.powerKw} kW` : "—"} />
+          {s.km && <Spec k="Kilometraža" v={km} />}
+          {s.fuel && <Spec k="Gorivo" v={s.fuel} />}
+          {s.transmission && <Spec k="Mjenjač" v={s.transmission} />}
+          {s.bodyType && <Spec k="Karoserija" v={s.bodyType} />}
+          {s.drive && <Spec k="Pogon" v={s.drive} />}
+          {s.powerKw && <Spec k="Snaga" v={`${s.powerKw} kW`} />}
         </div>
         {s.description && (
           <p className="text-sm text-[var(--color-ink-soft)] pt-3 border-t border-[var(--color-line)] line-clamp-4">
             {s.description}
           </p>
         )}
-        {s.features.length > 0 && (
+        {featureLabels.length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-3 border-t border-[var(--color-line)]">
-            {s.features.slice(0, 8).map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
-            {s.features.length > 8 && <Badge variant="outline">+ {s.features.length - 8}</Badge>}
+            {featureLabels.slice(0, 8).map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
+            {featureLabels.length > 8 && <Badge variant="outline">+ {featureLabels.length - 8}</Badge>}
           </div>
         )}
       </div>

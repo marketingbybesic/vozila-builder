@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Select } from "@/components/ui/select";
+import { SelectField } from "@/components/napredno/controls";
 
-const OPTIONS: { value: string; label: string }[] = [
+const OPTIONS = [
   { value: "newest", label: "Najnoviji prvi" },
   { value: "price-asc", label: "Cijena: najniža" },
   { value: "price-desc", label: "Cijena: najviša" },
@@ -18,20 +18,19 @@ export function SortDropdown() {
   const current = params.get("sort") ?? "newest";
 
   return (
-    <Select
-      className="w-auto min-w-[200px]"
-      value={current}
-      onChange={(e) => {
-        const next = new URLSearchParams(params.toString());
-        if (e.target.value === "newest") next.delete("sort");
-        else next.set("sort", e.target.value);
-        next.delete("page");
-        router.push(`${pathname}?${next.toString()}`, { scroll: false });
-      }}
-    >
-      {OPTIONS.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </Select>
+    <div className="w-auto min-w-[200px]">
+      <SelectField
+        value={current === "newest" ? "" : current}
+        placeholder="Najnoviji prvi"
+        options={OPTIONS.filter((o) => o.value !== "newest")}
+        onChange={(v) => {
+          const next = new URLSearchParams(params.toString());
+          if (!v || v === "newest") next.delete("sort");
+          else next.set("sort", v);
+          next.delete("page");
+          router.push(`${pathname}?${next.toString()}`, { scroll: false });
+        }}
+      />
+    </div>
   );
 }
