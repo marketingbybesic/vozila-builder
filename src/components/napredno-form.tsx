@@ -15,19 +15,19 @@ import { MAKES } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory } from "@/data/categories";
+import { getCategory, CATEGORIES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  Car, Gauge, Palette, ShieldCheck, Sofa, Tag, DoorOpen,
+  Car, Gauge, Palette, ShieldCheck, Sofa, Tag, DoorOpen, ChevronRight,
   History, MapPin, Settings2, Zap, Boxes, Ruler, ListFilter, Search, RotateCcw,
   Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
 import {
   MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
-  BodyTypePicker, type Opt,
+  BodyTypePicker, CategoryTabs, type Opt,
 } from "@/components/napredno/controls";
 import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
 import type { LucideIcon } from "lucide-react";
@@ -42,7 +42,7 @@ const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i
 type AttrValue = string | string[] | boolean | undefined;
 
 // Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja"]);
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji"]);
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
@@ -58,7 +58,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const [pending, startTransition] = useTransition();
 
   const initCategory = sp.get("category") ?? "auto";
-  const [category] = useState<string>(initCategory);
+  const [category, setCategoryState] = useState<string>(initCategory);
+  // Picker se prikazuje samo kad NEMA subcategory iz URL-a (ulaz preko ikone).
+  // Kad dolazi iz homepage submenu (subcategory set) → fokus na tu podkat, bez pickera.
+  const cameFromSubmenu = !!sp.get("subcategory");
   const categoryDef = getCategory(category);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category), [category]);
 
@@ -124,14 +127,26 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     "fuel", "transmission", "powerKw", "engineCc", "bodyType", "drive", "color",
   ]);
 
-  // Grupiraj dinamička polja, izuzmi ona koja već imamo kao hardkodirana.
+  // Grupiraj dinamička polja, izuzmi ona koja već imamo kao hardkodirana
+  // I poštuj `scope`: polje s scope-om prikaži samo za tu podkategoriju.
   const dynamicFields = useMemo(
-    () => filterDef.fields.filter((f) => f.storage === "attr" || !HANDLED_COLUMNS.has(f.key)),
-    [filterDef]
+    () => filterDef.fields.filter((f) => {
+      if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
+      if (f.searchable === false) return false;
+      if (f.scope && f.scope.length > 0) {
+        return subcategory ? f.scope.includes(subcategory) : false;
+      }
+      return true;
+    }),
+    [filterDef, subcategory]
   );
   const dynamicGroups = useMemo(() => groupFields(dynamicFields), [dynamicFields]);
-  const basicDynamic = dynamicGroups.filter((g) => BASIC_GROUPS.has(g.name));
-  const advancedDynamic = dynamicGroups.filter((g) => !BASIC_GROUPS.has(g.name));
+  // Grupe koje hardkodirane sekcije već pokrivaju (Motor/Karoserija/Boja/Cijena)
+  // ne smiju se duplicirati gore — njihovi dodatni attr specifični filteri
+  // (cilindri, takt, tip boje...) idu u "Više filtera".
+  const HARDCODED_GROUPS = new Set(["Motor", "Karoserija", "Boja", "Cijena"]);
+  const basicDynamic = dynamicGroups.filter((g) => BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name));
+  const advancedDynamic = dynamicGroups.filter((g) => !BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name));
 
   // Broj aktivnih atributa (za badge na "Više filtera").
   const attrActiveCount = useMemo(() => {
@@ -238,6 +253,19 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     setCondition([]); setOfferType([]); setSellerType([]); setCounty("");
     setShowWithoutPrice(true); setWarranty(false); setAttrs({});
   };
+
+  // Promjena kategorije preko pickera → resetiraj kategorija-ovisne filtere
+  // (opcije marki/goriva/karoserije/atributa se razlikuju po kategoriji).
+  const changeCategory = (slug: string) => {
+    setCategoryState(slug);
+    setSubcategory(""); setMake(""); setModel("");
+    setFuel([]); setTransmission([]); setBodyType([]); setColor([]);
+    setEngineMin(""); setEngineMax(""); setPowerMin(""); setPowerMax("");
+    setKmMin(""); setKmMax(""); setAttrs({});
+  };
+
+  // hasField: prikaži hardkodiranu sekciju samo ako kategorija ima to polje.
+  const hasField = (key: string) => filterDef.fields.some((f) => f.key === key);
 
   // Chips pregled trenutno aktivnih filtera (uklonjivi).
   const activeChips: Chip[] = useMemo(() => {
@@ -363,6 +391,22 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   return (
     <form onSubmit={onSubmit} className="space-y-7 pb-28">
+      {/* Izbornik glavnih kategorija (samo kad NEMA subcategory iz submenu-a) */}
+      {!cameFromSubmenu && (
+        <CategoryTabs categories={CATEGORIES} value={category} onChange={changeCategory} />
+      )}
+
+      {/* Kad dolazi iz submenu (fokus na podkategoriju) → "Svi oglasi" izlaz */}
+      {cameFromSubmenu && (
+        <a
+          href={`/oglasi?category=${category}`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent-dark)] hover:underline"
+        >
+          Svi oglasi
+          <ChevronRight className="size-4" />
+        </a>
+      )}
+
       {/* Chips pregled aktivnih filtera */}
       {activeChips.length > 0 && (
         <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-accent)]/[0.04] p-3 sm:p-4">
@@ -407,10 +451,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
       </Panel>
 
-      {/* ── 2. CIJENA, GODINA, KILOMETRAŽA ── */}
+      {/* ── 2. CIJENA, GODINA (+ km samo ako kategorija koristi km) ── */}
       <Panel>
-        <SectionHead icon={Tag} title="Cijena, godina, kilometraža" />
-        {/* Tag ikona je jedinstvena za cjenovnu sekciju */}
+        <SectionHead icon={Tag} title={hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
@@ -420,45 +463,67 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               <SelectField value={yearMax} onChange={setYearMax} placeholder="Do" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
             </div>
           </div>
-          <RangeSelect label="Kilometraža" unit="km" minValue={kmMin} maxValue={kmMax} onMin={setKmMin} onMax={setKmMax} steps={KM_STEPS} />
+          {hasField("km") && (
+            <RangeSelect label="Kilometraža" unit="km" minValue={kmMin} maxValue={kmMax} onMin={setKmMin} onMax={setKmMax} steps={KM_STEPS} />
+          )}
         </div>
       </Panel>
 
-      {/* ── 4. MOTOR + KAROSERIJA ── */}
-      <Panel>
-        <SectionHead icon={Gauge} title="Motor i karoserija" />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={ENGINE_STEPS} />
-          <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={POWER_STEPS} />
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Vrsta goriva" values={fuel} onChange={setFuel}
-            options={fuelOpts(filterDef)} placeholder="Sve" />
-          <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
-            options={[{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]} placeholder="Sve" />
-        </div>
-        <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
-          options={bodyOpts(filterDef)} cols={3} />
-      </Panel>
+      {/* ── 3. MOTOR + KAROSERIJA (samo polja koja kategorija koristi) ── */}
+      {(hasField("engineCc") || hasField("powerKw") || hasField("fuel") || hasField("bodyType")) && (
+        <Panel>
+          <SectionHead icon={Gauge} title={hasField("bodyType") ? "Motor i karoserija" : "Motor"} />
+          {(hasField("engineCc") || hasField("powerKw")) && (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {hasField("engineCc") && (
+                <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={ENGINE_STEPS} />
+              )}
+              {hasField("powerKw") && (
+                <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={POWER_STEPS} />
+              )}
+            </div>
+          )}
+          {(hasField("fuel") || hasField("transmission")) && (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {hasField("fuel") && (
+                <MultiSelect label={fuelLabel(filterDef)} values={fuel} onChange={setFuel}
+                  options={fuelOpts(filterDef)} placeholder="Sve" />
+              )}
+              {hasField("transmission") && (
+                <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
+                  options={transmissionOpts(filterDef)} placeholder="Sve" />
+              )}
+            </div>
+          )}
+          {hasField("bodyType") && (
+            <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
+              options={bodyOpts(filterDef)} cols={3} />
+          )}
+        </Panel>
+      )}
 
       {/* ── 5. Osnovne dinamičke grupe (Vrata i sjedala, PDV, Stil...) — IZNAD Boje ── */}
       {basicDynamic.length > 0 && (
         <Panel>{basicDynamic.map(renderDynGroup)}</Panel>
       )}
 
-      {/* ── 6. BOJE (uvijek vidljivo, swatch+naziv) ── */}
-      <Panel>
-        <SectionHead icon={Palette} title="Boje" />
-        <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Tip boje" values={(attrs.colorType as string[] | undefined) ?? []}
-            onChange={(v) => setAttr("colorType", v)}
-            options={[{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }]} placeholder="Sve" />
-          <SelectField label="Boja unutrašnjosti" value={(attrs.upholsteryColor as string) ?? ""}
-            onChange={(v) => setAttr("upholsteryColor", v || undefined)}
-            options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
-        </div>
-      </Panel>
+      {/* ── 5. BOJE (samo ako kategorija ima boju — npr. ne za dijelove/mehanizaciju) ── */}
+      {hasField("color") && (
+        <Panel>
+          <SectionHead icon={Palette} title="Boje" />
+          <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
+          {isAuto && (
+            <div className="grid sm:grid-cols-2 gap-3">
+              <MultiSelect label="Tip boje" values={(attrs.colorType as string[] | undefined) ?? []}
+                onChange={(v) => setAttr("colorType", v)}
+                options={[{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }]} placeholder="Sve" />
+              <SelectField label="Boja unutrašnjosti" value={(attrs.upholsteryColor as string) ?? ""}
+                onChange={(v) => setAttr("upholsteryColor", v || undefined)}
+                options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
+            </div>
+          )}
+        </Panel>
+      )}
 
       {/* ── 6. VIŠE FILTERA (oprema/povijest/specifikacije) ── */}
       {advancedDynamic.length > 0 && (
@@ -542,6 +607,13 @@ function optsFromField(def: CategoryFilters, key: string, fallback: Opt[]): Opt[
 }
 function fuelOpts(def: CategoryFilters): Opt[] {
   return optsFromField(def, "fuel", ["Benzin", "Dizel", "Hibrid", "Električni", "Plin"].map((v) => ({ value: v, label: v })));
+}
+// Naziv polja goriva (moto/mehanizacija ga zovu "Pogon").
+function fuelLabel(def: CategoryFilters): string {
+  return def.fields.find((x) => x.key === "fuel")?.label ?? "Vrsta goriva";
+}
+function transmissionOpts(def: CategoryFilters): Opt[] {
+  return optsFromField(def, "transmission", [{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]);
 }
 function bodyOpts(def: CategoryFilters): Opt[] {
   return optsFromField(def, "bodyType",

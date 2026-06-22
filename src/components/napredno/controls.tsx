@@ -9,7 +9,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
-  Tractor, Bike, Box, type LucideIcon,
+  Tractor, Bike, Box, Disc3, type LucideIcon,
 } from "lucide-react";
 
 export type Opt = { value: string; label: string };
@@ -470,5 +470,43 @@ export function TextField({
         className={fieldBase}
       />
     </label>
+  );
+}
+
+/** Izbornik glavnih kategorija (kućice s ikonom) — dinamička zamjena polja ispod. */
+const CAT_ICON: Record<string, LucideIcon> = {
+  car: Car, bike: Bike, truck: Truck, excavator: Tractor, camper: Caravan, brakedisc: Disc3,
+};
+export function CategoryTabs({
+  categories, value, onChange,
+}: {
+  categories: { slug: string; name: string; icon: string }[];
+  value: string;
+  onChange: (slug: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      {categories.map((c) => {
+        const Icon = CAT_ICON[c.icon] ?? Car;
+        const active = c.slug === value;
+        return (
+          <button
+            key={c.slug}
+            type="button"
+            onClick={() => onChange(c.slug)}
+            aria-pressed={active}
+            className={
+              "flex flex-col items-center justify-center gap-1.5 py-3 px-1 rounded-xl border text-center transition-all " +
+              (active
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 text-[var(--color-ink)] font-medium"
+                : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
+            }
+          >
+            <Icon className={"size-5 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+            <span className="text-[11px] leading-tight">{c.name}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
