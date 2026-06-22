@@ -23,17 +23,18 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  SelectField, MultiSelect, RangeSelect, RangeInput, BodyTypePicker,
-  ColorPicker, CategoryTabs, TogglePill, TextField, type Opt,
+  SelectField, MultiSelect, RangeInput, BodyTypePicker,
+  ColorPicker, CategoryCards, SubcategoryButtons, TogglePill, TextField, type Opt,
 } from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
 
 const STEPS = [
-  { id: 1, title: "Kategorija i osnovno", subtitle: "Vrsta, marka, model" },
-  { id: 2, title: "Specifikacije", subtitle: "Tehnički podaci i oprema" },
-  { id: 3, title: "Fotografije", subtitle: "Slike vozila" },
-  { id: 4, title: "Cijena i opis", subtitle: "Detalji oglasa" },
-  { id: 5, title: "Pregled", subtitle: "Provjera i objava" },
+  { id: 1, title: "Kategorija", subtitle: "Što prodaješ?" },
+  { id: 2, title: "Osnovno", subtitle: "Marka, model, godina" },
+  { id: 3, title: "Specifikacije", subtitle: "Tehnički podaci" },
+  { id: 4, title: "Fotografije", subtitle: "Slike vozila" },
+  { id: 5, title: "Cijena i opis", subtitle: "Detalji oglasa" },
+  { id: 6, title: "Pregled", subtitle: "Provjera i objava" },
 ];
 
 // Steps za range-kontrole (kao u naprednoj pretrazi).
@@ -126,6 +127,13 @@ export function PostListingForm() {
     () => (categoryDef?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })),
     [categoryDef]
   );
+  // Podkategorije (pills) — izuzmi "auto-oglasi" (to je napredna pretraga, ne podtip).
+  const subcatOptions: Opt[] = useMemo(
+    () => (categoryDef?.subcategories ?? [])
+      .filter((sc) => sc.slug !== "auto-oglasi")
+      .map((sc) => ({ value: sc.slug, label: sc.name })),
+    [categoryDef]
+  );
   // Modeli postoje samo za auto (MAKES.models); ostale kategorije → tekst.
   const makeObj = s.category === "auto" && s.make ? getMake(s.make) : undefined;
   const modelOptions: Opt[] = useMemo(
@@ -197,10 +205,11 @@ export function PostListingForm() {
   };
 
   const stepValid = useMemo(() => {
-    if (step === 1) return !!(s.category && s.make && s.model && s.year && s.condition);
-    if (step === 2) return requiredSpecKeys.every(specValueFilled);
-    if (step === 3) return s.photos.length >= 1;
-    if (step === 4) return !!(s.priceEur && s.description.length >= 30 && s.county && s.city && s.firstName && s.phone);
+    if (step === 1) return !!s.category;
+    if (step === 2) return !!(s.make && s.model && s.year && s.condition);
+    if (step === 3) return requiredSpecKeys.every(specValueFilled);
+    if (step === 4) return s.photos.length >= 1;
+    if (step === 5) return !!(s.priceEur && s.description.length >= 30 && s.county && s.city && s.firstName && s.phone);
     return true;
   }, [step, s, requiredSpecKeys]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -278,6 +287,8 @@ export function PostListingForm() {
   // za column polja i edit za attr polja).
   const renderSpecField = (f: FilterField) => {
     const isColumn = COLUMN_KEYS.has(f.key);
+    const req = requiredSpecKeys.includes(f.key);
+    const opt = !req; // sve ostalo nije obavezno
 
     // ── COLUMN polja (tipizirana, single-value u objavi) ──
     if (isColumn) {
@@ -289,6 +300,7 @@ export function PostListingForm() {
           <BodyTypePicker
             key={f.key}
             label={f.label}
+            required={req}
             values={colVal ? [colVal] : []}
             onChange={(vals) => setCol(vals.length ? vals[vals.length - 1] : "")}
             options={f.options ?? []}
@@ -301,6 +313,7 @@ export function PostListingForm() {
           <ColorPicker
             key={f.key}
             label={f.label}
+            required={req}
             values={colVal ? [colVal] : []}
             onChange={(vals) => setCol(vals.length ? vals[vals.length - 1] : "")}
             options={(f.options ?? []).map((o) => o.label)}
@@ -314,6 +327,7 @@ export function PostListingForm() {
           <div key={f.key}>
             <SelectField
               label={`${f.label}${f.unit ? ` (${f.unit})` : ""}`}
+              required={req}
               value={colVal}
               onChange={setCol}
               placeholder="Odaberi"
@@ -327,6 +341,7 @@ export function PostListingForm() {
         <SelectField
           key={f.key}
           label={f.label}
+          required={req}
           value={colVal}
           onChange={setCol}
           placeholder="Odaberi"
@@ -351,6 +366,7 @@ export function PostListingForm() {
         <RangeInput
           key={f.key}
           label={f.label}
+          required={req}
           unit={f.unit}
           value={s.attributes[f.key] as string | undefined}
           onSet={(v) => setAttr(f.key, v)}
@@ -362,6 +378,7 @@ export function PostListingForm() {
         <SelectField
           key={f.key}
           label={f.label}
+          required={req}
           value={(s.attributes[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
           options={f.options ?? []}
@@ -374,6 +391,7 @@ export function PostListingForm() {
         <TextField
           key={f.key}
           label={f.label}
+          required={req}
           value={(s.attributes[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
           placeholder={f.label}
@@ -398,11 +416,9 @@ export function PostListingForm() {
     const allToggle = g.fields.every((f) => f.type === "toggle" && !COLUMN_KEYS.has(f.key));
     const allBodyOrColor = g.fields.every((f) => f.key === "bodyType" || f.key === "color");
     return (
-      <div key={g.name} className="space-y-3">
-        <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
-          {g.name}
-        </div>
-        <div className={allBodyOrColor ? "space-y-4" : (allToggle ? "grid sm:grid-cols-2 gap-2" : "grid sm:grid-cols-2 gap-4")}>
+      <div key={g.name} className="space-y-3.5">
+        <SectionHead>{g.name}</SectionHead>
+        <div className={allBodyOrColor ? "space-y-4" : (allToggle ? "grid sm:grid-cols-2 gap-2.5" : "grid sm:grid-cols-2 gap-3 sm:gap-4")}>
           {g.fields.map(renderSpecField)}
         </div>
       </div>
@@ -411,7 +427,7 @@ export function PostListingForm() {
 
   return (
     <>
-      <ol className="mt-8 grid grid-cols-5 gap-2">
+      <ol className="mt-8 grid grid-cols-6 gap-2">
         {STEPS.map((st) => {
           const done = st.id < step;
           const active = st.id === step;
@@ -448,22 +464,27 @@ export function PostListingForm() {
 
       <div className="mt-8 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-6 md:p-8 animate-fade-in" key={step}>
         {step === 1 && (
-          <div className="space-y-5">
-            <FormHeader title="Kategorija i osnovno" desc="Što prodaješ?" />
-            <Field label="Kategorija">
-              <CategoryTabs categories={CATEGORIES} value={s.category} onChange={changeCategory} />
-            </Field>
-            {categoryDef && categoryDef.subcategories.length > 0 && (
-              <SelectField
-                label="Podkategorija"
-                value={s.subcategory}
-                onChange={(v) => set("subcategory", v)}
-                placeholder="Odaberi podkategoriju"
-                options={categoryDef.subcategories
-                  .filter((sc) => sc.slug !== "auto-oglasi")
-                  .map((sc) => ({ value: sc.slug, label: sc.name }))}
-              />
+          <div className="space-y-8">
+            <FormHeader title="Što prodaješ?" desc="Odaberi kategoriju oglasa" />
+            <CategoryCards categories={CATEGORIES} value={s.category} onChange={changeCategory} />
+            {subcatOptions.length > 0 && (
+              <div className="space-y-3 animate-fade-in">
+                <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
+                  Podkategorija
+                </div>
+                <SubcategoryButtons
+                  options={subcatOptions}
+                  value={s.subcategory}
+                  onChange={(v) => set("subcategory", v)}
+                />
+              </div>
             )}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-5">
+            <FormHeader title="Osnovno" desc="Marka, model i godina" />
             <div className="grid sm:grid-cols-2 gap-4">
               <SelectField
                 label="Marka"
@@ -509,7 +530,7 @@ export function PostListingForm() {
                     type="button"
                     key={c}
                     onClick={() => set("condition", c)}
-                    className={"h-11 rounded-md border text-sm transition-all " + (s.condition === c ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
+                    className={"h-11 rounded-xl border text-sm transition-all " + (s.condition === c ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
                   >
                     {c}
                   </button>
@@ -519,20 +540,20 @@ export function PostListingForm() {
           </div>
         )}
 
-        {step === 2 && (
-          <div className="space-y-6">
+        {step === 3 && (
+          <div className="space-y-7">
             <FormHeader title="Specifikacije" desc={`Tehnički podaci za: ${categoryDef?.name ?? s.category}`} />
             {specGroups.length === 0 ? (
               <p className="text-sm text-[var(--color-muted)]">Za ovu kategoriju nema dodatnih specifikacija. Nastavi dalje.</p>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-7">
                 {specGroups.map(renderSpecGroup)}
               </div>
             )}
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-5">
             <FormHeader title="Fotografije" desc="Prva slika je naslovna - odaberi najljepši kut" />
             <PhotoUploader photos={s.photos} onChange={(p) => set("photos", p)} />
@@ -542,7 +563,7 @@ export function PostListingForm() {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="space-y-5">
             <FormHeader title="Cijena, opis i kontakt" desc="Što kupac mora znati?" />
             <div className="grid sm:grid-cols-2 gap-4">
@@ -616,10 +637,16 @@ export function PostListingForm() {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <div className="space-y-5">
             <FormHeader title="Pregled prije objave" desc="Provjeri sve podatke" icon={<Sparkles className="size-5" />} />
-            <ReviewPreview state={s} makeLabel={makeOptions.find((m) => m.value === s.make)?.label ?? s.make} />
+            <ReviewPreview
+              state={s}
+              makeLabel={makeOptions.find((m) => m.value === s.make)?.label ?? s.make}
+              categoryLabel={categoryDef?.name ?? s.category}
+              subcategoryLabel={subcatOptions.find((sc) => sc.value === s.subcategory)?.label ?? ""}
+              filterDef={filterDef}
+            />
             <div className="bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-md p-4 text-sm">
               <div className="font-medium text-[var(--color-ink)] mb-1">Prvi oglas — besplatno</div>
               <p className="text-[var(--color-ink-soft)] text-xs leading-relaxed">
@@ -692,6 +719,18 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">{label}</span>
       <div className="mt-1.5">{children}</div>
     </label>
+  );
+}
+
+function SectionHead({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="size-1.5 rounded-full bg-[var(--color-accent)] shrink-0" />
+      <span className="text-[13px] uppercase tracking-widest font-semibold text-[var(--color-ink-soft)]">
+        {children}
+      </span>
+      <span className="flex-1 h-px bg-[var(--color-line)]" />
+    </div>
   );
 }
 
@@ -777,11 +816,31 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
   );
 }
 
-function ReviewPreview({ state: s, makeLabel }: { state: State; makeLabel: string }) {
+function ReviewPreview({
+  state: s, makeLabel, categoryLabel, subcategoryLabel, filterDef,
+}: {
+  state: State; makeLabel: string;
+  categoryLabel: string; subcategoryLabel: string; filterDef: CategoryFilters;
+}) {
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
   const km = s.km ? formatKm(Number(s.km)) : "—";
   const make = makeLabel || "—";
   const featureLabels = collectFeatureLabels(s.attributes);
+
+  // Lijepi prikaz popunjenih schema-atributa: label iz sheme + čitljiva vrijednost.
+  const attrRows: { k: string; v: string }[] = [];
+  for (const f of filterDef.fields) {
+    if (f.storage !== "attr" || f.key === "subcategory" || f.key === "adAge") continue;
+    const raw = s.attributes[f.key];
+    if (raw === undefined || raw === "" || raw === false) continue;
+    if (Array.isArray(raw) && raw.length === 0) continue;
+    const labelFor = (val: string) => f.options?.find((o) => o.value === val)?.label ?? val;
+    let v: string;
+    if (raw === true) v = "Da";
+    else if (Array.isArray(raw)) v = raw.map(labelFor).join(", ");
+    else v = labelFor(String(raw));
+    attrRows.push({ k: f.label, v });
+  }
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden">
@@ -790,6 +849,10 @@ function ReviewPreview({ state: s, makeLabel }: { state: State; makeLabel: strin
         <img src={s.photos[0]} alt="" className="w-full aspect-[16/9] object-cover" />
       )}
       <div className="p-5 space-y-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Badge variant="accent">{categoryLabel}</Badge>
+          {subcategoryLabel && <Badge variant="neutral">{subcategoryLabel}</Badge>}
+        </div>
         <div>
           <h3 className="font-display text-2xl">
             {make} {s.model} {s.variant && <span className="italic text-[var(--color-ink-soft)] font-normal">{s.variant}</span>}
@@ -804,7 +867,14 @@ function ReviewPreview({ state: s, makeLabel }: { state: State; makeLabel: strin
           {s.bodyType && <Spec k="Karoserija" v={s.bodyType} />}
           {s.drive && <Spec k="Pogon" v={s.drive} />}
           {s.powerKw && <Spec k="Snaga" v={`${s.powerKw} kW`} />}
+          {s.color && <Spec k="Boja" v={s.color} />}
+          {s.condition && <Spec k="Stanje" v={s.condition} />}
         </div>
+        {attrRows.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs pt-3 border-t border-[var(--color-line)]">
+            {attrRows.slice(0, 12).map((r) => <Spec key={r.k} k={r.k} v={r.v} />)}
+          </div>
+        )}
         {s.description && (
           <p className="text-sm text-[var(--color-ink-soft)] pt-3 border-t border-[var(--color-line)] line-clamp-4">
             {s.description}

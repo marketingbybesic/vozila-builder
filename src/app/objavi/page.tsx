@@ -13,7 +13,7 @@ export default function ObjaviPage() {
       <div className="max-w-3xl mx-auto">
         <h1 className="font-display text-3xl md:text-4xl tracking-tight">Objavi svoj oglas</h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
-          5 koraka · cca 5 minuta · prvi oglas je besplatan
+          6 koraka · cca 5 minuta · prvi oglas je besplatan
         </p>
 
         <PostListingForm />

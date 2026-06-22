@@ -48,13 +48,13 @@ function bodyIcon(label: string): LucideIcon {
 
 /** Oblik karoserije kao chips s ikonom (lijepo, za sve kategorije). */
 export function BodyTypePicker({
-  label, values, onChange, options, cols = 2,
-}: { label?: string; values: string[]; onChange: (v: string[]) => void; options: Opt[]; cols?: 2 | 3 }) {
+  label, required, optional, values, onChange, options, cols = 2,
+}: { label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void; options: Opt[]; cols?: 2 | 3 }) {
   const toggle = (v: string) =>
     onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <Label required={required} optional={optional}>{label}</Label>}
       <div className={"grid gap-2 " + (cols === 3 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2")}>
         {options.map((o) => {
           const Icon = bodyIcon(o.label);
@@ -65,15 +65,16 @@ export function BodyTypePicker({
               type="button"
               onClick={() => toggle(o.value)}
               aria-pressed={active}
+              title={o.label}
               className={
-                "flex items-center gap-2 px-2.5 h-11 rounded-xl border text-sm text-left transition-all " +
+                "flex items-center gap-1.5 px-2 h-11 rounded-xl border text-[13px] leading-tight text-left transition-all " +
                 (active
                   ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 font-medium text-[var(--color-ink)]"
                   : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
               }
             >
-              <Icon className={"size-4.5 shrink-0 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
-              <span className="truncate">{o.label}</span>
+              <Icon className={"size-4 shrink-0 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+              <span className="min-w-0 leading-tight">{o.label}</span>
             </button>
           );
         })}
@@ -87,10 +88,17 @@ const fieldBase =
   "text-[var(--color-ink)] transition-colors focus:outline-none focus:border-[var(--color-accent)] " +
   "focus:ring-2 focus:ring-[var(--color-accent)]/25";
 
-export function Label({ children }: { children: React.ReactNode }) {
+export function Label({
+  children, required, optional,
+}: { children: React.ReactNode; required?: boolean; optional?: boolean }) {
   return (
-    <span className="block mb-1.5 text-[13px] font-semibold text-[var(--color-ink-soft)]">
-      {children}
+    <span className="flex items-center gap-1.5 mb-1.5 text-[13px] font-semibold text-[var(--color-ink-soft)]">
+      <span>{children}</span>
+      {required && <span className="text-[var(--color-danger)]" aria-hidden>*</span>}
+      {required && <span className="sr-only">(obavezno)</span>}
+      {optional && !required && (
+        <span className="text-[11px] font-normal text-[var(--color-muted)]">(nije obavezno)</span>
+      )}
     </span>
   );
 }
@@ -168,9 +176,9 @@ const optionCls = (active: boolean) =>
  * Radio behavior: picking an option closes the menu.
  */
 export function SelectField({
-  label, value, onChange, options, placeholder = "Sve", icon: Icon,
+  label, required, optional, value, onChange, options, placeholder = "Sve", icon: Icon,
 }: {
-  label?: string; value: string; onChange: (v: string) => void;
+  label?: string; required?: boolean; optional?: boolean; value: string; onChange: (v: string) => void;
   options: Opt[]; placeholder?: string; icon?: LucideIcon;
 }) {
   const [open, setOpen] = useState(false);
@@ -180,7 +188,7 @@ export function SelectField({
 
   return (
     <div ref={ref} className="block">
-      {label && <Label>{label}</Label>}
+      {label && <Label required={required} optional={optional}>{label}</Label>}
       <div className="relative">
         <button
           type="button"
@@ -237,9 +245,9 @@ export function SelectField({
  * Selections render as removable chips beneath the trigger.
  */
 export function MultiSelect({
-  label, values, onChange, options, placeholder = "Odaberi", icon: Icon,
+  label, required, optional, values, onChange, options, placeholder = "Odaberi", icon: Icon,
 }: {
-  label?: string; values: string[]; onChange: (v: string[]) => void;
+  label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void;
   options: Opt[]; placeholder?: string; icon?: LucideIcon;
 }) {
   const [open, setOpen] = useState(false);
@@ -252,7 +260,7 @@ export function MultiSelect({
 
   return (
     <div ref={ref} className="block">
-      {label && <Label>{label}</Label>}
+      {label && <Label required={required} optional={optional}>{label}</Label>}
       <div className="relative">
         <button
           type="button"
@@ -339,15 +347,15 @@ const COLOR_HEX: Record<string, string> = {
 };
 
 export function ColorPicker({
-  label, values, onChange, options,
+  label, required, optional, values, onChange, options,
 }: {
-  label?: string; values: string[]; onChange: (v: string[]) => void; options: string[];
+  label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void; options: string[];
 }) {
   const toggle = (v: string) =>
     onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <Label required={required} optional={optional}>{label}</Label>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
         {options.map((o) => {
           const active = values.includes(o);
@@ -388,9 +396,9 @@ export function ColorPicker({
 
 /** Range as two compact selects (od / do) sharing a row. */
 export function RangeSelect({
-  label, unit, minValue, maxValue, onMin, onMax, steps, fmt,
+  label, required, optional, unit, minValue, maxValue, onMin, onMax, steps, fmt,
 }: {
-  label: string; unit?: string;
+  label: string; required?: boolean; optional?: boolean; unit?: string;
   minValue: string; maxValue: string;
   onMin: (v: string) => void; onMax: (v: string) => void;
   steps: number[]; fmt?: (n: number) => string;
@@ -398,7 +406,7 @@ export function RangeSelect({
   const render = (n: number) => (fmt ? fmt(n) : n.toLocaleString("hr-HR")) + (unit ? ` ${unit}` : "");
   return (
     <div>
-      <Label>{label}</Label>
+      <Label required={required} optional={optional}>{label}</Label>
       <div className="grid grid-cols-2 gap-2">
         <SelectField value={minValue} onChange={onMin} placeholder="Od" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
         <SelectField value={maxValue} onChange={onMax} placeholder="Do" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
@@ -409,15 +417,15 @@ export function RangeSelect({
 
 /** Numeric range as two inputs (for attr ranges without fixed steps). */
 export function RangeInput({
-  label, unit, value, onSet,
+  label, required, optional, unit, value, onSet,
 }: {
-  label: string; unit?: string; value: string | undefined; onSet: (v: string | undefined) => void;
+  label: string; required?: boolean; optional?: boolean; unit?: string; value: string | undefined; onSet: (v: string | undefined) => void;
 }) {
   const raw = value ?? "";
   const [minS, maxS] = raw.includes("..") ? raw.split("..") : ["", ""];
   return (
     <div>
-      <Label>{label}{unit ? ` (${unit})` : ""}</Label>
+      <Label required={required} optional={optional}>{label}{unit ? ` (${unit})` : ""}</Label>
       <div className="grid grid-cols-2 gap-2">
         <input
           type="number" defaultValue={minS} placeholder="Od"
@@ -457,11 +465,11 @@ export function TogglePill({
 }
 
 export function TextField({
-  label, value, onChange, placeholder,
-}: { label?: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  label, required, optional, value, onChange, placeholder,
+}: { label?: string; required?: boolean; optional?: boolean; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <label className="block">
-      {label && <Label>{label}</Label>}
+      {label && <Label required={required} optional={optional}>{label}</Label>}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -507,6 +515,89 @@ export function CategoryTabs({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * Velike kartice glavnih kategorija (objava — korak "Što prodaješ?").
+ * Responsive: 2 stupca mobitel → 3 tablet → 6 desktop. Veća ikona + naziv.
+ */
+export function CategoryCards({
+  categories, value, onChange,
+}: {
+  categories: { slug: string; name: string; icon: string }[];
+  value: string;
+  onChange: (slug: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+      {categories.map((c) => {
+        const Icon = CAT_ICON[c.icon] ?? Car;
+        const active = c.slug === value;
+        return (
+          <button
+            key={c.slug}
+            type="button"
+            onClick={() => onChange(c.slug)}
+            aria-pressed={active}
+            className={
+              "group flex flex-col items-center justify-center gap-2.5 sm:gap-3 py-5 sm:py-7 px-2 rounded-2xl border-2 text-center transition-all " +
+              (active
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 shadow-sm"
+                : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/20")
+            }
+          >
+            <span
+              className={
+                "grid place-items-center size-12 sm:size-14 rounded-2xl transition-colors " +
+                (active ? "bg-[var(--color-accent)]/15 text-[var(--color-accent-dark)]" : "bg-[var(--color-line)]/40 text-[var(--color-ink-soft)] group-hover:text-[var(--color-ink)]")
+              }
+            >
+              <Icon className="size-6 sm:size-7" />
+            </span>
+            <span className={"text-sm font-medium leading-tight " + (active ? "text-[var(--color-ink)]" : "text-[var(--color-ink-soft)]")}>
+              {c.name}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Podkategorije kao odabir gumbi (pill chips) — jedan odabir. */
+export function SubcategoryButtons({
+  options, value, onChange,
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (slug: string) => void;
+}) {
+  // Jedan red, horizontalni scroll na uskim ekranima (uredno u svakom prikazu).
+  return (
+    <div className="-mx-1 px-1 overflow-x-auto scrollbar-thin">
+      <div className="flex gap-2 w-max">
+        {options.map((o) => {
+          const active = o.value === value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => onChange(active ? "" : o.value)}
+              aria-pressed={active}
+              className={
+                "h-10 px-3.5 rounded-full border text-[13px] font-medium whitespace-nowrap shrink-0 transition-all " +
+                (active
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
+                  : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
+              }
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
