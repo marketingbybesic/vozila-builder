@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import {
   MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
-  type Opt,
+  BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
 import type { LucideIcon } from "lucide-react";
@@ -52,7 +52,7 @@ const GROUP_ICON: Record<string, LucideIcon> = {
   Gume: CircleDot, Felge: Wrench, Tekućine: Droplets, Ostalo: Boxes,
 };
 
-export function NaprednoForm() {
+export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean; onClose?: () => void } = {}) {
   const router = useRouter();
   const sp = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -62,35 +62,46 @@ export function NaprednoForm() {
   const categoryDef = getCategory(category);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category), [category]);
 
+  // Inicijalizacija iz URL-a (panel se otvori s trenutnim filterima).
+  const g = (k: string) => sp.get(k) ?? "";
+  const gArr = (k: string) => (sp.get(k)?.split(",").filter(Boolean) ?? []);
+
   // ── Hardkodirani (tipizirani) filteri zajednički svim vozilima ──
-  const [subcategory, setSubcategory] = useState(sp.get("subcategory") ?? "");
-  const [make, setMake] = useState("");
-  const [model, setModel] = useState("");
-  const [q, setQ] = useState("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
-  const [yearMin, setYearMin] = useState("");
-  const [yearMax, setYearMax] = useState("");
-  const [kmMin, setKmMin] = useState("");
-  const [kmMax, setKmMax] = useState("");
-  const [powerMin, setPowerMin] = useState("");
-  const [powerMax, setPowerMax] = useState("");
-  const [engineMin, setEngineMin] = useState("");
-  const [engineMax, setEngineMax] = useState("");
-  const [fuel, setFuel] = useState<string[]>([]);
-  const [transmission, setTransmission] = useState<string[]>([]);
-  const [bodyType, setBodyType] = useState<string[]>([]);
-  const [drive, setDrive] = useState<string[]>([]);
-  const [color, setColor] = useState<string[]>([]);
-  const [condition, setCondition] = useState<string[]>([]);
-  const [offerType, setOfferType] = useState<string[]>([]);
-  const [sellerType, setSellerType] = useState<string[]>([]);
-  const [county, setCounty] = useState("");
-  const [showWithoutPrice, setShowWithoutPrice] = useState(true);
-  const [warranty, setWarranty] = useState(false);
+  const [subcategory, setSubcategory] = useState(g("subcategory"));
+  const [make, setMake] = useState(g("make"));
+  const [model, setModel] = useState(g("model"));
+  const [q, setQ] = useState(g("q"));
+  const [priceMin, setPriceMin] = useState(g("priceMin"));
+  const [priceMax, setPriceMax] = useState(g("priceMax"));
+  const [yearMin, setYearMin] = useState(g("yearMin"));
+  const [yearMax, setYearMax] = useState(g("yearMax"));
+  const [kmMin, setKmMin] = useState(g("kmMin"));
+  const [kmMax, setKmMax] = useState(g("kmMax"));
+  const [powerMin, setPowerMin] = useState(g("powerMin"));
+  const [powerMax, setPowerMax] = useState(g("powerMax"));
+  const [engineMin, setEngineMin] = useState(g("engineMin"));
+  const [engineMax, setEngineMax] = useState(g("engineMax"));
+  const [fuel, setFuel] = useState<string[]>(gArr("fuel"));
+  const [transmission, setTransmission] = useState<string[]>(gArr("transmission"));
+  const [bodyType, setBodyType] = useState<string[]>(gArr("bodyType"));
+  const [color, setColor] = useState<string[]>(gArr("color"));
+  const [condition, setCondition] = useState<string[]>(gArr("condition"));
+  const [offerType, setOfferType] = useState<string[]>(gArr("offerType"));
+  const [sellerType, setSellerType] = useState<string[]>(gArr("sellerType"));
+  const [county, setCounty] = useState(g("county"));
+  const [showWithoutPrice, setShowWithoutPrice] = useState(sp.get("hidePriceless") !== "1");
+  const [warranty, setWarranty] = useState(sp.get("a.warranty") === "1");
 
   // ── Dinamički atributni filteri (jsonb) iz category-filters.ts ──
-  const [attrs, setAttrs] = useState<Record<string, AttrValue>>({});
+  const [attrs, setAttrs] = useState<Record<string, AttrValue>>(() => {
+    const o: Record<string, AttrValue> = {};
+    for (const [k, v] of sp.entries()) {
+      if (!k.startsWith("a.") || k === "a.warranty") continue;
+      const key = k.slice(2);
+      o[key] = v.includes(",") ? v.split(",").filter(Boolean) : (v === "1" ? true : v);
+    }
+    return o;
+  });
   const [showMore, setShowMore] = useState(false);
 
   const isAuto = category === "auto";
@@ -161,7 +172,6 @@ export function NaprednoForm() {
       fuel: fuel.length ? (fuel as ListingFilters["fuel"]) : undefined,
       transmission: transmission.length ? (transmission as ListingFilters["transmission"]) : undefined,
       bodyType: bodyType.length ? (bodyType as ListingFilters["bodyType"]) : undefined,
-      drive: drive.length ? (drive as ListingFilters["drive"]) : undefined,
       color: color.length ? (color as ListingFilters["color"]) : undefined,
       condition: condition.length ? (condition as ListingFilters["condition"]) : undefined,
       sellerType: sellerType.length ? (sellerType as ListingFilters["sellerType"]) : undefined,
@@ -170,19 +180,19 @@ export function NaprednoForm() {
     };
     return applyFilters(LISTINGS, f).length;
   }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax,
-      powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, color,
+      powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, color,
       condition, sellerType, county, attrs, warranty]);
 
   const totalActive = useMemo(() => {
     let n = 0;
     [make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax,
       engineMin, engineMax, county].forEach((v) => v && n++);
-    [fuel, transmission, bodyType, drive, color, condition, offerType, sellerType, subcategory ? [subcategory] : []]
+    [fuel, transmission, bodyType, color, condition, offerType, sellerType, subcategory ? [subcategory] : []]
       .forEach((a) => (n += a.length));
     n += attrActiveCount + (warranty ? 1 : 0) + (showWithoutPrice ? 0 : 1);
     return n;
   }, [make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax,
-      engineMin, engineMax, county, fuel, transmission, bodyType, drive, color, condition,
+      engineMin, engineMax, county, fuel, transmission, bodyType, color, condition,
       offerType, sellerType, subcategory, attrActiveCount, warranty, showWithoutPrice]);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -202,7 +212,7 @@ export function NaprednoForm() {
     if (warranty) set("a.warranty", "1");
     for (const [name, vs] of [
       ["fuel", fuel], ["transmission", transmission], ["bodyType", bodyType],
-      ["drive", drive], ["color", color], ["condition", condition],
+      ["color", color], ["condition", condition],
       ["offerType", offerType], ["sellerType", sellerType],
     ] as const) {
       if (vs.length) out.set(name, vs.join(","));
@@ -214,14 +224,17 @@ export function NaprednoForm() {
       else out.set(`a.${k}`, String(v));
     }
     const qs = out.toString();
-    startTransition(() => router.push(qs ? `/oglasi?${qs}` : "/oglasi"));
+    startTransition(() => {
+      router.push(qs ? `/oglasi?${qs}` : "/oglasi");
+      onClose?.();
+    });
   };
 
   const reset = () => {
     setSubcategory(""); setMake(""); setModel(""); setQ("");
     setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMin(""); setKmMax("");
     setPowerMin(""); setPowerMax(""); setEngineMin(""); setEngineMax("");
-    setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setColor([]);
+    setFuel([]); setTransmission([]); setBodyType([]); setColor([]);
     setCondition([]); setOfferType([]); setSellerType([]); setCounty("");
     setShowWithoutPrice(true); setWarranty(false); setAttrs({});
   };
@@ -262,7 +275,6 @@ export function NaprednoForm() {
     multi(fuel, setFuel);
     multi(transmission, setTransmission);
     multi(bodyType, setBodyType);
-    multi(drive, setDrive);
     multi(color, setColor);
     if (warranty) out.push({ id: "garancija", label: "Garancija", onRemove: () => setWarranty(false) });
     // dinamički atributi
@@ -277,7 +289,7 @@ export function NaprednoForm() {
     return out;
   }, [subcategory, categoryDef, offerType, condition, make, makeOptions, model, isAuto, q,
       priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, engineMin, engineMax, powerMin, powerMax,
-      fuel, transmission, bodyType, drive, color, warranty, attrs, county, sellerType]);
+      fuel, transmission, bodyType, color, warranty, attrs, county, sellerType]);
 
   // Renderer za jedno dinamičko polje (attr ili neobrađeni column).
   const renderField = (f: FilterField) => {
@@ -425,12 +437,8 @@ export function NaprednoForm() {
           <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
             options={[{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]} placeholder="Sve" />
         </div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Oblik karoserije" values={bodyType} onChange={setBodyType}
-            options={bodyOpts(filterDef)} placeholder="Sve" />
-          <MultiSelect label="Pogon" values={drive} onChange={setDrive}
-            options={[{ value: "Prednji", label: "Prednji" }, { value: "Stražnji", label: "Stražnji" }, { value: "4x4", label: "4x4" }]} placeholder="Sve" />
-        </div>
+        <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
+          options={bodyOpts(filterDef)} cols={3} />
       </Panel>
 
       {/* ── 5. BOJE (uvijek vidljivo, swatch+naziv) ── */}

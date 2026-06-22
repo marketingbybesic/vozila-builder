@@ -7,9 +7,78 @@
  */
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Check, ChevronDown, X, type LucideIcon } from "lucide-react";
+import {
+  Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
+  Tractor, Bike, Box, type LucideIcon,
+} from "lucide-react";
 
 export type Opt = { value: string; label: string };
+
+/**
+ * Ikona po obliku karoserije (radi za sve kategorije: auto/gospodarska/...).
+ * Fallback je Car. Mapira se po nazivu (label) jer su to čitljive HR oznake.
+ */
+const BODY_ICON: Record<string, LucideIcon> = {
+  // auto
+  Microcar: Car, Limuzina: Car, Hatchback: Car, Karavan: Car, Monovolumen: Car,
+  SUV: Car, Coupe: Car, Cabrio: Car, Pickup: Truck,
+  // gospodarska
+  Furgon: Truck, Kombi: Truck, Kamionet: Truck, "Šasija s kabinom": Truck,
+  "Šasija s nadgradnjom": Container, "Pick up": Truck,
+  Autobusi: Bus, Kamioni: Truck, "Dostavna vozila": Truck, "Teretne prikolice": Container,
+  // generičke
+  Kamper: Caravan, "Mobilne kućice": Caravan, Viličari: Forklift, Traktor: Tractor,
+  Motocikl: Bike, Skuter: Bike,
+};
+function bodyIcon(label: string): LucideIcon {
+  if (BODY_ICON[label]) return BODY_ICON[label];
+  const l = label.toLowerCase();
+  if (l.includes("kamion") || l.includes("furgon") || l.includes("dostav") || l.includes("pickup") || l.includes("pick up")) return Truck;
+  if (l.includes("autobus") || l.includes("bus")) return Bus;
+  if (l.includes("kamper") || l.includes("kućic") || l.includes("prikolic")) return Caravan;
+  if (l.includes("vilič") || l.includes("vilic")) return Forklift;
+  if (l.includes("traktor") || l.includes("stroj")) return Tractor;
+  if (l.includes("moto") || l.includes("skuter") || l.includes("bicikl")) return Bike;
+  if (l.includes("kontejner") || l.includes("šasij") || l.includes("sasij")) return Container;
+  if (l.includes("oprema") || l.includes("dio") || l.includes("dijel")) return Box;
+  return Car;
+}
+
+/** Oblik karoserije kao chips s ikonom (lijepo, za sve kategorije). */
+export function BodyTypePicker({
+  label, values, onChange, options, cols = 2,
+}: { label?: string; values: string[]; onChange: (v: string[]) => void; options: Opt[]; cols?: 2 | 3 }) {
+  const toggle = (v: string) =>
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  return (
+    <div>
+      {label && <Label>{label}</Label>}
+      <div className={"grid gap-2 " + (cols === 3 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2")}>
+        {options.map((o) => {
+          const Icon = bodyIcon(o.label);
+          const active = values.includes(o.value);
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => toggle(o.value)}
+              aria-pressed={active}
+              className={
+                "flex items-center gap-2 px-2.5 h-11 rounded-xl border text-sm text-left transition-all " +
+                (active
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 font-medium text-[var(--color-ink)]"
+                  : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
+              }
+            >
+              <Icon className={"size-4.5 shrink-0 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+              <span className="truncate">{o.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 const fieldBase =
   "w-full h-12 px-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-sm " +

@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/container";
 import { ListingCard } from "@/components/listing-card";
-import { FilterSidebar } from "@/components/filter-sidebar";
+import { OglasiSidebar } from "@/components/oglasi-sidebar";
 import { SortDropdown } from "@/components/sort-dropdown";
 import { Pagination } from "@/components/pagination";
 import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
@@ -53,7 +53,7 @@ export default async function OglasiPage({
 
       <div className="grid lg:grid-cols-[280px_1fr] gap-8">
         <div className="hidden lg:block">
-          <FilterSidebar />
+          <OglasiSidebar />
         </div>
 
         <div>
