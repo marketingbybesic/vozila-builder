@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Napredna pretraga — jedan koherentan sustav, dinamički po kategoriji.
+ *
+ * Forma se gradi iz category-filters.ts (FILTER_DEFS) prema ?category=.
+ * Osnovni filteri uvijek vidljivi; napredni iza "Više filtera".
+ * Multi → dropdown + chips; boja → swatch+naziv; range → dva selecta/inputa.
+ * Vizualni indikatori: ikona po sekciji + badge s brojem odabranog.
+ */
+
 import { useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MAKES } from "@/data/makes";
@@ -8,44 +17,57 @@ import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
 import { getCategory } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
-import { getFilterDefs, groupFields, type FilterField } from "@/data/category-filters";
-import { ChevronDown } from "lucide-react";
 import {
-  FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, DRIVES, COLORS, CONDITIONS, SELLER_TYPES,
-} from "@/lib/types";
+  getFilterDefs, groupFields, type FilterField, type CategoryFilters,
+} from "@/data/category-filters";
+import {
+  Car, Gauge, Cog, Fuel, Palette, ShieldCheck, Snowflake, Sofa, SquareParking,
+  History, MapPin, Settings2, Zap, Boxes, Ruler, Tag, ListFilter, Search, RotateCcw,
+} from "lucide-react";
+import {
+  MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
+  type Opt,
+} from "@/components/napredno/controls";
+import type { LucideIcon } from "lucide-react";
 
 const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
-// avto.net "Moč motorja" (snaga kW) i "Prostornina" (obujam ccm) koraci
 const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
 const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
-const EURO_NORMS = ["EURO 3", "EURO 4", "EURO 5", "EURO 6", "EURO 6d", "EURO 7"] as const;
-const DOORS_OPTS = ["2/3", "4/5", "Klizna vrata"] as const;
-const SEATS_OPTS = ["2", "3", "4", "5", "6", "7", "8", "9"] as const;
-// Karlo: stanje vozila bez Oldtimera (enum zadržava Oldtimer zbog starih oglasa)
-const CONDITIONS_FORM = CONDITIONS.filter((c) => c !== "Oldtimer");
-// avto.net-style boja swatch (HR boja → hex za kvadratić)
-const COLOR_HEX: Record<string, string> = {
-  "Crna": "#1a1a1a", "Bijela": "#f5f5f5", "Siva": "#8a8a8a", "Srebrna": "#c0c4c8",
-  "Plava": "#2563aa", "Crvena": "#c0392b", "Zelena": "#2e7d4f", "Smeđa": "#6b4423",
-  "Žuta": "#e6c419", "Narančasta": "#e8742c",
-};
 const YEAR_NOW = new Date().getFullYear();
-// Njuškalo-style wide range: current year back to 1900 for oldtimers
-const YEAR_OLDEST = 1900;
-const YEARS = Array.from({ length: YEAR_NOW - YEAR_OLDEST + 1 }, (_, i) => YEAR_NOW - i);
+const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i);
 
 type AttrValue = string | string[] | boolean | undefined;
+
+// Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Cijena", "Boja"]);
+
+// Ikona po nazivu grupe (vizualni indikator koji vodi oko).
+const GROUP_ICON: Record<string, LucideIcon> = {
+  Vrsta: Car, Motor: Gauge, Karoserija: Car, Cijena: Tag, Boja: Palette,
+  Specifikacije: Ruler, Električna: Zap, Oprema: Settings2, Pravno: ShieldCheck,
+  Povijest: History, Udobnost: Sofa, Dimenzije: Ruler, Detalji: ListFilter,
+  Gume: Cog, Felge: Cog, Tekućine: Fuel, Ostalo: Boxes,
+};
+// Ikona po ključu polja (leading ikona u dropdownu).
+const FIELD_ICON: Record<string, LucideIcon> = {
+  fuel: Fuel, transmission: Cog, bodyType: Car, drive: Cog, color: Palette,
+  climate: Snowflake, interior: Sofa, safety: ShieldCheck, parking: SquareParking,
+  sellerType: Tag, subcategory: Car,
+};
 
 export function NaprednoForm() {
   const router = useRouter();
   const sp = useSearchParams();
   const [pending, startTransition] = useTransition();
-  // Napredna pretraga je ISKLJUČIVO za automobile (Karlo, 2026-06-09).
-  // Kategorija je uvijek "auto" — nema biranja drugih kategorija.
-  const initSubcategory = sp.get("subcategory") ?? "";
-  const [category] = useState<string>("auto");
-  const [subcategory, setSubcategory] = useState<string>(initSubcategory);
+
+  const initCategory = sp.get("category") ?? "auto";
+  const [category] = useState<string>(initCategory);
+  const categoryDef = getCategory(category);
+  const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category), [category]);
+
+  // ── Hardkodirani (tipizirani) filteri zajednički svim vozilima ──
+  const [subcategory, setSubcategory] = useState(sp.get("subcategory") ?? "");
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [q, setQ] = useState("");
@@ -55,47 +77,67 @@ export function NaprednoForm() {
   const [yearMax, setYearMax] = useState("");
   const [kmMin, setKmMin] = useState("");
   const [kmMax, setKmMax] = useState("");
-  const [fuel, setFuel] = useState<string[]>([]);
-  const [transmission, setTransmission] = useState<string[]>([]);
   const [powerMin, setPowerMin] = useState("");
   const [powerMax, setPowerMax] = useState("");
   const [engineMin, setEngineMin] = useState("");
   const [engineMax, setEngineMax] = useState("");
+  const [fuel, setFuel] = useState<string[]>([]);
+  const [transmission, setTransmission] = useState<string[]>([]);
   const [bodyType, setBodyType] = useState<string[]>([]);
   const [drive, setDrive] = useState<string[]>([]);
-  const [doors, setDoors] = useState<string[]>([]);
-  const [seats, setSeats] = useState<string[]>([]);
   const [color, setColor] = useState<string[]>([]);
-  const [euroNorm, setEuroNorm] = useState<string[]>([]);
   const [condition, setCondition] = useState<string[]>([]);
   const [offerType, setOfferType] = useState<string[]>([]);
   const [sellerType, setSellerType] = useState<string[]>([]);
   const [county, setCounty] = useState("");
-  const [attrs, setAttrs] = useState<Record<string, AttrValue>>({});
-  // Karlo: gumb "Prikaži oglase bez cijene" (default ON) + "Garancija"
   const [showWithoutPrice, setShowWithoutPrice] = useState(true);
   const [warranty, setWarranty] = useState(false);
 
-  const categoryDef = category ? getCategory(category) : undefined;
-  const makeOptions = useMemo(() => {
-    if (!category) return MAKES.map((m) => ({ slug: m.slug, name: m.name }));
-    return categoryDef?.makes ?? [];
-  }, [category, categoryDef]);
-  // Ovisni model dropdown (avto.net logika: marka → filtrirani modeli).
-  // Auto marke imaju model-liste; ostale kategorije nemaju → fallback na text.
-  const selectedMakeModels = useMemo(() => {
+  // ── Dinamički atributni filteri (jsonb) iz category-filters.ts ──
+  const [attrs, setAttrs] = useState<Record<string, AttrValue>>({});
+  const [showMore, setShowMore] = useState(false);
+
+  const isAuto = category === "auto";
+
+  const makeOptions: Opt[] = useMemo(() => {
+    const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
+    return list.map((m) => ({ value: m.slug, label: m.name }));
+  }, [categoryDef]);
+  const modelOptions = useMemo(() => {
     if (!make) return [];
-    return MAKES.find((m) => m.slug === make)?.models ?? [];
+    return (MAKES.find((m) => m.slug === make)?.models ?? []).map((m) => ({ value: m, label: m }));
   }, [make]);
-  const filterDef = useMemo(() => getFilterDefs(category || "auto"), [category]);
-  const attrFields = useMemo(
-    () => filterDef.fields.filter((f) => f.storage === "attr"),
+
+  const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));
+
+  // Polja koja su "column" storage i NISU već pokrivena hardkodiranim kontrolama
+  // renderiraju se generički; attr polja uvijek generički.
+  const HANDLED_COLUMNS = new Set([
+    "priceEur", "year", "km", "county", "sellerType", "condition",
+    "fuel", "transmission", "powerKw", "engineCc", "bodyType", "drive", "color",
+  ]);
+
+  // Grupiraj dinamička polja, izuzmi ona koja već imamo kao hardkodirana.
+  const dynamicFields = useMemo(
+    () => filterDef.fields.filter((f) => f.storage === "attr" || !HANDLED_COLUMNS.has(f.key)),
     [filterDef]
   );
-  const attrGroups = useMemo(() => groupFields(attrFields), [attrFields]);
+  const dynamicGroups = useMemo(() => groupFields(dynamicFields), [dynamicFields]);
+  const basicDynamic = dynamicGroups.filter((g) => BASIC_GROUPS.has(g.name));
+  const advancedDynamic = dynamicGroups.filter((g) => !BASIC_GROUPS.has(g.name));
 
-  // Živi brojač rezultata (avto.net "Najdenih: N") — računa se klijentski
-  // nad LISTINGS dok korisnik mijenja filtere, prije submita.
+  // Broj aktivnih atributa (za badge na "Više filtera").
+  const attrActiveCount = useMemo(() => {
+    let n = 0;
+    for (const v of Object.values(attrs)) {
+      if (v === undefined || v === "" || v === false) continue;
+      if (Array.isArray(v) && v.length === 0) continue;
+      n += Array.isArray(v) ? v.length : 1;
+    }
+    return n;
+  }, [attrs]);
+
+  // ── Živi brojač rezultata ──
   const liveCount = useMemo(() => {
     const attrsClean: Record<string, string | number | boolean | string[]> = {};
     for (const [k, v] of Object.entries(attrs)) {
@@ -105,7 +147,7 @@ export function NaprednoForm() {
     }
     if (warranty) attrsClean.warranty = true;
     const f: ListingFilters = {
-      category: (category || undefined) as ListingFilters["category"],
+      category: category as ListingFilters["category"],
       subcategory: subcategory || undefined,
       make: make || undefined,
       model: model || undefined,
@@ -124,76 +166,58 @@ export function NaprednoForm() {
       transmission: transmission.length ? (transmission as ListingFilters["transmission"]) : undefined,
       bodyType: bodyType.length ? (bodyType as ListingFilters["bodyType"]) : undefined,
       drive: drive.length ? (drive as ListingFilters["drive"]) : undefined,
-      doors: doors.length ? doors : undefined,
-      seats: seats.length ? seats : undefined,
       color: color.length ? (color as ListingFilters["color"]) : undefined,
-      euroNorm: euroNorm.length ? euroNorm : undefined,
       condition: condition.length ? (condition as ListingFilters["condition"]) : undefined,
       sellerType: sellerType.length ? (sellerType as ListingFilters["sellerType"]) : undefined,
       county: county || undefined,
       attrs: Object.keys(attrsClean).length ? attrsClean : undefined,
     };
     return applyFilters(LISTINGS, f).length;
-  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, doors, seats, color, euroNorm, condition, sellerType, county, attrs, warranty]);
+  }, [category, subcategory, make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax,
+      powerMin, powerMax, engineMin, engineMax, fuel, transmission, bodyType, drive, color,
+      condition, sellerType, county, attrs, warranty]);
 
-  const setAttr = (key: string, v: AttrValue) =>
-    setAttrs((a) => ({ ...a, [key]: v }));
-  const toggleAttrMulti = (key: string, v: string) => {
-    setAttrs((a) => {
-      const cur = (a[key] as string[] | undefined) ?? [];
-      const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
-      return { ...a, [key]: next };
-    });
-  };
-  const toggleAttrBool = (key: string) =>
-    setAttrs((a) => ({ ...a, [key]: !a[key] }));
-
-  function arrToQ(name: string, vs: string[]) { return vs.length ? [name, vs.join(",")] : null; }
+  const totalActive = useMemo(() => {
+    let n = 0;
+    [make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax,
+      engineMin, engineMax, county].forEach((v) => v && n++);
+    [fuel, transmission, bodyType, drive, color, condition, offerType, sellerType, subcategory ? [subcategory] : []]
+      .forEach((a) => (n += a.length));
+    n += attrActiveCount + (warranty ? 1 : 0) + (showWithoutPrice ? 0 : 1);
+    return n;
+  }, [make, model, q, priceMin, priceMax, yearMin, yearMax, kmMin, kmMax, powerMin, powerMax,
+      engineMin, engineMax, county, fuel, transmission, bodyType, drive, color, condition,
+      offerType, sellerType, subcategory, attrActiveCount, warranty, showWithoutPrice]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const sp = new URLSearchParams();
-    const set = (k: string, v: string | null) => { if (v) sp.set(k, v); };
-    if (category) set("category", category);
-    if (subcategory) set("subcategory", subcategory);
-    if (make) set("make", make);
-    if (model) set("model", model);
-    if (q) set("q", q);
-    if (priceMin) set("priceMin", priceMin);
-    if (priceMax) set("priceMax", priceMax);
-    if (yearMin) set("yearMin", yearMin);
-    if (yearMax) set("yearMax", yearMax);
-    if (kmMin) set("kmMin", kmMin);
-    if (kmMax) set("kmMax", kmMax);
-    if (powerMin) set("powerMin", powerMin);
-    if (powerMax) set("powerMax", powerMax);
-    if (engineMin) set("engineMin", engineMin);
-    if (engineMax) set("engineMax", engineMax);
-    if (county) set("county", county);
-    // Karlo t.6: gumbi. Default ON → ne šaljemo ništa; OFF skriva oglase bez cijene.
+    const out = new URLSearchParams();
+    const set = (k: string, v: string | null) => { if (v) out.set(k, v); };
+    set("category", category);
+    set("subcategory", subcategory);
+    set("make", make); set("model", model); set("q", q);
+    set("priceMin", priceMin); set("priceMax", priceMax);
+    set("yearMin", yearMin); set("yearMax", yearMax);
+    set("kmMin", kmMin); set("kmMax", kmMax);
+    set("powerMin", powerMin); set("powerMax", powerMax);
+    set("engineMin", engineMin); set("engineMax", engineMax);
+    set("county", county);
     if (!showWithoutPrice) set("hidePriceless", "1");
     if (warranty) set("a.warranty", "1");
     for (const [name, vs] of [
       ["fuel", fuel], ["transmission", transmission], ["bodyType", bodyType],
-      ["drive", drive], ["doors", doors], ["seats", seats], ["color", color],
-      ["euroNorm", euroNorm], ["condition", condition], ["sellerType", sellerType],
+      ["drive", drive], ["color", color], ["condition", condition],
+      ["offerType", offerType], ["sellerType", sellerType],
     ] as const) {
-      const r = arrToQ(name, vs);
-      if (r) sp.set(r[0], r[1]);
+      if (vs.length) out.set(name, vs.join(","));
     }
-    // Attributes
     for (const [k, v] of Object.entries(attrs)) {
       if (v === undefined || v === "" || v === false) continue;
-      if (Array.isArray(v)) {
-        if (v.length === 0) continue;
-        sp.set(`a.${k}`, v.join(","));
-      } else if (typeof v === "boolean") {
-        if (v) sp.set(`a.${k}`, "1");
-      } else {
-        sp.set(`a.${k}`, String(v));
-      }
+      if (Array.isArray(v)) { if (v.length) out.set(`a.${k}`, v.join(",")); }
+      else if (typeof v === "boolean") { if (v) out.set(`a.${k}`, "1"); }
+      else out.set(`a.${k}`, String(v));
     }
-    const qs = sp.toString();
+    const qs = out.toString();
     startTransition(() => router.push(qs ? `/oglasi?${qs}` : "/oglasi"));
   };
 
@@ -201,539 +225,270 @@ export function NaprednoForm() {
     setSubcategory(""); setMake(""); setModel(""); setQ("");
     setPriceMin(""); setPriceMax(""); setYearMin(""); setYearMax(""); setKmMin(""); setKmMax("");
     setPowerMin(""); setPowerMax(""); setEngineMin(""); setEngineMax("");
-    setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setDoors([]); setSeats([]);
-    setColor([]); setEuroNorm([]); setCondition([]); setOfferType([]); setSellerType([]);
-    setCounty(""); setAttrs({});
-    setShowWithoutPrice(true); setWarranty(false);
+    setFuel([]); setTransmission([]); setBodyType([]); setDrive([]); setColor([]);
+    setCondition([]); setOfferType([]); setSellerType([]); setCounty("");
+    setShowWithoutPrice(true); setWarranty(false); setAttrs({});
+  };
+
+  // Renderer za jedno dinamičko polje (attr ili neobrađeni column).
+  const renderField = (f: FilterField) => {
+    const Icon = FIELD_ICON[f.key];
+    if (f.type === "toggle") {
+      return (
+        <TogglePill
+          key={f.key}
+          on={Boolean(attrs[f.key])}
+          onClick={() => setAttr(f.key, !attrs[f.key])}
+          label={f.label}
+        />
+      );
+    }
+    if (f.type === "range") {
+      return (
+        <RangeInput
+          key={f.key}
+          label={f.label}
+          unit={f.unit}
+          value={attrs[f.key] as string | undefined}
+          onSet={(v) => setAttr(f.key, v)}
+        />
+      );
+    }
+    if (f.type === "select") {
+      return (
+        <SelectField
+          key={f.key}
+          label={f.label}
+          value={(attrs[f.key] as string) ?? ""}
+          onChange={(v) => setAttr(f.key, v || undefined)}
+          options={f.options ?? []}
+        />
+      );
+    }
+    if (f.type === "text") {
+      return (
+        <TextField
+          key={f.key}
+          label={f.label}
+          value={(attrs[f.key] as string) ?? ""}
+          onChange={(v) => setAttr(f.key, v || undefined)}
+          placeholder={f.label}
+        />
+      );
+    }
+    // multi
+    return (
+      <MultiSelect
+        key={f.key}
+        label={f.label}
+        icon={Icon}
+        values={(attrs[f.key] as string[] | undefined) ?? []}
+        onChange={(v) => setAttr(f.key, v)}
+        options={f.options ?? []}
+        placeholder="Odaberi"
+      />
+    );
+  };
+
+  const renderDynGroup = (g: { name: string; fields: FilterField[] }) => {
+    const GIcon = GROUP_ICON[g.name] ?? ListFilter;
+    return (
+      <div key={g.name} className="space-y-3">
+        <SectionHead icon={GIcon} title={g.name} />
+        <div className="grid sm:grid-cols-2 gap-3">
+          {g.fields.map(renderField)}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
-      <Section title="Vrsta auta">
-        <Row>
-          {categoryDef && categoryDef.subcategories.length > 0 && (
-            <Field label="Podkategorija">
-              <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)} className={selectCls}>
-                <option value="">Sve podkategorije</option>
-                {categoryDef.subcategories.map((sc) => (
-                  <option key={sc.slug} value={sc.slug}>{sc.name}</option>
-                ))}
-              </select>
-            </Field>
+    <form onSubmit={onSubmit} className="space-y-7 pb-28">
+      {/* ── 1. OSNOVNO (najvažnije, istaknuto) ── */}
+      <Panel>
+        {categoryDef && categoryDef.subcategories.length > 0 && (
+          <SelectField
+            label="Podkategorija"
+            value={subcategory}
+            onChange={setSubcategory}
+            options={categoryDef.subcategories
+              .filter((s) => s.slug !== "auto-oglasi")
+              .map((s) => ({ value: s.slug, label: s.name }))}
+            placeholder="Sve podkategorije"
+          />
+        )}
+        <div className="grid sm:grid-cols-2 gap-3">
+          <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
+          {modelOptions.length > 0 ? (
+            <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
+          ) : (
+            <TextField label="Model" value={model} onChange={setModel} placeholder={make ? "npr. Golf, A4, X3..." : "Svi modeli"} />
           )}
-        </Row>
-      </Section>
-
-      {/* avto.net prvo polje: Tip ponudbe (prodaja/najam) */}
-      <Section title="Tip ponude">
-        <Field label="Ponuda">
-          <CheckGroup options={["Prodaja", "Najam"]} values={offerType} onChange={setOfferType} />
-        </Field>
-      </Section>
-
-      {/* Karlo redoslijed t.3: Stanje vozila ODMAH nakon tipa ponude (bez Oldtimera) */}
-      <Section title="Stanje vozila">
-        <Field label="Stanje">
-          <CheckGroup options={CONDITIONS_FORM} values={condition} onChange={setCondition} />
-        </Field>
-      </Section>
-
-      {/* Karlo t.4-5: Osnovno = Marka, Model, pa TIP (manualni upis ispod Modela) */}
-      <Section title="Osnovno">
-        <Row>
-          <Field label="Marka">
-            <select value={make} onChange={(e) => { setMake(e.target.value); setModel(""); }} className={selectCls}>
-              <option value="">Sve marke</option>
-              {makeOptions.map((m) => <option key={m.slug} value={m.slug}>{m.name}</option>)}
-            </select>
-          </Field>
-          <Field label="Model">
-            {selectedMakeModels.length > 0 ? (
-              <select value={model} onChange={(e) => setModel(e.target.value)} className={selectCls}>
-                <option value="">Svi modeli</option>
-                {selectedMakeModels.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            ) : (
-              <input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                type="text"
-                disabled={!make && !!category && category !== "auto"}
-                placeholder={make ? "npr. Golf, A4, X3..." : "Prvo odaberi marku"}
-                className="w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)] disabled:opacity-50"
-              />
-            )}
-          </Field>
-        </Row>
-        <Field label="TIP">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            type="text"
-            placeholder="npr. GTI, Avant, Quattro, M Sport..."
-            className="w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)]"
-          />
-        </Field>
-      </Section>
-
-      {/* Karlo t.6: gumbi "Prikaži oglase bez cijene" (default ON) + "Garancija" */}
-      <Section title="Opcije prikaza">
-        <div className="grid sm:grid-cols-2 gap-2">
-          <ToggleButton
-            on={showWithoutPrice}
-            onClick={() => setShowWithoutPrice((s) => !s)}
-            label="Prikaži oglase bez cijene"
-          />
-          <ToggleButton
-            on={warranty}
-            onClick={() => setWarranty((s) => !s)}
-            label="Garancija"
-          />
         </div>
-      </Section>
+        {isAuto && (
+          <TextField label="TIP" value={q} onChange={setQ} placeholder="npr. GTI, Avant, Quattro, M Sport..." />
+        )}
+        <div className="grid sm:grid-cols-2 gap-3">
+          <TogglePill on={showWithoutPrice} onClick={() => setShowWithoutPrice((s) => !s)} label="Prikaži oglase bez cijene" />
+          <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
+        </div>
+      </Panel>
 
-      {/* ── Redoslijed 1:1 kao avto.net napredna pretraga (vidi AVTONET-FORM-REFERENCE.md) ──
-          Stanje → Karoserija(oblik) → Marka/Model → Cijena+Godina+Km →
-          Motor(obujam→snaga→gorivo→mjenjač) → Oprema → Boja → Lokacija/prodavač */}
+      {/* ── 2. TIP PONUDE + STANJE ── */}
+      <Panel>
+        <SectionHead icon={Tag} title="Ponuda i stanje" />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <MultiSelect label="Tip ponude" icon={Tag} values={offerType} onChange={setOfferType}
+            options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+          <MultiSelect label="Stanje vozila" icon={Car} values={condition} onChange={setCondition}
+            options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
+        </div>
+      </Panel>
 
-      <Section title="Oblik karoserije">
-        <CheckGroup options={BODY_TYPES} values={bodyType} onChange={setBodyType} />
-      </Section>
-
-      {/* avto.net "Cena, starost, prevoženih km" — sve u jednoj sekciji */}
-      <Section title="Cijena, godina, kilometraža">
-        <Row>
-          <Field label="Cijena od (€)">
-            <select value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
-            </select>
-          </Field>
-          <Field label="Cijena do (€)">
-            <select value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {PRICE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} €</option>)}
-            </select>
-          </Field>
-        </Row>
-        <Row>
-          <Field label="Godina od">
-            <select value={yearMin} onChange={(e) => setYearMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </Field>
-          <Field label="Godina do">
-            <select value={yearMax} onChange={(e) => setYearMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </Field>
-        </Row>
-        <Row>
-          <Field label="Kilometri od">
-            <select value={kmMin} onChange={(e) => setKmMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {KM_STEPS.map((k) => <option key={k} value={k}>{k.toLocaleString("hr-HR")} km</option>)}
-            </select>
-          </Field>
-          <Field label="Kilometri do">
-            <select value={kmMax} onChange={(e) => setKmMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {KM_STEPS.map((k) => <option key={k} value={k}>{k.toLocaleString("hr-HR")} km</option>)}
-            </select>
-          </Field>
-        </Row>
-      </Section>
-
-      {/* avto.net "Gorivo, motor, menjalnik": Prostornina → Moč → Gorivo → Menjalnik */}
-      <Section title="Gorivo, motor, mjenjač">
-        <Row>
-          <Field label="Obujam od (cm³)">
-            <select value={engineMin} onChange={(e) => setEngineMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {ENGINE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} cm³</option>)}
-            </select>
-          </Field>
-          <Field label="Obujam do (cm³)">
-            <select value={engineMax} onChange={(e) => setEngineMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {ENGINE_STEPS.map((p) => <option key={p} value={p}>{p.toLocaleString("hr-HR")} cm³</option>)}
-            </select>
-          </Field>
-        </Row>
-        <Row>
-          <Field label="Snaga od (kW)">
-            <select value={powerMin} onChange={(e) => setPowerMin(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
-            </select>
-          </Field>
-          <Field label="Snaga do (kW)">
-            <select value={powerMax} onChange={(e) => setPowerMax(e.target.value)} className={selectCls}>
-              <option value="">Bez granice</option>
-              {POWER_STEPS.map((p) => <option key={p} value={p}>{p} kW</option>)}
-            </select>
-          </Field>
-        </Row>
-        <Field label="Vrsta goriva">
-          <CheckGroup options={FUEL_TYPES} values={fuel} onChange={setFuel} />
-        </Field>
-        <Field label="Mjenjač">
-          <CheckGroup options={TRANSMISSIONS} values={transmission} onChange={setTransmission} />
-        </Field>
-      </Section>
-
-      {/* Karlo t.14: preimenovano "Dodatna oprema i specifikacije" → "Ostale opcije" */}
-      <Section title="Ostale opcije" collapsible defaultOpen={false}>
-        <Field label="Pogon">
-          <CheckGroup options={DRIVES} values={drive} onChange={setDrive} />
-        </Field>
-        <Field label="Broj vrata">
-          <CheckGroup options={DOORS_OPTS} values={doors} onChange={setDoors} />
-        </Field>
-        <Field label="Broj sjedala">
-          <CheckGroup options={SEATS_OPTS} values={seats} onChange={setSeats} />
-        </Field>
-        <Field label="Emisijska norma (EURO)">
-          <CheckGroup options={EURO_NORMS} values={euroNorm} onChange={setEuroNorm} />
-        </Field>
-      </Section>
-
-      {/* Karlo t.18-22: naslov "Boje"; Boja vozila + Tip boje + Boja unutrašnjosti */}
-      <Section title="Boje" collapsible defaultOpen={false}>
-        <Field label="Boja vozila">
-          <ColorSwatchGroup options={COLORS} values={color} onChange={setColor} />
-        </Field>
-        <Field label="Tip boje">
-          <CheckGroup
-            options={["metalik", "mat"]}
-            values={(attrs.colorType as string[] | undefined) ?? []}
-            onChange={(v) => setAttr("colorType", v)}
-          />
-        </Field>
-        <Field label="Boja unutrašnjosti">
-          <select
-            value={(attrs.upholsteryColor as string) ?? ""}
-            onChange={(e) => setAttr("upholsteryColor", e.target.value || undefined)}
-            className={selectCls}
-          >
-            <option value="">Sve</option>
-            {["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </Field>
-      </Section>
-
-      {attrGroups.length > 0 && (
-        <Section title={`Specifični filtri · ${filterDef.label}`}>
-          {attrGroups.map((g) => (
-            <div key={g.name} className="space-y-3 pt-2">
-              <h3 className="text-[11px] uppercase tracking-widest font-semibold text-[var(--color-muted)]">
-                {g.name}
-              </h3>
-              {g.fields.map((f) => (
-                <AttrField
-                  key={f.key}
-                  field={f}
-                  value={attrs[f.key]}
-                  onSet={(v) => setAttr(f.key, v)}
-                  onToggle={() => toggleAttrBool(f.key)}
-                  onMulti={(v) => toggleAttrMulti(f.key, v)}
-                />
-              ))}
+      {/* ── 3. CIJENA, GODINA, KILOMETRAŽA ── */}
+      <Panel>
+        <SectionHead icon={Tag} title="Cijena, godina, kilometraža" />
+        <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <Label>Godina</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <SelectField value={yearMin} onChange={setYearMin} placeholder="Od" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+              <SelectField value={yearMax} onChange={setYearMax} placeholder="Do" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
             </div>
-          ))}
-        </Section>
+          </div>
+          <RangeSelect label="Kilometraža" unit="km" minValue={kmMin} maxValue={kmMax} onMin={setKmMin} onMax={setKmMax} steps={KM_STEPS} />
+        </div>
+      </Panel>
+
+      {/* ── 4. MOTOR + KAROSERIJA ── */}
+      <Panel>
+        <SectionHead icon={Gauge} title="Motor i karoserija" />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={ENGINE_STEPS} />
+          <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={POWER_STEPS} />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <MultiSelect label="Vrsta goriva" icon={Fuel} values={fuel} onChange={setFuel}
+            options={fuelOpts(filterDef)} placeholder="Sve" />
+          <MultiSelect label="Mjenjač" icon={Cog} values={transmission} onChange={setTransmission}
+            options={[{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]} placeholder="Sve" />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <MultiSelect label="Oblik karoserije" icon={Car} values={bodyType} onChange={setBodyType}
+            options={bodyOpts(filterDef)} placeholder="Sve" />
+          <MultiSelect label="Pogon" icon={Cog} values={drive} onChange={setDrive}
+            options={[{ value: "Prednji", label: "Prednji" }, { value: "Stražnji", label: "Stražnji" }, { value: "4x4", label: "4x4" }]} placeholder="Sve" />
+        </div>
+      </Panel>
+
+      {/* ── 5. BOJE (uvijek vidljivo, swatch+naziv) ── */}
+      <Panel>
+        <SectionHead icon={Palette} title="Boje" />
+        <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <MultiSelect label="Tip boje" icon={Palette} values={(attrs.colorType as string[] | undefined) ?? []}
+            onChange={(v) => setAttr("colorType", v)}
+            options={[{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }]} placeholder="Sve" />
+          <SelectField label="Boja unutrašnjosti" value={(attrs.upholsteryColor as string) ?? ""}
+            onChange={(v) => setAttr("upholsteryColor", v || undefined)}
+            options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
+        </div>
+      </Panel>
+
+      {/* Dodatne osnovne dinamičke grupe (npr. PDV za gospodarska, Stil za moto) */}
+      {basicDynamic.map(renderDynGroup).length > 0 && (
+        <Panel>{basicDynamic.map(renderDynGroup)}</Panel>
       )}
 
-      {/* Karlo t.20/24: Lokacija i prodavač PREMJEŠTENO na ZADNJU poziciju */}
-      <Section title="Lokacija i prodavač">
-        <Row>
-          <Field label="Lokacija (županija)">
-            <select value={county} onChange={(e) => setCounty(e.target.value)} className={selectCls}>
-              <option value="">Sve županije</option>
-              {COUNTIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Prodavač">
-            <CheckGroup options={SELLER_TYPES} values={sellerType} onChange={setSellerType} />
-          </Field>
-        </Row>
-      </Section>
+      {/* ── 6. VIŠE FILTERA (oprema/povijest/specifikacije) ── */}
+      {advancedDynamic.length > 0 && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowMore((s) => !s)}
+            aria-expanded={showMore}
+            className="w-full h-12 px-4 rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
+          >
+            <Settings2 className="size-4" />
+            {showMore ? "Sakrij dodatne filtere" : "Više filtera"}
+            {!showMore && attrActiveCount > 0 && (
+              <span className="grid place-items-center min-w-5 h-5 px-1 rounded-full bg-[var(--color-accent)] text-white text-[11px] font-semibold">
+                {attrActiveCount}
+              </span>
+            )}
+          </button>
+          {showMore && (
+            <Panel className="mt-4">{advancedDynamic.map(renderDynGroup)}</Panel>
+          )}
+        </div>
+      )}
 
-      <div className="flex gap-2 sticky bottom-0 z-10 bg-[var(--color-bg)] p-3 rounded-md border-t border-[var(--color-line)] -mx-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
-        <button
-          type="submit"
-          disabled={pending}
-          className="h-11 px-6 rounded-md bg-[var(--color-ink)] text-white text-sm font-medium hover:bg-[var(--color-ink-soft)] disabled:opacity-60"
-        >
-          {pending
-            ? "Tražim..."
-            : `Prikaži ${liveCount} ${liveCount === 1 ? "vozilo" : liveCount < 5 ? "vozila" : "vozila"}`}
-        </button>
-        <button
-          type="button"
-          onClick={reset}
-          className="h-11 px-5 rounded-md border border-[var(--color-line)] text-sm font-medium hover:bg-[var(--color-line)]/40"
-        >
-          Reset
-        </button>
+      {/* ── 7. LOKACIJA I PRODAVAČ (zadnje) ── */}
+      <Panel>
+        <SectionHead icon={MapPin} title="Lokacija i prodavač" />
+        <div className="grid sm:grid-cols-2 gap-3">
+          <SelectField label="Lokacija (županija)" value={county} onChange={setCounty}
+            options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+          <MultiSelect label="Prodavač" icon={Tag} values={sellerType} onChange={setSellerType}
+            options={[{ value: "Privatni", label: "Privatni" }, { value: "Trgovac", label: "Trgovac" }]} placeholder="Svi" />
+        </div>
+      </Panel>
+
+      {/* ── Sticky CTA ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--color-line)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
+        <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-3">
+          {totalActive > 0 && (
+            <button type="button" onClick={reset}
+              className="h-12 px-4 rounded-xl border border-[var(--color-line)] text-sm font-medium text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 flex items-center gap-2 transition-colors">
+              <RotateCcw className="size-4" /> Poništi
+            </button>
+          )}
+          <button type="submit" disabled={pending}
+            className="flex-1 h-12 px-6 rounded-xl bg-[var(--color-accent)] text-[var(--color-ink)] text-sm font-semibold hover:bg-[var(--color-accent-dark)] hover:text-white disabled:opacity-60 flex items-center justify-center gap-2 transition-colors">
+            <Search className="size-4" />
+            {pending ? "Tražim..." : `Prikaži ${liveCount} ${liveCount === 1 ? "vozilo" : "vozila"}`}
+          </button>
+        </div>
       </div>
     </form>
   );
 }
 
-const selectCls = "w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)] text-sm";
+// ── Sub-helpers ──────────────────────────────────────────────────────────
 
-function Section({
-  title, children, collapsible = false, defaultOpen = true,
-}: {
-  title: string; children: React.ReactNode; collapsible?: boolean; defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  if (!collapsible) {
-    return (
-      <section>
-        <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">
-          {title}
-        </h2>
-        <div className="space-y-4">{children}</div>
-      </section>
-    );
-  }
+function Panel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <section className="border-t border-[var(--color-line)] pt-4">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
-        aria-expanded={open}
-      >
-        <span>{title}</span>
-        <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && <div className="space-y-4 mt-3">{children}</div>}
+    <section className={"rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-4 " + className}>
+      {children}
     </section>
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
-  return <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">{children}</div>;
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function SectionHead({ icon: Icon, title }: { icon: LucideIcon; title: string }) {
   return (
-    <label className="block text-sm">
-      <span className="block mb-1.5 font-medium text-[var(--color-ink)]">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-// avto.net-style boja swatch grid — kvadratići u boji s kvačicom kad je odabrano
-function ColorSwatchGroup({
-  options, values, onChange,
-}: { options: readonly string[]; values: string[]; onChange: (v: string[]) => void }) {
-  const toggle = (o: string) => {
-    onChange(values.includes(o) ? values.filter((v) => v !== o) : [...values, o]);
-  };
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((o) => {
-        const active = values.includes(o);
-        const hex = COLOR_HEX[o] ?? "#999";
-        return (
-          <button
-            key={o}
-            type="button"
-            onClick={() => toggle(o)}
-            title={o}
-            aria-pressed={active}
-            className={
-              "size-9 rounded-md border-2 grid place-items-center transition-all " +
-              (active ? "border-[var(--color-accent)] scale-110" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
-            }
-            style={{ backgroundColor: hex }}
-          >
-            {active && (
-              <span className={"text-[13px] font-bold " + (o === "Bijela" || o === "Žuta" || o === "Srebrna" ? "text-black" : "text-white")}>
-                ✓
-              </span>
-            )}
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-2.5">
+      <span className="grid place-items-center size-8 rounded-lg bg-[var(--color-accent)]/12 text-[var(--color-accent-dark)]">
+        <Icon className="size-4.5" />
+      </span>
+      <h2 className="font-display text-lg tracking-tight text-[var(--color-ink)]">{title}</h2>
     </div>
   );
 }
 
-// avto.net-style on/off gumb (default-stanje kontrolira pozivatelj)
-function ToggleButton({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={
-        "h-11 px-4 rounded-md border text-sm font-medium flex items-center justify-between gap-2 transition-colors " +
-        (on
-          ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
-          : "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
-      }
-    >
-      <span>{label}</span>
-      <span className={"size-2.5 rounded-full shrink-0 " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
-    </button>
-  );
+// Opcije izvučene iz filterDef (po kategoriji), s fallbackom.
+function optsFromField(def: CategoryFilters, key: string, fallback: Opt[]): Opt[] {
+  const f = def.fields.find((x) => x.key === key);
+  return f?.options ?? fallback;
 }
-
-function CheckGroup({
-  options, values, onChange,
-}: { options: readonly string[]; values: string[]; onChange: (v: string[]) => void }) {
-  const toggle = (o: string) => {
-    onChange(values.includes(o) ? values.filter((v) => v !== o) : [...values, o]);
-  };
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((o) => {
-        const active = values.includes(o);
-        return (
-          <button
-            key={o}
-            type="button"
-            onClick={() => toggle(o)}
-            className={
-              "px-3 py-1.5 rounded-full border text-xs transition-colors " +
-              (active
-                ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
-                : "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
-            }
-          >
-            {o}
-          </button>
-        );
-      })}
-    </div>
-  );
+function fuelOpts(def: CategoryFilters): Opt[] {
+  return optsFromField(def, "fuel", ["Benzin", "Dizel", "Hibrid", "Električni", "Plin"].map((v) => ({ value: v, label: v })));
 }
-
-function AttrField({
-  field, value, onSet, onToggle, onMulti,
-}: {
-  field: FilterField;
-  value: AttrValue;
-  onSet: (v: string | undefined) => void;
-  onToggle: () => void;
-  onMulti: (v: string) => void;
-}) {
-  if (field.type === "toggle") {
-    const on = Boolean(value);
-    return (
-      <button
-        type="button"
-        onClick={onToggle}
-        className={
-          "w-full text-left text-sm px-3 py-2 rounded-md border flex items-center justify-between transition-colors " +
-          (on ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
-              : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
-        }
-      >
-        <span>{field.label}</span>
-        <span className={"size-2 rounded-full " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
-      </button>
-    );
-  }
-
-  if (field.type === "range") {
-    const raw = (value as string) ?? "";
-    const [minS, maxS] = raw.includes("..") ? raw.split("..") : ["", ""];
-    return (
-      <div>
-        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">
-          {field.label}{field.unit ? ` (${field.unit})` : ""}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            defaultValue={minS}
-            placeholder={field.min !== undefined ? String(field.min) : "Min"}
-            onBlur={(e) => {
-              const v = e.target.value;
-              if (!v && !maxS) onSet(undefined);
-              else onSet(`${v}..${maxS}`);
-            }}
-            className={selectCls}
-          />
-          <input
-            type="number"
-            defaultValue={maxS}
-            placeholder={field.max !== undefined ? String(field.max) : "Max"}
-            onBlur={(e) => {
-              const v = e.target.value;
-              if (!v && !minS) onSet(undefined);
-              else onSet(`${minS}..${v}`);
-            }}
-            className={selectCls}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (field.type === "select") {
-    return (
-      <div>
-        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
-        <select value={(value as string) ?? ""} onChange={(e) => onSet(e.target.value || undefined)} className={selectCls}>
-          <option value="">Sve</option>
-          {field.options?.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
-
-  if (field.type === "multi") {
-    const vs = (value as string[] | undefined) ?? [];
-    return (
-      <div>
-        <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
-        <div className="flex flex-wrap gap-1.5">
-          {field.options?.map((o) => {
-            const active = vs.includes(o.value);
-            return (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => onMulti(o.value)}
-                className={
-                  "px-3 py-1.5 rounded-full border text-xs transition-colors " +
-                  (active
-                    ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
-                    : "bg-[var(--color-surface)] text-[var(--color-ink)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
-                }
-              >
-                {o.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="text-xs font-medium text-[var(--color-ink-soft)] mb-1.5">{field.label}</div>
-      <input
-        defaultValue={(value as string) ?? ""}
-        placeholder={field.label}
-        onBlur={(e) => onSet(e.target.value || undefined)}
-        className="w-full h-11 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-bg)]"
-      />
-    </div>
-  );
+function bodyOpts(def: CategoryFilters): Opt[] {
+  return optsFromField(def, "bodyType",
+    ["Microcar", "Limuzina", "Hatchback", "Karavan", "Monovolumen", "SUV", "Coupe", "Cabrio", "Pickup"].map((v) => ({ value: v, label: v })));
+}
+function colorOpts(def: CategoryFilters): string[] {
+  const f = def.fields.find((x) => x.key === "color");
+  return f?.options?.map((o) => o.label) ?? ["Crna", "Bijela", "Siva", "Srebrna", "Plava", "Crvena", "Zelena", "Smeđa", "Žuta", "Narančasta"];
 }

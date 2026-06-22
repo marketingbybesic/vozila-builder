@@ -1,0 +1,315 @@
+"use client";
+
+/**
+ * Napredna pretraga — reusable form controls.
+ * One coherent system (no chips-wall): every multi filter is a dropdown that
+ * opens a checkbox list; selections render as removable chips below the field.
+ */
+
+import { useEffect, useId, useRef, useState } from "react";
+import { Check, ChevronDown, X, type LucideIcon } from "lucide-react";
+
+export type Opt = { value: string; label: string };
+
+const fieldBase =
+  "w-full h-12 px-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-sm " +
+  "text-[var(--color-ink)] transition-colors focus:outline-none focus:border-[var(--color-accent)] " +
+  "focus:ring-2 focus:ring-[var(--color-accent)]/25";
+
+export function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="block mb-1.5 text-[13px] font-semibold text-[var(--color-ink-soft)]">
+      {children}
+    </span>
+  );
+}
+
+/** Single-select native dropdown, styled. */
+export function SelectField({
+  label, value, onChange, options, placeholder = "Sve",
+}: {
+  label?: string; value: string; onChange: (v: string) => void;
+  options: Opt[]; placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      {label && <Label>{label}</Label>}
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={fieldBase + " appearance-none pr-10 cursor-pointer"}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-[var(--color-muted)]" />
+      </div>
+    </label>
+  );
+}
+
+/**
+ * Multi-select dropdown. Closed: shows count. Open: checkbox list.
+ * Selections render as removable chips beneath the trigger.
+ */
+export function MultiSelect({
+  label, values, onChange, options, placeholder = "Odaberi", icon: Icon,
+}: {
+  label?: string; values: string[]; onChange: (v: string[]) => void;
+  options: Opt[]; placeholder?: string; icon?: LucideIcon;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const id = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  const toggle = (v: string) =>
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  const labelFor = (v: string) => options.find((o) => o.value === v)?.label ?? v;
+
+  return (
+    <div ref={ref} className="block">
+      {label && <Label>{label}</Label>}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={id}
+          className={
+            fieldBase + " flex items-center gap-2.5 text-left cursor-pointer " +
+            (values.length ? "text-[var(--color-ink)]" : "text-[var(--color-muted)]")
+          }
+        >
+          {Icon && (
+            <Icon className={"size-4.5 shrink-0 " + (values.length ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+          )}
+          <span className="truncate flex-1">
+            {values.length === 0 ? placeholder : `${values.length} odabrano`}
+          </span>
+          {values.length > 0 && (
+            <span className="grid place-items-center min-w-5 h-5 px-1 rounded-full bg-[var(--color-accent)] text-white text-[11px] font-semibold shrink-0">
+              {values.length}
+            </span>
+          )}
+          <ChevronDown className={"size-4 text-[var(--color-muted)] shrink-0 transition-transform " + (open ? "rotate-180" : "")} />
+        </button>
+
+        {open && (
+          <div
+            id={id}
+            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] shadow-xl shadow-black/10 p-1.5 scrollbar-thin"
+          >
+            {options.map((o) => {
+              const active = values.includes(o.value);
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => toggle(o.value)}
+                  className={
+                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors " +
+                    (active
+                      ? "bg-[var(--color-accent)]/10 text-[var(--color-ink)]"
+                      : "text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40")
+                  }
+                >
+                  <span
+                    className={
+                      "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
+                      (active
+                        ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
+                        : "border-[var(--color-line)]")
+                    }
+                  >
+                    {active && <Check className="size-3 text-white" strokeWidth={3} />}
+                  </span>
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {values.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--color-ink)] text-white text-xs"
+            >
+              {labelFor(v)}
+              <button
+                type="button"
+                onClick={() => toggle(v)}
+                aria-label={`Ukloni ${labelFor(v)}`}
+                className="grid place-items-center size-4 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <X className="size-3" strokeWidth={2.5} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Color picker: swatch + name, always visible. Selected = ring + check. */
+const COLOR_HEX: Record<string, string> = {
+  "Crna": "#16181d", "Bijela": "#f4f4f0", "Siva": "#8a8d93", "Srebrna": "#c4c8cd",
+  "Plava": "#2563aa", "Crvena": "#c0392b", "Zelena": "#2e7d4f", "Smeđa": "#6b4423",
+  "Žuta": "#e6c419", "Narančasta": "#e8742c", "Bež": "#d8c9a8",
+};
+
+export function ColorPicker({
+  label, values, onChange, options,
+}: {
+  label?: string; values: string[]; onChange: (v: string[]) => void; options: string[];
+}) {
+  const toggle = (v: string) =>
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  return (
+    <div>
+      {label && <Label>{label}</Label>}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        {options.map((o) => {
+          const active = values.includes(o);
+          const hex = COLOR_HEX[o] ?? "#999";
+          const lightSwatch = ["Bijela", "Žuta", "Srebrna", "Bež"].includes(o);
+          return (
+            <button
+              key={o}
+              type="button"
+              onClick={() => toggle(o)}
+              aria-pressed={active}
+              className={
+                "flex items-center gap-2.5 px-2.5 h-11 rounded-xl border text-sm text-left transition-all " +
+                (active
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 font-medium"
+                  : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+              }
+            >
+              <span
+                className="size-6 rounded-lg shrink-0 grid place-items-center border border-black/10"
+                style={{ backgroundColor: hex }}
+              >
+                {active && (
+                  <Check
+                    className={"size-3.5 " + (lightSwatch ? "text-black" : "text-white")}
+                    strokeWidth={3}
+                  />
+                )}
+              </span>
+              <span className="truncate text-[var(--color-ink)]">{o}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Range as two compact selects (od / do) sharing a row. */
+export function RangeSelect({
+  label, unit, minValue, maxValue, onMin, onMax, steps, fmt,
+}: {
+  label: string; unit?: string;
+  minValue: string; maxValue: string;
+  onMin: (v: string) => void; onMax: (v: string) => void;
+  steps: number[]; fmt?: (n: number) => string;
+}) {
+  const render = (n: number) => (fmt ? fmt(n) : n.toLocaleString("hr-HR")) + (unit ? ` ${unit}` : "");
+  return (
+    <div>
+      <Label>{label}</Label>
+      <div className="grid grid-cols-2 gap-2">
+        <SelectField value={minValue} onChange={onMin} placeholder="Od" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
+        <SelectField value={maxValue} onChange={onMax} placeholder="Do" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
+      </div>
+    </div>
+  );
+}
+
+/** Numeric range as two inputs (for attr ranges without fixed steps). */
+export function RangeInput({
+  label, unit, value, onSet,
+}: {
+  label: string; unit?: string; value: string | undefined; onSet: (v: string | undefined) => void;
+}) {
+  const raw = value ?? "";
+  const [minS, maxS] = raw.includes("..") ? raw.split("..") : ["", ""];
+  return (
+    <div>
+      <Label>{label}{unit ? ` (${unit})` : ""}</Label>
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="number" defaultValue={minS} placeholder="Od"
+          onBlur={(e) => { const v = e.target.value; if (!v && !maxS) onSet(undefined); else onSet(`${v}..${maxS}`); }}
+          className={fieldBase}
+        />
+        <input
+          type="number" defaultValue={maxS} placeholder="Do"
+          onBlur={(e) => { const v = e.target.value; if (!v && !minS) onSet(undefined); else onSet(`${minS}..${v}`); }}
+          className={fieldBase}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** On/off toggle pill (e.g. Garancija, Prikaži bez cijene). */
+export function TogglePill({
+  on, onClick, label,
+}: { on: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={
+        "h-12 px-4 rounded-xl border text-sm font-medium flex items-center justify-between gap-2 transition-colors " +
+        (on
+          ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+          : "bg-[var(--color-surface)] text-[var(--color-ink-soft)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+      }
+    >
+      <span>{label}</span>
+      <span className={"size-2.5 rounded-full shrink-0 " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
+    </button>
+  );
+}
+
+export function TextField({
+  label, value, onChange, placeholder,
+}: { label?: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <label className="block">
+      {label && <Label>{label}</Label>}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type="text"
+        placeholder={placeholder}
+        className={fieldBase}
+      />
+    </label>
+  );
+}
