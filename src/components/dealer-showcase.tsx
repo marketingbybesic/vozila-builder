@@ -37,12 +37,15 @@ function DealerBlock({ dealer }: { dealer: Dealer }) {
         </Link>
       </div>
 
-      {/* 6 listings: 3 columns × 2 rows */}
+      {/* 6 listings: 3 columns × 2 rows.
+          Showcase kartice → dealer profil (stvarna ruta), NE pojedinačni oglas
+          (ti demo oglasi nemaju DB stranicu → izbjegava 404 + prefetch greške). */}
       <div className="grid grid-cols-3 gap-1.5">
         {cars.map((l) => (
           <Link
             key={l.slug}
-            href={`/oglasi/${l.slug}`}
+            href={`/trgovci/${dealer.slug}`}
+            prefetch={false}
             className="group relative rounded-[var(--radius-sm)] overflow-hidden bg-[var(--color-line)]"
           >
             <div className="aspect-[4/3] relative">

@@ -43,7 +43,7 @@ export const FEATURED_DEALERS: Dealer[] = [
       { title: "Peugeot 3008 1.5 BlueHDi", price: 26700, image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&h=300&fit=crop", slug: "peugeot-3008-1-5-bluehdi-2022-split-lst-d007" },
       { title: "Renault Captur TCe 130", price: 19800, image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400&h=300&fit=crop", slug: "renault-captur-tce-130-2022-split-lst-d008" },
       { title: "Ford Kuga 2.0 EcoBlue", price: 27500, image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=300&fit=crop", slug: "ford-kuga-2-0-ecoblue-2021-split-lst-d009" },
-      { title: "Hyundai Tucson 1.6 CRDi", price: 28900, image: "https://images.unsplash.com/photo-1628956719520-4b0a1e5ebf0e?w=400&h=300&fit=crop", slug: "hyundai-tucson-1-6-crdi-2022-split-lst-d010" },
+      { title: "Hyundai Tucson 1.6 CRDi", price: 28900, image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=400&h=300&fit=crop", slug: "hyundai-tucson-1-6-crdi-2022-split-lst-d010" },
       { title: "Opel Grandland 1.5D", price: 23400, image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=300&fit=crop", slug: "opel-grandland-1-5d-2021-split-lst-d011" },
       { title: "Mazda CX-5 2.2D AWD", price: 31200, image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=400&h=300&fit=crop", slug: "mazda-cx-5-2-2d-awd-2022-split-lst-d012" },
     ],

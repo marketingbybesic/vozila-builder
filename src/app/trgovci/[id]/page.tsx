@@ -5,7 +5,24 @@ import { Container } from "@/components/ui/container";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { db } from "@/db";
+import Image from "next/image";
+import { FEATURED_DEALERS, type Dealer } from "@/data/dealers";
 import { MapPin, Phone, ShieldCheck, Mail } from "lucide-react";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** id može biti UUID (DB user) ili slug (static premium dealer). Nikad ne
+ *  prosljeđuj ne-UUID u getUserById → Postgres baca 500 na uuid koloni. */
+async function resolveSeller(id: string) {
+  if (UUID_RE.test(id)) {
+    const seller = await db().getUserById(id);
+    if (seller) return { kind: "db" as const, seller };
+  }
+  const dealer = FEATURED_DEALERS.find((d) => d.slug === id);
+  if (dealer) return { kind: "static" as const, dealer };
+  return null;
+}
 
 export async function generateMetadata({
   params,
@@ -13,11 +30,13 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const seller = await db().getUserById(id);
-  if (!seller) return { title: "Prodavač nije pronađen" };
+  const r = await resolveSeller(id);
+  if (!r) return { title: "Prodavač nije pronađen" };
+  const name = r.kind === "db" ? `${r.seller.firstName} ${r.seller.lastName}` : r.dealer.name;
+  const city = r.kind === "db" ? r.seller.city ?? "Hrvatske" : r.dealer.city;
   return {
-    title: `${seller.firstName} ${seller.lastName} — oglasi`,
-    description: `Svi oglasi prodavača ${seller.firstName} ${seller.lastName} iz ${seller.city ?? "Hrvatske"}.`,
+    title: `${name} — oglasi`,
+    description: `Svi oglasi prodavača ${name} iz ${city}.`,
   };
 }
 
@@ -27,9 +46,15 @@ export default async function DealerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const seller = await db().getUserById(id);
-  if (!seller) notFound();
+  const r = await resolveSeller(id);
+  if (!r) notFound();
 
+  // Static premium dealer (marketing showcase) — nema DB usera.
+  if (r.kind === "static") {
+    return <StaticDealerProfile dealer={r.dealer} />;
+  }
+
+  const seller = r.seller;
   const userListings = await db().getListingsByUser(id);
   const active = userListings.filter((l) => l.status === "active");
 
@@ -105,6 +130,71 @@ export default async function DealerProfilePage({
             ))}
           </div>
         )}
+      </Container>
+    </>
+  );
+}
+
+/** Static premium dealer profile (marketing showcase, no DB user). */
+function StaticDealerProfile({ dealer }: { dealer: Dealer }) {
+  return (
+    <>
+      <section className="bg-[var(--color-surface)] border-b border-[var(--color-line)]">
+        <Container className="py-10 md:py-14">
+          <nav className="text-xs text-[var(--color-muted)] mb-4 flex items-center gap-2">
+            <Link href="/" className="hover:text-[var(--color-ink)]">Početna</Link>
+            <span>›</span>
+            <Link href="/trgovci" className="hover:text-[var(--color-ink)]">Prodavači</Link>
+            <span>›</span>
+            <span className="text-[var(--color-ink-soft)] truncate">{dealer.name}</span>
+          </nav>
+
+          <div className="flex flex-wrap items-start gap-6">
+            <div className="size-20 rounded-full bg-gradient-to-br from-[var(--color-ink)] to-[var(--color-ink-soft)] text-white grid place-items-center font-display text-2xl">
+              {dealer.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+            </div>
+            <div className="flex-1 min-w-[260px]">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <Badge variant="accent">Trgovac</Badge>
+                <Badge variant="outline">
+                  <ShieldCheck className="size-3" /> Verificiran
+                </Badge>
+                <Badge variant="accent">Premium</Badge>
+              </div>
+              <h1 className="font-display text-3xl md:text-4xl tracking-tight">{dealer.name}</h1>
+              <div className="mt-2 text-sm text-[var(--color-ink-soft)] flex flex-wrap items-center gap-x-5 gap-y-1">
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="size-3.5" />
+                  {dealer.city}, {dealer.county}
+                </span>
+              </div>
+              <div className="mt-4 text-sm text-[var(--color-ink-soft)]">
+                {dealer.listings.length} {dealer.listings.length === 1 ? "vozilo" : "vozila"} u ponudi
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <Container className="py-10">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {dealer.listings.map((l) => (
+            <div
+              key={l.slug}
+              className="rounded-[var(--radius-md)] overflow-hidden border border-[var(--color-line)] bg-[var(--color-surface)]"
+            >
+              <div className="aspect-[4/3] relative bg-[var(--color-line)]">
+                <Image src={l.image} alt={l.title} fill className="object-cover" sizes="(max-width:640px) 100vw, 33vw" />
+              </div>
+              <div className="p-4">
+                <div className="font-medium text-[var(--color-ink)] truncate">{l.title}</div>
+                <div className="mt-1 font-display text-xl text-[var(--color-accent-dark)]">
+                  {l.price.toLocaleString("hr-HR")} €
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Container>
     </>
   );
