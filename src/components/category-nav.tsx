@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Car, Bike, Truck, Caravan, ChevronDown } from "lucide-react";
 import { Backhoe, Wheel } from "@/components/icons/tabler";
 import { cn } from "@/lib/utils";
-import { CATEGORIES, subcategoryHref } from "@/data/categories";
+import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
+import { ChevronLeft } from "lucide-react";
 
 const ICONS = {
   car: Car,
@@ -18,8 +19,15 @@ const ICONS = {
 
 export function CategoryNav() {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [openSubSlug, setOpenSubSlug] = useState<string | null>(null);
 
   const openCategory = CATEGORIES.find((c) => c.slug === openSlug);
+  const openSub = openCategory?.subcategories.find((s) => s.slug === openSubSlug);
+
+  const selectCategory = (slug: string) => {
+    setOpenSlug((prev) => (prev === slug ? null : slug));
+    setOpenSubSlug(null);
+  };
 
   return (
     <nav aria-label="Kategorije vozila">
@@ -31,7 +39,7 @@ export function CategoryNav() {
             <li key={cat.slug}>
               <button
                 type="button"
-                onClick={() => setOpenSlug(isOpen ? null : cat.slug)}
+                onClick={() => selectCategory(cat.slug)}
                 aria-expanded={isOpen}
                 className={cn(
                   "group relative flex flex-col items-center justify-center gap-1.5 w-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border transition-all",
@@ -61,27 +69,83 @@ export function CategoryNav() {
           ostale kategorije vode podkategorije na obične rezultate (/oglasi). */}
       {openCategory && (
         <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
-              {openCategory.name}
-            </span>
-          </div>
-          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-            {openCategory.subcategories.map((sub) => (
-              <li key={sub.slug}>
-                <Link
-                  href={
-                    openCategory.slug === "auto" && sub.slug === "auto-oglasi"
-                      ? `/oglasi/napredno?category=auto`
-                      : subcategoryHref(openCategory.slug, sub.slug)
-                  }
-                  className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
+          {openSub && hasChildren(openSub) ? (
+            // 2. nivo — children odabrane podkategorije (dijelovi)
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setOpenSubSlug(null)}
+                  className="flex items-center gap-1 text-[11px] uppercase tracking-wider font-semibold text-white/60 hover:text-white transition-colors"
                 >
-                  {sub.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  <ChevronLeft className="size-3.5" />
+                  {openCategory.name}
+                </button>
+                <span className="text-white/30">/</span>
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
+                  {openSub.name}
+                </span>
+              </div>
+              <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                <li>
+                  <Link
+                    href={subcategoryHref(openCategory.slug, openSub.slug)}
+                    className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs font-medium text-[var(--color-accent)] bg-white/[0.04] hover:bg-white/10 transition-colors"
+                  >
+                    Sve: {openSub.name}
+                  </Link>
+                </li>
+                {openSub.children!.map((child) => (
+                  <li key={child.slug}>
+                    <Link
+                      href={subChildHref(openCategory.slug, openSub.slug, child.slug)}
+                      className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
+                    >
+                      {child.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            // 1. nivo — podkategorije
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] uppercase tracking-wider font-semibold text-[var(--color-accent)]">
+                  {openCategory.name}
+                </span>
+              </div>
+              <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {openCategory.subcategories.map((sub) =>
+                  hasChildren(sub) ? (
+                    <li key={sub.slug}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenSubSlug(sub.slug)}
+                        className="w-full flex items-center justify-between gap-1 rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        <span className="text-left">{sub.name}</span>
+                        <ChevronDown className="size-3.5 -rotate-90 text-white/40 shrink-0" />
+                      </button>
+                    </li>
+                  ) : (
+                    <li key={sub.slug}>
+                      <Link
+                        href={
+                          openCategory.slug === "auto" && sub.slug === "auto-oglasi"
+                            ? `/oglasi/napredno?category=auto`
+                            : subcategoryHref(openCategory.slug, sub.slug)
+                        }
+                        className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        {sub.name}
+                      </Link>
+                    </li>
+                  )
+                )}
+              </ul>
+            </>
+          )}
         </div>
       )}
     </nav>

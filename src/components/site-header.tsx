@@ -6,15 +6,18 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageSquare, User, Plus, SlidersHorizontal, Menu, X, ChevronDown } from "lucide-react";
 import { HeaderSearch } from "@/components/header-search";
-import { CATEGORIES, subcategoryHref } from "@/data/categories";
+import { ChevronRight } from "lucide-react";
+import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [openCat, setOpenCat] = useState<string | null>(null);
+  const [openSub, setOpenSub] = useState<string | null>(null);
 
   const closeMenu = () => {
     setOpen(false);
     setOpenCat(null);
+    setOpenSub(null);
   };
 
   return (
@@ -105,20 +108,63 @@ export function SiteHeader() {
                   </button>
                   {isOpen && (
                     <div className="pl-3 pb-1 flex flex-col">
-                      {cat.subcategories.map((sub) => (
-                        <Link
-                          key={sub.slug}
-                          href={
-                            cat.slug === "auto" && sub.slug === "auto-oglasi"
-                              ? `/oglasi/napredno?category=auto`
-                              : subcategoryHref(cat.slug, sub.slug)
-                          }
-                          onClick={closeMenu}
-                          className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
+                      {cat.subcategories.map((sub) => {
+                        const subOpen = openSub === `${cat.slug}:${sub.slug}`;
+                        if (hasChildren(sub)) {
+                          return (
+                            <div key={sub.slug}>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setOpenSub(subOpen ? null : `${cat.slug}:${sub.slug}`)
+                                }
+                                aria-expanded={subOpen}
+                                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
+                              >
+                                {sub.name}
+                                <ChevronRight
+                                  className={`size-3.5 text-[var(--color-ink-soft)] transition-transform ${subOpen ? "rotate-90" : ""}`}
+                                />
+                              </button>
+                              {subOpen && (
+                                <div className="pl-3 flex flex-col border-l border-[var(--color-line)] ml-3">
+                                  <Link
+                                    href={subcategoryHref(cat.slug, sub.slug)}
+                                    onClick={closeMenu}
+                                    className="px-3 py-1.5 rounded-md text-[13px] font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40"
+                                  >
+                                    Sve: {sub.name}
+                                  </Link>
+                                  {sub.children!.map((child) => (
+                                    <Link
+                                      key={child.slug}
+                                      href={subChildHref(cat.slug, sub.slug, child.slug)}
+                                      onClick={closeMenu}
+                                      className="px-3 py-1.5 rounded-md text-[13px] text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
+                                    >
+                                      {child.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return (
+                          <Link
+                            key={sub.slug}
+                            href={
+                              cat.slug === "auto" && sub.slug === "auto-oglasi"
+                                ? `/oglasi/napredno?category=auto`
+                                : subcategoryHref(cat.slug, sub.slug)
+                            }
+                            onClick={closeMenu}
+                            className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
+                          >
+                            {sub.name}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

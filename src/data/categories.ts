@@ -3,6 +3,7 @@ import { MAKES as AUTO_MAKES } from "./makes";
 export type Subcategory = {
   slug: string;
   name: string; // Croatian
+  children?: Subcategory[]; // 2. nivo (avto.net "Rezervni deli" logika, npr. dijelovi)
 };
 
 export type Category = {
@@ -87,19 +88,156 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
   { slug: "kamping-oprema", name: "Kamping oprema" },
 ];
 
+// DIJELOVI I OPREMA — 2-nivoa struktura (avto.net "Rezervni deli in oprema").
+// Svaka gornja kategorija ima svoje podkategorije koje se otvaraju u submenu.
 const DIJELOVI_SUBS: Subcategory[] = [
-  { slug: "auto-dijelovi", name: "Auto dijelovi" },
-  { slug: "auto-dodatna-oprema", name: "Auto dodatna oprema" },
-  { slug: "multimedija", name: "Multimedija" },
-  { slug: "moto-dijelovi", name: "Moto dijelovi i oprema" },
-  { slug: "za-gospodarska", name: "Za gospodarska vozila" },
-  { slug: "za-gradevinske-strojeve", name: "Za građevinske strojeve" },
-  { slug: "za-poljoprivredne-strojeve", name: "Za poljoprivredne strojeve" },
-  { slug: "za-vilicare", name: "Za viličare" },
-  { slug: "servisna-oprema", name: "Servisna oprema" },
-  { slug: "gume", name: "Gume" },
-  { slug: "felge", name: "Felge" },
-  { slug: "ulja-tekucine", name: "Ulja i tekućine" },
+  {
+    slug: "auto-dijelovi",
+    name: "Auto dijelovi",
+    children: [
+      { slug: "motor-dijelovi", name: "Motor i dijelovi motora" },
+      { slug: "mjenjac-transmisija", name: "Mjenjač i transmisija" },
+      { slug: "kocnice", name: "Kočnice" },
+      { slug: "ovjes-amortizeri", name: "Ovjes i amortizeri" },
+      { slug: "upravljac-volan", name: "Upravljački sustav" },
+      { slug: "ispuh-katalizator", name: "Ispuh i katalizator" },
+      { slug: "hladenje-grijanje", name: "Hlađenje i grijanje" },
+      { slug: "elektrika-senzori", name: "Elektrika i senzori" },
+      { slug: "akumulatori", name: "Akumulatori" },
+      { slug: "karoserija-limarija", name: "Karoserija i limarija" },
+      { slug: "stakla-retrovizori", name: "Stakla i retrovizori" },
+      { slug: "svjetla-zarulje", name: "Svjetla i žarulje" },
+      { slug: "filteri", name: "Filteri" },
+      { slug: "gorivo-sustav", name: "Sustav goriva" },
+      { slug: "unutrasnjost", name: "Dijelovi unutrašnjosti" },
+    ],
+  },
+  {
+    slug: "auto-dodatna-oprema",
+    name: "Auto dodatna oprema",
+    children: [
+      { slug: "krovni-nosaci", name: "Krovni nosači i kutije" },
+      { slug: "vucne-kuke", name: "Vučne kuke" },
+      { slug: "presvlake-tepisi", name: "Presvlake i tepisi" },
+      { slug: "lanci-snijeg", name: "Lanci i oprema za snijeg" },
+      { slug: "auto-kozmetika", name: "Auto kozmetika" },
+      { slug: "alarmi-zastita", name: "Alarmi i zaštita" },
+      { slug: "djecja-sjedalica", name: "Dječje sjedalice" },
+      { slug: "tuning", name: "Tuning oprema" },
+    ],
+  },
+  {
+    slug: "multimedija",
+    name: "Multimedija",
+    children: [
+      { slug: "radio-navigacija", name: "Radio i navigacija" },
+      { slug: "zvucnici-pojacala", name: "Zvučnici i pojačala" },
+      { slug: "kamere-parkiranje", name: "Kamere i senzori parkiranja" },
+      { slug: "android-carplay", name: "Android / CarPlay" },
+      { slug: "antene", name: "Antene" },
+    ],
+  },
+  {
+    slug: "moto-dijelovi",
+    name: "Moto dijelovi i oprema",
+    children: [
+      { slug: "moto-motor", name: "Motor i dijelovi" },
+      { slug: "moto-kocnice", name: "Kočnice" },
+      { slug: "moto-ovjes", name: "Ovjes" },
+      { slug: "moto-ispuh", name: "Ispuh" },
+      { slug: "moto-elektrika", name: "Elektrika" },
+      { slug: "moto-oplata", name: "Oplata i karoserija" },
+      { slug: "kacige", name: "Kacige" },
+      { slug: "moto-odjeca", name: "Moto odjeća i zaštita" },
+    ],
+  },
+  {
+    slug: "za-gospodarska",
+    name: "Za gospodarska vozila",
+    children: [
+      { slug: "gv-motor", name: "Motor i pogon" },
+      { slug: "gv-kocnice", name: "Kočnice i zračni sustav" },
+      { slug: "gv-ovjes", name: "Ovjes i osovine" },
+      { slug: "gv-elektrika", name: "Elektrika" },
+      { slug: "gv-kabina", name: "Kabina i karoserija" },
+      { slug: "gv-nadogradnja", name: "Nadogradnje i sanduci" },
+    ],
+  },
+  {
+    slug: "za-gradevinske-strojeve",
+    name: "Za građevinske strojeve",
+    children: [
+      { slug: "gs-hidraulika", name: "Hidraulika" },
+      { slug: "gs-podvozje", name: "Podvozje i gusjenice" },
+      { slug: "gs-zlice-prikljucci", name: "Žlice i priključci" },
+      { slug: "gs-motor", name: "Motor i pogon" },
+      { slug: "gs-elektrika", name: "Elektrika" },
+    ],
+  },
+  {
+    slug: "za-poljoprivredne-strojeve",
+    name: "Za poljoprivredne strojeve",
+    children: [
+      { slug: "ps-motor", name: "Motor i pogon" },
+      { slug: "ps-hidraulika", name: "Hidraulika" },
+      { slug: "ps-gume", name: "Gume i kotači" },
+      { slug: "ps-prikljucci", name: "Priključci" },
+      { slug: "ps-elektrika", name: "Elektrika" },
+    ],
+  },
+  {
+    slug: "za-vilicare",
+    name: "Za viličare",
+    children: [
+      { slug: "vil-vilice", name: "Vilice i nosači" },
+      { slug: "vil-baterije", name: "Baterije i punjači" },
+      { slug: "vil-gume", name: "Gume i kotači" },
+      { slug: "vil-hidraulika", name: "Hidraulika" },
+    ],
+  },
+  {
+    slug: "servisna-oprema",
+    name: "Servisna oprema",
+    children: [
+      { slug: "alat-rucni", name: "Ručni alat" },
+      { slug: "dijagnostika", name: "Dijagnostika" },
+      { slug: "dizalice-podizaci", name: "Dizalice i podizači" },
+      { slug: "kompresori", name: "Kompresori" },
+      { slug: "radionicka-oprema", name: "Radionička oprema" },
+    ],
+  },
+  {
+    slug: "gume",
+    name: "Gume",
+    children: [
+      { slug: "ljetne-gume", name: "Ljetne gume" },
+      { slug: "zimske-gume", name: "Zimske gume" },
+      { slug: "cjelogodisnje-gume", name: "Cjelogodišnje gume" },
+      { slug: "teretne-gume", name: "Teretne gume" },
+      { slug: "moto-gume", name: "Moto gume" },
+    ],
+  },
+  {
+    slug: "felge",
+    name: "Felge",
+    children: [
+      { slug: "aluminijske-felge", name: "Aluminijske felge" },
+      { slug: "celicne-felge", name: "Čelične felge" },
+      { slug: "cjelina-guma-felga", name: "Komplet guma + felga" },
+      { slug: "ratkape", name: "Ratkape" },
+    ],
+  },
+  {
+    slug: "ulja-tekucine",
+    name: "Ulja i tekućine",
+    children: [
+      { slug: "motorno-ulje", name: "Motorno ulje" },
+      { slug: "ulje-mjenjac", name: "Ulje za mjenjač" },
+      { slug: "antifriz-rashladno", name: "Antifriz i rashladna tekućina" },
+      { slug: "kocnicna-tekucina", name: "Kočnička tekućina" },
+      { slug: "aditivi", name: "Aditivi" },
+    ],
+  },
 ];
 
 // Starter brand sets for non-auto categories. Industry-standard makes;
@@ -193,8 +331,8 @@ export function getDefaultCategory(): Category {
  */
 export const ADVANCED_SUBCATEGORIES: Record<string, string[]> = {
   auto: ["auto-oglasi"],
-  moto: ["motocikl"],
-  gospodarska: ["dostavna", "kamioni"],
+  moto: ["motocikl", "skuter", "atv-utv"],
+  gospodarska: ["dostavna", "kamioni", "prikolice"],
   mehanizacija: ["gradevinski-strojevi", "poljoprivredni-strojevi", "vilicari"],
   "prosti-cas": ["kamperi", "kamp-prikolice"],
   dijelovi: [],
@@ -211,4 +349,24 @@ export function subcategoryHref(categorySlug: string, subSlug: string): string {
     return `/oglasi/napredno?category=${categorySlug}&subcategory=${subSlug}`;
   }
   return `/oglasi?category=${categorySlug}&subcategory=${subSlug}`;
+}
+
+/**
+ * Link za klik na podkategoriju 2. nivoa (dijelovi, avto.net logika).
+ * parent = gornja kategorija (npr. auto-dijelovi), child = konkretna vrsta (kocnice).
+ * Vodi na rezultate filtrirane po subcategory=parent & vrsta=child.
+ */
+export function subChildHref(
+  categorySlug: string,
+  parentSlug: string,
+  childSlug: string,
+): string {
+  // 2. nivo se filtrira preko attr engine-a (a.vrsta=<child>) → bez izmjena
+  // filter enginea; radi automatski kad oglasi dobiju attributes.vrsta.
+  return `/oglasi?category=${categorySlug}&subcategory=${parentSlug}&a.vrsta=${childSlug}`;
+}
+
+/** Ima li podkategorija drugi nivo (children)? */
+export function hasChildren(sub: Subcategory): boolean {
+  return Array.isArray(sub.children) && sub.children.length > 0;
 }
