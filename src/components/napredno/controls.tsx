@@ -11,20 +11,22 @@ import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
   Tractor, Bike, Box, Disc3, type LucideIcon,
 } from "lucide-react";
+import { AUTO_BODY_ICON } from "./body-icons";
 
 export type Opt = { value: string; label: string };
 
+/** Ikona može biti lucide ili naša SVG silueta — obje primaju `className`. */
+type IconComp = React.ComponentType<{ className?: string }>;
+
 /**
  * Ikona po obliku karoserije (radi za sve kategorije: auto/gospodarska/...).
- * PRIVREMENO: lucide nema točne bočne siluete karoserija pa auto-podtipovi
- * (Limuzina/SUV/Coupe/...) dijele Car. Vehicle-type ikone (Truck/Bus/Caravan/
- * Forklift) SU točne. TODO: zamijeniti pravim SVG siluetama (vidi memory).
+ * AUTO tipovi (Limuzina/SUV/Coupe/...) sad koriste PRAVE bočne siluete iz
+ * body-icons.tsx. Vehicle-type ikone (Truck/Bus/Caravan/Forklift) ostaju lucide.
  */
-const BODY_ICON: Record<string, LucideIcon> = {
-  // auto
-  Microcar: Car, Limuzina: Car, Hatchback: Car, Karavan: Car, Monovolumen: Car,
-  SUV: Car, Coupe: Car, Cabrio: Car, Pickup: Truck,
-  // gospodarska
+const BODY_ICON: Record<string, IconComp> = {
+  // auto — prave siluete
+  ...AUTO_BODY_ICON,
+  // gospodarska — lucide vehicle ikone (točne)
   Furgon: Truck, Kombi: Truck, Kamionet: Truck, "Šasija s kabinom": Truck,
   "Šasija s nadgradnjom": Container, "Pick up": Truck,
   Autobusi: Bus, Kamioni: Truck, "Dostavna vozila": Truck, "Teretne prikolice": Container,
@@ -32,7 +34,7 @@ const BODY_ICON: Record<string, LucideIcon> = {
   Kamper: Caravan, "Mobilne kućice": Caravan, Viličari: Forklift, Traktor: Tractor,
   Motocikl: Bike, Skuter: Bike,
 };
-function bodyIcon(label: string): LucideIcon {
+function bodyIcon(label: string): IconComp {
   if (BODY_ICON[label]) return BODY_ICON[label];
   const l = label.toLowerCase();
   if (l.includes("kamion") || l.includes("furgon") || l.includes("dostav") || l.includes("pickup") || l.includes("pick up")) return Truck;
@@ -59,6 +61,12 @@ export function BodyTypePicker({
         {options.map((o) => {
           const Icon = bodyIcon(o.label);
           const active = values.includes(o.value);
+          // Auto siluete su 2:1 (viewBox 48×24) → treba h-4 w-8; lucide 1:1 → size-4.
+          const isSilhouette = o.label in AUTO_BODY_ICON;
+          const iconCls =
+            (isSilhouette ? "h-4 w-8 " : "size-4 ") +
+            "shrink-0 " +
+            (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]");
           return (
             <button
               key={o.value}
@@ -73,7 +81,7 @@ export function BodyTypePicker({
                   : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]")
               }
             >
-              <Icon className={"size-4 shrink-0 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
+              <Icon className={iconCls} />
               <span className="min-w-0 leading-tight">{o.label}</span>
             </button>
           );
