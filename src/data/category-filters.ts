@@ -219,11 +219,11 @@ const AUTO_FIELDS: FilterField[] = [
     options: [
       { value: "bez-stete", label: "Bez štete" },
       { value: "primjereno-godinama", label: "Za svoje godine primjereno" },
+      // Karlo 27.07: tri odvojena "oštećen prednji/stražnji/bočni dio" spojena
+      // u jedno "Oštećeno" (vrijedi i za AUTO i za GOSPODARSKU).
+      { value: "osteceno", label: "Oštećeno" },
       { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
-      { value: "ostecen-prednji", label: "Oštećen prednji dio" },
-      { value: "ostecen-straznji", label: "Oštećen stražnji dio" },
-      { value: "ostecen-bocni", label: "Oštećen bočni dio" },
     ] },
   { key: "floodState", label: "Poplavljen", type: "select", storage: "attr", group: "Povijest",
     scope: ["ostecen-u-kvaru"],
@@ -309,15 +309,35 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "e-bicikl", label: "E-bicikl" },
       { value: "e-moto", label: "E-moto" },
     ] },
+  // Karlo 27.07: Stil stoji ODMAH ispod podkategorije i mijenja se po njoj.
+  // Motocikl: + Trokolica i Trike. Skuter i ATV imaju vlastite liste.
   { key: "motoCategory", label: "Stil", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["motocikl", "moped", "minimoto", "oldtimer", "e-moto"],
     options: [
       v("Sport"), v("Chopper"), v("Tourer"),
       { value: "naked", label: "Naked bike" },
       v("Enduro"), v("Supermoto"), v("Trial"), v("Cross"),
+      v("Trokolica"), v("Trike"),
+    ] },
+  { key: "motoCategory", label: "Stil", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["skuter", "e-skuter"],
+    options: [
+      v("Skuter"),
+      { value: "maxi-skuter", label: "Maxi skuter" },
+      { value: "3-4-kotacni-skuter", label: "3-4 kotačni skuter" },
+    ] },
+  { key: "motoCategory", label: "Stil", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["atv-utv"],
+    options: [
+      v("ATV"), v("UTV"),
+      { value: "golf-car", label: "Golf car" },
+      v("Trikolica"), v("Trike"),
     ] },
 
-  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 2500, step: 50, storage: "column", group: "Motor" },
-  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 220, step: 1, storage: "column", group: "Motor" },
+  // Karlo 27.07: obujam do 1500 cm³, snaga do 112 kW (ljestvice u MOTO_ENGINE_STEPS /
+  // MOTO_POWER_STEPS ispod — Od/Do izbornik koristi njih, ne linearni step).
+  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 1500, step: 50, storage: "column", group: "Motor" },
+  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 112, step: 1, storage: "column", group: "Motor" },
   { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
     options: [v("Benzin"), v("Električni")] },
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
@@ -337,12 +357,7 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "remen", label: "Remen" },
       { value: "direktan", label: "Direktan" },
     ] },
-  { key: "coolingType", label: "Hlađenje", type: "select", storage: "attr", group: "Motor",
-    options: [
-      { value: "zrak", label: "Zračno" },
-      { value: "tekucina", label: "Tekućinom" },
-      { value: "ulje", label: "Uljno" },
-    ] },
+  // Karlo 27.07: "Hlađenje" izbačeno iz grupe Motor.
 
   // EV moto — samo e-skuter/e-bicikl/e-moto (domenska analiza)
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100,
@@ -356,35 +371,10 @@ const MOTO_FIELDS: FilterField[] = [
   { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna",
     scope: ["e-skuter", "e-bicikl"] },
 
-  // ATV / UTV — samo atv-utv (domenska analiza)
-  { key: "driveAtvType", label: "Pogon (ATV)", type: "select", storage: "attr", group: "Specifikacije",
-    scope: ["atv-utv"],
-    options: [
-      { value: "2x4", label: "2x4" },
-      { value: "4x4", label: "4x4" },
-    ] },
-  { key: "seatsAtvCount", label: "Broj sjedala", type: "select", storage: "attr", group: "Specifikacije",
-    scope: ["atv-utv"],
-    options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "towingHook", label: "Vučna kuka", type: "toggle", storage: "attr", group: "Specifikacije",
-    scope: ["atv-utv"] },
-
-  // Motorne sanke — samo motorne-sanke (domenska analiza)
-  { key: "trackLength", label: "Dužina gusjenice", type: "range", unit: "mm", min: 2000, max: 4500, step: 50,
-    storage: "attr", group: "Specifikacije", scope: ["motorne-sanke"] },
-  { key: "trackWidth", label: "Širina gusjenice", type: "range", unit: "mm", min: 250, max: 700, step: 10,
-    storage: "attr", group: "Specifikacije", scope: ["motorne-sanke"] },
-
-  // Specifikacije univerzalno (domenska analiza)
-  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 600, step: 5,
-    storage: "attr", group: "Specifikacije" },
-  { key: "seatHeight", label: "Visina sjedala", type: "range", unit: "mm", min: 600, max: 950, step: 10,
-    storage: "attr", group: "Specifikacije" },
-  { key: "fuelCapacity", label: "Kapacitet spremnika", type: "range", unit: "L", min: 0, max: 40, step: 1,
-    storage: "attr", group: "Specifikacije" },
-
-  { key: "licenceClass", label: "Vozačka kategorija", type: "multi", storage: "attr", group: "Pravno",
-    options: ["AM","A1","A2","A","B"].map(v) },
+  // Karlo 27.07: cijela grupa "Specifikacije" izbačena iz MOTO
+  // (težina, visina sjedala, kapacitet spremnika, ATV pogon/sjedala/vučna kuka,
+  //  dužina i širina gusjenice). ATV koristi isti izbornik kao motocikl.
+  // Karlo 27.07: grupa "Pravno" (vozačka kategorija) izbačena.
 
   { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Crvena","Plava","Zelena","Žuta","Narančasta","Siva","Srebrna"].map(v) },
@@ -420,10 +410,8 @@ const MOTO_FIELDS: FilterField[] = [
     ] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    options: [v("prodaja"), v("najam")] },
+  // Karlo 27.07: iz grupe "Ostalo" izbačeni "Tip ponude" i "Na zalihi".
   { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "inStock", label: "Na zalihi", type: "toggle", storage: "attr", group: "Ostalo" },
 ];
 
 // ── GOSPODARSKA — full 34-field taxonomy from avto.net ─────────────────
@@ -438,8 +426,46 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "prikolice", label: "Teretne prikolice" },
       { value: "utv", label: "UTV vozila" },
       { value: "najam", label: "Ponude za najam" },
+    ],
+    // Karlo 27.07: "Vrsta" izbačena iz Dostavne (ostale podkat. je zadržavaju
+    // jer im je to jedini način prebacivanja između vrsta vozila).
+    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
+  // Karlo 27.07: KAMIONI su na avto.netu razvrstani po tipu nadgradnje, a to nam
+  // je nedostajalo. Stoji odmah ispod podkategorije (grupa "Vrsta" je 2. po redu).
+  { key: "truckType", label: "Tip vozila", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["kamioni"],
+    options: [
+      { value: "kiper", label: "Kiper" },
+      { value: "sanduk", label: "Sanduk / otvoreni tovarni prostor" },
+      { value: "sanduk-cerada", label: "Sanduk s ceradom" },
+      { value: "furgon", label: "Furgon / zatvoreni sanduk" },
+      { value: "hladnjaca", label: "Hladnjača" },
+      { value: "izotermni", label: "Izotermni" },
+      { value: "cisterna", label: "Cisterna" },
+      { value: "silos", label: "Silos" },
+      { value: "autodizalica", label: "Autodizalica" },
+      { value: "s-dizalicom", label: "Kamion s dizalicom" },
+      { value: "sasija-kabina", label: "Šasija s kabinom" },
+      { value: "tegljac", label: "Tegljač / vučno vozilo" },
+      { value: "autotransporter", label: "Autotransporter" },
+      { value: "auto-mjesalica", label: "Auto-mješalica (mikser)" },
+      { value: "betonska-pumpa", label: "Betonska pumpa" },
+      { value: "smecar", label: "Smećar / komunalno" },
+      { value: "cistilica", label: "Čistilica" },
+      { value: "vatrogasni", label: "Vatrogasni" },
+      { value: "sanitetski", label: "Sanitetski" },
+      { value: "vojni", label: "Vojni" },
+      { value: "podvozje-siroko", label: "Vozilo za prijevoz strojeva" },
+      { value: "drvo", label: "Za prijevoz drva" },
+      { value: "stoka", label: "Za prijevoz stoke" },
+      { value: "kontejner", label: "Nosač kontejnera / rolo kiper" },
+      { value: "sleper", label: "Šleper / vučna služba" },
+      { value: "radna-platforma", label: "Radna platforma / košara" },
+      { value: "ostalo", label: "Ostalo" },
     ] },
+  // Karlo 27.07: "Oblik karoserije" izbačen iz Kamiona (tip vozila ga zamjenjuje).
   { key: "bodyType", label: "Karoserija", type: "multi", storage: "column", group: "Vrsta",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       v("Furgon"), v("Kombi"), { value: "kamionet", label: "Kamionet" },
       { value: "sasija-kabina", label: "Šasija s kabinom" },
@@ -458,37 +484,48 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
     options: [v("Ručni"), v("Automatski")] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
-  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 16000, step: 100, storage: "column", group: "Motor" },
+  // Karlo 27.07: "Obujam" izbačen iz Dostavne i Kamiona.
+  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 16000, step: 100, storage: "column", group: "Motor",
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
+  // Karlo 27.07: "Emisijska norma" izbačena iz Dostavne i Kamiona.
   { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
+    scope: ["autobusi", "prikolice", "utv", "najam"],
     options: ["EURO 3","EURO 4","EURO 5","EURO 6","EURO 6d","EURO 7"].map(v) },
 
   { key: "seats", label: "Broj sjedala", type: "range", min: 1, max: 80, step: 1, storage: "column", group: "Karoserija" },
+  // Karlo 27.07: stražnja i bočna vrata — skraćene liste ("Sve" je prazna vrijednost dropdowna).
   { key: "rearDoors", label: "Stražnja vrata", type: "select", storage: "attr", group: "Karoserija",
     options: [
-      { value: "krilna", label: "Krilna vrata" },
-      { value: "rolo", label: "Roleta" },
-      { value: "klizna", label: "Klizna" },
+      { value: "podizna", label: "Podizna vrata" },
+      { value: "dvokrilna", label: "Dvokrilna vrata" },
     ] },
   { key: "sideDoors", label: "Bočna vrata", type: "select", storage: "attr", group: "Karoserija",
     options: [
-      { value: "klizna-l", label: "Klizna lijeva" },
-      { value: "klizna-d", label: "Klizna desna" },
+      { value: "klizna-jednostrana", label: "Klizna jednostrana" },
       { value: "obje", label: "Obje klizne" },
     ] },
 
-  { key: "gvwKg", label: "Ukupna masa", type: "range", unit: "kg", min: 0, max: 60000, step: 100, storage: "attr", group: "Specifikacije" },
-  { key: "payloadKg", label: "Korisna nosivost", type: "range", unit: "kg", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije" },
+  // Karlo 27.07: cijela grupa "Specifikacije" izbačena iz DOSTAVNE.
+  // Ostale podkategorije (kamioni/autobusi/prikolice/UTV/najam) je zadržavaju —
+  // zato scope, a ne brisanje polja.
+  { key: "gvwKg", label: "Ukupna masa", type: "range", unit: "kg", min: 0, max: 60000, step: 100, storage: "attr", group: "Specifikacije",
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
+  { key: "payloadKg", label: "Korisna nosivost", type: "range", unit: "kg", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije",
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
   { key: "axles", label: "Broj osovina", type: "select", storage: "attr", group: "Specifikacije",
+    scope: ["autobusi", "prikolice", "utv", "najam"],
     options: [2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "wheelbaseMm", label: "Međuosovinski razmak", type: "range", unit: "mm", min: 2000, max: 7500, step: 50, storage: "attr", group: "Specifikacije" },
+  { key: "wheelbaseMm", label: "Međuosovinski razmak", type: "range", unit: "mm", min: 2000, max: 7500, step: 50, storage: "attr", group: "Specifikacije",
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
   { key: "axleConfiguration", label: "Konfiguracija osovina", type: "select", storage: "attr", group: "Specifikacije",
-    scope: ["kamioni", "autobusi"],
+    scope: ["autobusi"],
     options: ["4x2","4x4","6x2","6x4","6x6","8x4"].map(v) },
   { key: "cargoVolumeCbm", label: "Volumen tovarnog prostora", type: "range", unit: "m³", min: 0, max: 120, step: 1,
-    storage: "attr", group: "Specifikacije", scope: ["dostavna", "kamioni", "prikolice"] },
+    storage: "attr", group: "Specifikacije", scope: ["prikolice"] },
   { key: "cargoLengthM", label: "Dužina tovarnog prostora", type: "range", unit: "m", min: 0, max: 18, step: 0.1,
-    storage: "attr", group: "Specifikacije", scope: ["dostavna", "kamioni", "prikolice"] },
+    storage: "attr", group: "Specifikacije", scope: ["prikolice"] },
   { key: "brakes", label: "Kočni sustav", type: "select", storage: "attr", group: "Specifikacije",
+    scope: ["autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "abs", label: "ABS" },
       { value: "ebs", label: "EBS" },
@@ -555,7 +592,10 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "busWc", label: "WC", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
   { key: "busTv", label: "TV / multimedija", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
 
+  // Karlo 27.07: u DOSTAVNOJ od "Povijesti" ostaje samo Stanje, i to s istom
+  // listom kao AUTO ("Stanje karoserije"). Ostale podkat. zadržavaju punu grupu.
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
+    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
@@ -565,18 +605,23 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Povijest",
     options: [
       { value: "bez-stete", label: "Bez štete" },
+      { value: "primjereno-godinama", label: "Za svoje godine primjereno" },
+      // Karlo 27.07: tri odvojena "oštećen prednji/stražnji/bočni dio" spojena
+      // u jedno "Oštećeno" (vrijedi i za AUTO i za GOSPODARSKU).
+      { value: "osteceno", label: "Oštećeno" },
       { value: "lakse-popravljeno", label: "Lakša šteta popravljena" },
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
     ] },
-  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
-  { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest" },
+  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
+    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
+  { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest",
+    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
 
   { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Bijela","Plava","Crvena","Crna","Siva","Žuta","Zelena","Narančasta"].map(v) },
 
-  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    options: [v("prodaja"), v("najam")] },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
+  // Karlo 27.07: grupa "Ostalo" izbačena iz GOSPODARSKE — "Tip ponude" i
+  // "Garancija" već stoje u gornjem osnovnom panelu, ovdje su bili duplikat.
 ];
 
 // ── MEHANIZACIJA (machinery) — auto.net stub, our taxonomy ─────────────

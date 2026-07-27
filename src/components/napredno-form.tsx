@@ -15,7 +15,7 @@ import { MAKES } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -36,6 +36,9 @@ const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 250
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
 const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
 const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
+// Karlo 27.07: moto ima vlastite ljestvice (auto ostaje nepromijenjen).
+const MOTO_ENGINE_STEPS = [50, 125, 250, 350, 500, 750, 1000, 1500];
+const MOTO_POWER_STEPS = [7.5, 15, 22, 30, 37, 56, 75, 93, 112];
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i);
 
@@ -112,15 +115,19 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const [showMore, setShowMore] = useState(false);
 
   const isAuto = category === "auto";
+  const isMoto = category === "moto";
 
   const makeOptions: Opt[] = useMemo(() => {
     const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     return list.map((m) => ({ value: m.slug, label: m.name }));
   }, [categoryDef]);
+  // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
+  // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {
     if (!make) return [];
-    return (MAKES.find((m) => m.slug === make)?.models ?? []).map((m) => ({ value: m, label: m }));
-  }, [make]);
+    return (makesDbFor(category).find((m) => m.slug === make)?.models ?? [])
+      .map((m) => ({ value: m, label: m }));
+  }, [make, category]);
 
   const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));
 
@@ -149,7 +156,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // ne smiju se duplicirati gore — njihovi dodatni attr specifični filteri
   // (cilindri, takt, tip boje...) idu u "Više filtera".
   const HARDCODED_GROUPS = new Set(["Motor", "Karoserija", "Boja", "Cijena"]);
-  const basicDynamic = dynamicGroups.filter((g) => BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name));
+  // Karlo 27.07: grupa "Vrsta" (Vrsta vozila + Stil / Tip vozila) mora stajati
+  // ODMAH ispod podkategorije, a ne iza Cijene i Motora — zato se vadi iz
+  // basicDynamic i renderira zasebno u 1. panelu.
+  const vrstaGroup = dynamicGroups.find((g) => g.name === "Vrsta");
+  const basicDynamic = dynamicGroups.filter((g) => g.name !== "Vrsta" && BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name));
   const advancedDynamic = dynamicGroups.filter((g) => !BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name));
 
   // Broj aktivnih atributa (za badge na "Više filtera").
@@ -269,7 +280,17 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   };
 
   // hasField: prikaži hardkodiranu sekciju samo ako kategorija ima to polje.
-  const hasField = (key: string) => filterDef.fields.some((f) => f.key === key);
+  // Karlo 27.07: mora poštovati `scope` kao i dynamicFields — inače polje koje
+  // je scope-om izbačeno iz podkategorije (npr. Obujam kod kamiona) i dalje
+  // visi u hardkodiranoj sekciji "Motor i karoserija".
+  const hasField = (key: string) =>
+    filterDef.fields.some((f) => {
+      if (f.key !== key) return false;
+      if (f.scope && f.scope.length > 0) {
+        return subcategory ? f.scope.includes(subcategory) : false;
+      }
+      return true;
+    });
 
   // Chips pregled trenutno aktivnih filtera (uklonjivi).
   const activeChips: Chip[] = useMemo(() => {
@@ -445,6 +466,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             placeholder="Sve podkategorije"
           />
         )}
+        {/* Karlo 27.07: "Stil" (moto) / "Tip vozila" (kamioni) ide ODMAH ispod
+            podkategorije — grupa "Vrsta" renderirana ovdje, ne dolje uz Boje. */}
+        {vrstaGroup && renderDynGroup(vrstaGroup)}
         {/* Tip ponude + Stanje vozila ODMAH ispod Podkategorije */}
         <div className="grid sm:grid-cols-2 gap-3">
           <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
@@ -494,10 +518,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           {(hasField("engineCc") || hasField("powerKw")) && (
             <div className="grid sm:grid-cols-2 gap-3">
               {hasField("engineCc") && (
-                <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={ENGINE_STEPS} />
+                <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={isMoto ? MOTO_ENGINE_STEPS : ENGINE_STEPS} />
               )}
               {hasField("powerKw") && (
-                <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={POWER_STEPS} />
+                <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={isMoto ? MOTO_POWER_STEPS : POWER_STEPS} />
               )}
             </div>
           )}

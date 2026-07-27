@@ -1,4 +1,7 @@
+import type { CarMake } from "@/lib/types";
 import { MAKES as AUTO_MAKES } from "./makes";
+import { MOTO_MAKES } from "./makes-moto";
+import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 
 export type Subcategory = {
   slug: string;
@@ -242,14 +245,8 @@ const DIJELOVI_SUBS: Subcategory[] = [
 
 // Starter brand sets for non-auto categories. Industry-standard makes;
 // will be replaced by scraped lists from /tmp/avto-taxonomy/brands-*.md.
-const MOTO_MAKES_STARTER = [
-  "Honda", "Yamaha", "Kawasaki", "Suzuki", "Ducati", "BMW", "KTM", "Triumph",
-  "Aprilia", "Harley-Davidson", "Vespa", "Piaggio", "Husqvarna", "Royal Enfield",
-];
-const GOSPODARSKA_MAKES_STARTER = [
-  "MAN", "Iveco", "Mercedes-Benz", "DAF", "Volvo", "Scania", "Renault Trucks",
-  "Ford", "Fiat", "Peugeot", "Citroën", "Opel", "Volkswagen",
-];
+// Karlo 27.07: moto i gospodarska koriste pune avto.net baze s modelima
+// (src/data/makes-moto.ts, makes-gospodarska.ts) umjesto starter imena.
 const MEHANIZACIJA_MAKES_STARTER = [
   "JCB", "Caterpillar", "Komatsu", "John Deere", "Case IH", "New Holland",
   "Massey Ferguson", "Kubota", "Bobcat", "Hitachi", "Volvo CE", "Liebherr",
@@ -280,7 +277,7 @@ export const CATEGORIES: Category[] = [
     icon: "bike",
     active: true,
     subcategories: MOTO_SUBS,
-    makes: MOTO_MAKES_STARTER.map((n) => ({ slug: SLUG(n), name: n })),
+    makes: MOTO_MAKES.map((m) => ({ slug: m.slug, name: m.name })),
   },
   {
     slug: "gospodarska",
@@ -288,7 +285,7 @@ export const CATEGORIES: Category[] = [
     icon: "truck",
     active: true,
     subcategories: GOSPODARSKA_SUBS,
-    makes: GOSPODARSKA_MAKES_STARTER.map((n) => ({ slug: SLUG(n), name: n })),
+    makes: GOSPODARSKA_MAKES.map((m) => ({ slug: m.slug, name: m.name })),
   },
   {
     slug: "mehanizacija",
@@ -369,4 +366,17 @@ export function subChildHref(
 /** Ima li podkategorija drugi nivo (children)? */
 export function hasChildren(sub: Subcategory): boolean {
   return Array.isArray(sub.children) && sub.children.length > 0;
+}
+
+/**
+ * Baza marki S MODELIMA za zadanu kategoriju.
+ * Karlo 27.07: Model dropdown je prije uvijek čitao AUTO bazu, pa moto i
+ * gospodarske marke nisu imale nijedan model. Kategorije bez vlastite baze
+ * (mehanizacija, prosti-cas, dijelovi) vraćaju [] → Model ostaje slobodan unos.
+ */
+export function makesDbFor(categorySlug: string): CarMake[] {
+  if (categorySlug === "auto") return AUTO_MAKES;
+  if (categorySlug === "moto") return MOTO_MAKES;
+  if (categorySlug === "gospodarska") return GOSPODARSKA_MAKES;
+  return [];
 }

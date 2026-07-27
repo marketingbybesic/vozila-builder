@@ -7,7 +7,6 @@ import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, St
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getMake } from "@/data/makes";
 import { HR_LOCATIONS, COUNTIES } from "@/data/locations";
 import { createListingAction } from "@/actions/listings";
 import {
@@ -18,7 +17,7 @@ import {
   COLORS,
   CONDITIONS,
 } from "@/lib/types";
-import { CATEGORIES, getCategory } from "@/data/categories";
+import { CATEGORIES, getCategory, makesDbFor } from "@/data/categories";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
@@ -129,11 +128,15 @@ export function PostListingForm() {
       .map((sc) => ({ value: sc.slug, label: sc.name })),
     [categoryDef]
   );
-  // Modeli postoje samo za auto (MAKES.models); ostale kategorije → tekst.
-  const makeObj = s.category === "auto" && s.make ? getMake(s.make) : undefined;
+  // Karlo 27.07: modeli dolaze iz baze TE kategorije (auto/moto/gospodarska).
+  // Kategorije bez baze i dalje padaju na slobodan tekstualni unos.
   const modelOptions: Opt[] = useMemo(
-    () => (makeObj?.models ?? []).map((m) => ({ value: m, label: m })),
-    [makeObj]
+    () => {
+      if (!s.make) return [];
+      return (makesDbFor(s.category).find((m) => m.slug === s.make)?.models ?? [])
+        .map((m) => ({ value: m, label: m }));
+    },
+    [s.category, s.make]
   );
 
   const cities = useMemo(() => {
@@ -141,8 +144,16 @@ export function PostListingForm() {
     return loc?.cities ?? [];
   }, [s.county]);
 
-  // hasField gating (mirror napredno-form).
-  const hasField = (key: string) => filterDef.fields.some((f) => f.key === key);
+  // hasField gating (mirror napredno-form) — uključujući `scope`, da objava ne
+  // traži polje koje pretraga za tu podkategoriju uopće ne prikazuje.
+  const hasField = (key: string) =>
+    filterDef.fields.some((f) => {
+      if (f.key !== key) return false;
+      if (f.scope && f.scope.length > 0) {
+        return s.subcategory ? f.scope.includes(s.subcategory) : false;
+      }
+      return true;
+    });
 
   // Spec polja koja se renderiraju u koraku 2 (schema-driven), uz scope filtriranje.
   const specFields = useMemo(
