@@ -708,7 +708,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Klima", "Tempomat", "Bluetooth", "Servisna knjižica"],
     sellerName: "Komercijala Zagreb", sellerType: "Trgovac", sellerPhone: "+385 1 555 6677",
     daysAgo: 3, registrationUntil: "08/2026",
-    attributes: { priceVat: "netto", euroNorm: "EURO 6", gvwKg: "3500", payloadKg: "1200", rearDoors: "krilna", sideDoors: "klizna-d", ownership: ["prvi-vlasnik", "servisna"] },
+    attributes: { priceVat: "netto", euroNorm: "EURO 6", gvwKg: "3500", payloadKg: "1200", rearDoors: "dvokrilna", sideDoors: "klizna-jednostrana", ownership: ["prvi-vlasnik", "servisna"] },
   },
   {
     category: "gospodarska", subcategory: "kamioni",

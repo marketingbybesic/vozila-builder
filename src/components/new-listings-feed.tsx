@@ -34,10 +34,13 @@ function MiniCard({ listing, entering }: { listing: Listing; entering: boolean }
             {listing.city} &middot; {timeAgo(listing.createdAt)}
           </div>
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-[var(--color-ink-soft)] mt-1.5">
-          <span className="inline-flex items-center gap-0.5"><Calendar className="size-3" />{listing.year}</span>
-          <span className="inline-flex items-center gap-0.5"><Gauge className="size-3" />{formatKm(listing.km)}</span>
-          <span className="inline-flex items-center gap-0.5"><Fuel className="size-3" />{listing.fuel}</span>
+        {/* Karlo 28.07: red se mora smjeti prelomiti i skupiti — bez min-w-0
+            dugo gorivo ("Električni") gurne karticu preko ruba i cijela
+            stranica dobije horizontalni scroll na 390px ekranu. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0 text-[10px] text-[var(--color-ink-soft)] mt-1.5">
+          <span className="inline-flex items-center gap-0.5 shrink-0"><Calendar className="size-3" />{listing.year}</span>
+          <span className="inline-flex items-center gap-0.5 shrink-0"><Gauge className="size-3" />{formatKm(listing.km)}</span>
+          <span className="inline-flex items-center gap-0.5 min-w-0"><Fuel className="size-3 shrink-0" /><span className="truncate">{listing.fuel}</span></span>
         </div>
         <div className="font-display text-base mt-1">{formatPrice(listing.priceEur)}</div>
       </div>
@@ -72,8 +75,11 @@ export function NewListingsFeed({ listings }: { listings: Listing[] }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Karlo 28.07: grid stavke se po zadanom ne smiju skupiti ispod svoje
+  // min-content širine → kartica naraste preko 390px ekrana i cijela stranica
+  // dobije horizontalni scroll. minmax(0,1fr) to dopušta na svakoj razini.
   return (
-    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-2.5 grid-cols-[minmax(0,1fr)] sm:grid-cols-[repeat(2,minmax(0,1fr))] lg:grid-cols-[repeat(3,minmax(0,1fr))]">
       {visible.map((l, i) => (
         <MiniCard key={`${l.id}-${i}`} listing={l} entering={i === entering} />
       ))}

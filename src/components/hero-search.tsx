@@ -55,7 +55,7 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col h-full bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-6 shadow-xl border border-white/10"
+      className="flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-6 shadow-xl border border-white/10"
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2">
@@ -71,7 +71,10 @@ export function HeroSearch() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-2 content-between flex-1">
+      {/* Karlo 28.07: `content-between` je razvlačio 4 reda preko cijele visine
+          susjednog panela → goleme praznine između polja. Ujednačen razmak
+          (gap-y-3) drži polja skupa, a `mt-auto` gura gumb na dno. */}
+      <div className="grid grid-cols-2 gap-x-3 gap-y-3">
         {/* 1. Marka */}
         <label className="block text-xs">
           <span className="block mb-1 font-semibold uppercase tracking-wider text-[var(--color-muted)]">
@@ -215,7 +218,7 @@ export function HeroSearch() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-4 w-full h-12 rounded-[var(--radius-md)] bg-[var(--color-ink)] text-white text-sm font-semibold uppercase tracking-widest inline-flex items-center justify-center gap-2 hover:bg-[var(--color-ink-soft)] disabled:opacity-60 transition-colors"
+        className="mt-4 w-full h-12 shrink-0 rounded-[var(--radius-md)] bg-[var(--color-accent)] text-[var(--color-ink)] text-sm font-semibold uppercase tracking-widest inline-flex items-center justify-center gap-2 hover:bg-[var(--color-accent-dark)] hover:text-white disabled:opacity-60 transition-colors"
       >
         {pending ? "Tražim..." : "Pretraži"}
         <ArrowRight className="size-4" />

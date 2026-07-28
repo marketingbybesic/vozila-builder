@@ -37,7 +37,15 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-[1fr_1fr] gap-5 items-stretch">
+          {/* Desktop: kategorije IZNAD tražilice — to je glavna navigacija,
+              pa dobiva prvo mjesto i punu širinu (Karlo 28.07). */}
+          <div className="hidden lg:block mb-4">
+            <CategoryNav variant="bar" />
+          </div>
+
+          {/* Karlo 28.07: `items-stretch` je razvlačio panel pretrage na visinu
+              trgovaca i ostavljao praznu rupu ispod polja → `items-start`. */}
+          <div className="grid lg:grid-cols-[1fr_1fr] gap-5 items-start">
             <HeroSearch />
             <div className="hidden lg:flex flex-col">
               <DealerShowcase />
@@ -54,14 +62,6 @@ export default async function HomePage() {
 
           <div className="lg:hidden mt-4">
             <DealerShowcaseMobile />
-          </div>
-
-          {/* Desktop: categories below both panels */}
-          <div className="hidden lg:block mt-5 text-center">
-            <p className="text-sm text-white/50 mb-3">
-              Pregled ostalih kategorija
-            </p>
-            <CategoryNav />
           </div>
         </Container>
       </section>

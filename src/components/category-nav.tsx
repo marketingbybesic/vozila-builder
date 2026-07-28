@@ -17,7 +17,15 @@ const ICONS = {
   brakedisc: Wheel,
 } as const;
 
-export function CategoryNav() {
+/**
+ * variant "grid" — 3×2 kvadrati (mobilni, zadano; nepromijenjeno ponašanje)
+ * variant "bar"  — vodoravna traka za desktop hero IZNAD tražilice.
+ *   Traka nosi glavnu navigaciju pa mora biti vizualno najjača stvar u heru:
+ *   veći dodirni cilj, ikona lijevo od teksta (brže se čita od centrirane),
+ *   aktivna kategorija dobiva punu accent podlogu umjesto 15% tinte koja se
+ *   na tamnoj pozadini jedva razaznavala.
+ */
+export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [openSubSlug, setOpenSubSlug] = useState<string | null>(null);
 
@@ -29,33 +37,66 @@ export function CategoryNav() {
     setOpenSubSlug(null);
   };
 
+  const isBar = variant === "bar";
+
   return (
     <nav aria-label="Kategorije vozila">
-      <ul className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      <ul
+        className={cn(
+          isBar
+            ? "flex items-stretch gap-1.5 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.04] p-1.5"
+            : "grid grid-cols-3 md:grid-cols-6 gap-2"
+        )}
+      >
         {CATEGORIES.map((cat) => {
           const Icon = ICONS[cat.icon];
           const isOpen = openSlug === cat.slug;
           return (
-            <li key={cat.slug}>
+            <li key={cat.slug} className={cn(isBar && "flex-1 min-w-0")}>
               <button
                 type="button"
                 onClick={() => selectCategory(cat.slug)}
                 aria-expanded={isOpen}
                 className={cn(
-                  "group relative flex flex-col items-center justify-center gap-1.5 w-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border transition-all",
-                  isOpen
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-white"
-                    : "border-white/15 bg-white/[0.06] text-white hover:bg-white/10 hover:border-white/30"
+                  "group relative transition-all",
+                  isBar
+                    ? cn(
+                        "flex items-center justify-center gap-2 w-full h-12 px-3 rounded-[var(--radius-md)] cursor-pointer",
+                        isOpen
+                          ? "bg-[var(--color-accent)] text-[var(--color-ink)] shadow-sm"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
+                      )
+                    : cn(
+                        "flex flex-col items-center justify-center gap-1.5 w-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border",
+                        isOpen
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-white"
+                          : "border-white/15 bg-white/[0.06] text-white hover:bg-white/10 hover:border-white/30"
+                      )
                 )}
               >
-                <Icon className="size-5 shrink-0" />
-                <span className="text-[11px] leading-tight uppercase tracking-wide font-medium text-center text-balance">
+                <Icon className={cn("shrink-0", isBar ? "size-[18px]" : "size-5")} />
+                <span
+                  className={cn(
+                    "leading-tight uppercase tracking-wide font-semibold text-balance",
+                    isBar
+                      ? "text-[11px] truncate"
+                      : "text-[11px] font-medium text-center"
+                  )}
+                >
                   {cat.name}
                 </span>
                 <ChevronDown
                   className={cn(
-                    "absolute top-1.5 right-1.5 size-3 text-white/40 transition-transform",
-                    isOpen && "rotate-180 text-[var(--color-accent)]"
+                    "transition-transform",
+                    isBar
+                      ? cn(
+                          "size-3.5 shrink-0",
+                          isOpen ? "rotate-180 text-[var(--color-ink)]/60" : "text-white/40"
+                        )
+                      : cn(
+                          "absolute top-1.5 right-1.5 size-3 text-white/40",
+                          isOpen && "rotate-180 text-[var(--color-accent)]"
+                        )
                   )}
                 />
               </button>
