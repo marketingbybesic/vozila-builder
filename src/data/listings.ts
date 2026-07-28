@@ -4,19 +4,19 @@ import { slugify } from "@/lib/utils";
 // Unsplash car photo IDs — verified public photos, royalty-free.
 // Multiple photos per listing reuse the same IDs across entries for variety.
 const PHOTOS = {
-  vwGolf: ["photo-1606664515524-ed2f786a0bd6", "photo-1612544409025-c4eaa3e9e6e1", "photo-1552519507-da3b142c6e3d"],
-  audiA4: ["photo-1606664515524-ed2f786a0bd6", "photo-1606664518716-7f5cc6e6c8e2", "photo-1605559424843-9e4c228bf1c2"],
+  vwGolf: ["photo-1606664515524-ed2f786a0bd6", "photo-1552519507-da3b142c6e3d", "photo-1552519507-da3b142c6e3d"],
+  audiA4: ["photo-1606664515524-ed2f786a0bd6", "photo-1605559424843-9e4c228bf1c2", "photo-1605559424843-9e4c228bf1c2"],
   bmw3: ["photo-1555215695-3004980ad54e", "photo-1542362567-b07e54358753", "photo-1494976388531-d1058494cdd8"],
-  merc: ["photo-1618843479313-40f8afb4b4d8", "photo-1618483533905-1e3a2c1a3acc", "photo-1617531653332-bd46c24f2068"],
+  merc: ["photo-1618843479313-40f8afb4b4d8", "photo-1617531653332-bd46c24f2068", "photo-1617531653332-bd46c24f2068"],
   skoda: ["photo-1606664515524-ed2f786a0bd6", "photo-1568844293986-8d0400bd4745"],
   renault: ["photo-1583121274602-3e2820c69888", "photo-1494976388531-d1058494cdd8"],
   peugeot: ["photo-1606664515524-ed2f786a0bd6", "photo-1542362567-b07e54358753"],
   toyota: ["photo-1621007947382-bb3c3994e3fb", "photo-1583121274602-3e2820c69888"],
-  tesla: ["photo-1560958089-b8a1929cea89", "photo-1617886903355-df116480e253", "photo-1536700503339-1e4b06520771"],
+  tesla: ["photo-1560958089-b8a1929cea89", "photo-1560958089-b8a1929cea89", "photo-1536700503339-1e4b06520771"],
   porsche: ["photo-1503376780353-7e6692767b70", "photo-1494976388531-d1058494cdd8"],
-  suv: ["photo-1519440407082-78d61a8c0f47", "photo-1551830820-330a71b99659", "photo-1606664922998-f180fd1a0aef"],
+  suv: ["photo-1533473359331-0135ef1b58bf", "photo-1551830820-330a71b99659", "photo-1621007947382-bb3c3994e3fb"],
   hatch: ["photo-1606664515524-ed2f786a0bd6", "photo-1605559424843-9e4c228bf1c2"],
-  ev: ["photo-1560958089-b8a1929cea89", "photo-1617886903355-df116480e253"],
+  ev: ["photo-1560958089-b8a1929cea89", "photo-1560958089-b8a1929cea89"],
   premium: ["photo-1503376780353-7e6692767b70", "photo-1618843479313-40f8afb4b4d8"],
   van: ["photo-1612825173281-9a193378527e"],
   // Non-auto category pools
@@ -25,12 +25,12 @@ const PHOTOS = {
   truck: ["photo-1601584115197-04ecc0da31d7", "photo-1592838064575-70ed626d3a0e"],
   bus: ["photo-1544620347-c4fd4a3d5957", "photo-1570125909232-eb263c188f7e"],
   excavator: ["photo-1581094794329-c8112a89af12", "photo-1504307651254-35680f356dfd"],
-  tractor: ["photo-1605338803155-8b46c2f1c0c1", "photo-1599056407101-7c557a4a0144"],
+  tractor: ["photo-1599056407101-7c557a4a0144", "photo-1599056407101-7c557a4a0144"],
   forklift: ["photo-1605559424843-9e4c228bf1c2", "photo-1581092160562-40aa08e78837"],
   camper: ["photo-1523987355523-c7b5b0dd90a7", "photo-1533873984035-25970ab07461", "photo-1626668893632-6f3a4466d22f"],
   boat: ["photo-1544551763-46a013bb70d5", "photo-1567899378494-47b22a2ae96a"],
   parts: ["photo-1486262715619-67b85e0b08d3", "photo-1530046339160-ce3e530c7d2f"],
-  tires: ["photo-1580273916550-e323be2ae537", "photo-1568659585082-21c3c5c8e3e8"],
+  tires: ["photo-1580273916550-e323be2ae537", "photo-1580273916550-e323be2ae537"],
 };
 
 function img(id: string): string {

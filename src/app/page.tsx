@@ -32,7 +32,7 @@ export default async function HomePage() {
             <h1 className="font-display text-2xl md:text-3xl">
               Pronađi svoje vozilo
             </h1>
-            <p className="mt-1 text-sm text-white/60">
+            <p className="mt-1 text-sm text-white/75">
               Pretraži 12.847 oglasa — auti, motori, gospodarska, mehanizacija, kamperi i dijelovi
             </p>
           </div>
@@ -54,7 +54,7 @@ export default async function HomePage() {
 
           {/* Mobile: categories first, then dealers */}
           <div className="lg:hidden mt-5">
-            <p className="text-sm text-white/50 mb-3 text-center">
+            <p className="text-sm text-white/75 mb-3 text-center">
               Pregled ostalih kategorija
             </p>
             <CategoryNav />
@@ -201,7 +201,7 @@ export default async function HomePage() {
               <Button asChild variant="accent" size="lg" className="w-full md:w-auto">
                 <Link href="/objavi">Objavi oglas besplatno</Link>
               </Button>
-              <span className="text-[11px] text-white/40 text-center md:text-right">Bez pretplate &middot; Bez skrivenih troškova</span>
+              <span className="text-[11px] text-white/70 text-center md:text-right">Bez pretplate &middot; Bez skrivenih troškova</span>
             </div>
           </div>
         </Container>
