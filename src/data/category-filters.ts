@@ -429,7 +429,7 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ],
     // Karlo 27.07: "Vrsta" izbačena iz Dostavne (ostale podkat. je zadržavaju
     // jer im je to jedini način prebacivanja između vrsta vozila).
-    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
   // Karlo 27.07: KAMIONI su na avto.netu razvrstani po tipu nadgradnje, a to nam
   // je nedostajalo. Stoji odmah ispod podkategorije (grupa "Vrsta" je 2. po redu).
   { key: "truckType", label: "Tip vozila", type: "multi", storage: "attr", group: "Vrsta",
@@ -540,12 +540,14 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
 
   // Equipment groups (same as AUTO trimmed)
   { key: "climate", label: "Klima", type: "multi", storage: "attr", group: "Oprema",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "klima", label: "Klima uređaj" },
       { value: "autoklima", label: "Automatska klima" },
       { value: "grijanje-mirovanje", label: "Grijanje u mirovanju" },
     ] },
   { key: "interior", label: "Interijer", type: "multi", storage: "attr", group: "Oprema",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "grijanje-sjedala", label: "Grijanje sjedala" },
       { value: "kozna-sjedala", label: "Kožna sjedala" },
@@ -560,6 +562,7 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "androidauto", label: "Android Auto" },
     ] },
   { key: "safety", label: "Sigurnost", type: "multi", storage: "attr", group: "Oprema",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "abs", label: "ABS" },
       { value: "esp", label: "ESP" },
@@ -569,11 +572,13 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "auto-cocenje", label: "Automatsko kočenje" },
     ] },
   { key: "parking", label: "Parkiranje", type: "multi", storage: "attr", group: "Oprema",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "kamera", label: "Kamera unatrag" },
       { value: "senzori", label: "Senzori parkiranja" },
     ] },
   { key: "otherEquipment", label: "Ostalo", type: "multi", storage: "attr", group: "Oprema",
+    scope: ["dostavna", "autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "alu-felge", label: "Alu felge" },
       { value: "4x4", label: "Pogon 4x4" },
@@ -586,8 +591,6 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "utovarna-rampa", label: "Utovarna rampa" },
       { value: "adr", label: "ADR (opasne tvari)" },
     ] },
-  { key: "craneCapacity", label: "Nosivost dizalice", type: "range", unit: "t", min: 0, max: 100, step: 1,
-    storage: "attr", group: "Oprema", scope: ["kamioni"] },
   // Autobusi — udobnost (domenska analiza)
   { key: "busWc", label: "WC", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
   { key: "busTv", label: "TV / multimedija", type: "toggle", storage: "attr", group: "Oprema", scope: ["autobusi"] },
@@ -595,7 +598,7 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   // Karlo 27.07: u DOSTAVNOJ od "Povijesti" ostaje samo Stanje, i to s istom
   // listom kao AUTO ("Stanje karoserije"). Ostale podkat. zadržavaju punu grupu.
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
-    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"],
+    scope: ["autobusi", "prikolice", "utv", "najam"],
     options: [
       { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
@@ -613,9 +616,9 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "veca-popravljena", label: "Veća šteta popravljena" },
     ] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
-    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
   { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest",
-    scope: ["kamioni", "autobusi", "prikolice", "utv", "najam"] },
+    scope: ["autobusi", "prikolice", "utv", "najam"] },
 
   { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Bijela","Plava","Crvena","Crna","Siva","Žuta","Zelena","Narančasta"].map(v) },
