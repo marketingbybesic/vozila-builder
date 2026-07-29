@@ -14,7 +14,7 @@ const PER_PAGE = 2; // max 2 trgovca, jedan ispod drugog
 function DealerBlock({ dealer }: { dealer: Dealer }) {
   const cars = dealer.listings.slice(0, 3);
   return (
-    <div className="bg-white rounded-[var(--radius-md)] p-2.5 shadow-sm text-[var(--color-ink)]">
+    <div className="bg-white rounded-[var(--radius-md)] p-2.5 shadow-sm text-[var(--color-ink)] flex-1 flex flex-col justify-center">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -92,7 +92,7 @@ export function DealerShowcase() {
   const visible = FEATURED_DEALERS.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
   return (
-    <div className="bg-[var(--color-accent)] rounded-[var(--radius-lg)] p-3 md:p-3.5 shadow-xl border border-[var(--color-accent-dark)] flex flex-col">
+    <div className="bg-[var(--color-accent)] rounded-[var(--radius-lg)] p-3 md:p-3.5 shadow-xl border border-[var(--color-accent-dark)] flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2 text-[var(--color-ink)]">
           <Star className="size-4 fill-[var(--color-ink)]" />
@@ -119,8 +119,12 @@ export function DealerShowcase() {
         </div>
       </div>
 
-      {/* Max 2 dealers, stacked vertically */}
-      <div className="flex flex-col gap-2.5 flex-1 animate-fade-in" key={page}>
+      {/* Max 2 dealers, stacked vertically.
+          Karlo 29.07: panel se `h-full`-om razvlači do visine bijelog, pa je
+          `flex-1` sam ostavljao praznu žutu traku ispod zadnje kartice.
+          `justify-between` + `justify-center` u kartici raspoređuju višak
+          prostora IZMEĐU i UNUTAR kartica umjesto da se skupi na dnu. */}
+      <div className="flex flex-col gap-2.5 flex-1 justify-between animate-fade-in" key={page}>
         {visible.map((d) => (
           <DealerBlock key={d.id} dealer={d} />
         ))}

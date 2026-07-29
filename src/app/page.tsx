@@ -42,7 +42,9 @@ export default async function HomePage() {
     <>
       {/* HERO: search left + dealers right on desktop, stacked on mobile */}
       <section className="relative overflow-hidden bg-[var(--color-ink)] text-white">
-        <Container className="relative py-4 md:py-5">
+        {/* Karlo 29.07: 40 px gore i dolje da se tamnoplava pozadina vidi
+            iznad i ispod panela (prije 16/20 px — paneli su "sjedali" na rub). */}
+        <Container className="relative py-6 lg:py-10">
           <div className="text-center mb-3 md:mb-4">
             <h1 className="font-display text-2xl md:text-3xl">
               Pronađi svoje vozilo
@@ -58,11 +60,15 @@ export default async function HomePage() {
             <CategoryNav variant="bar" />
           </div>
 
-          {/* Karlo 28.07: `items-stretch` je razvlačio panel pretrage na visinu
-              trgovaca i ostavljao praznu rupu ispod polja → `items-start`. */}
           {/* Karlo 29.07: bijeli panel širi, narančasti uži — hero mora stati
-              u jedan ekran na desktopu. */}
-          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-4 items-start">
+              u jedan ekran na desktopu.
+              Karlo 29.07 (2): donji rubovi se nisu poklapali — žuti je završavao
+              ~46 px iznad bijelog. Bijeli (HeroSearch) je viši i diktira visinu
+              retka, pa `lg:items-stretch` razvlači SAMO žuti do iste linije.
+              Na mobitelu ostaje `items-start` (paneli su jedan ispod drugog).
+              ⚠️ Ne vraćati globalni `items-stretch` — 28.07 je razvukao bijeli
+              panel i ostavio praznu rupu ispod polja. */}
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-4 items-start lg:items-stretch">
             <HeroSearch />
             <div className="hidden lg:flex flex-col">
               <DealerShowcase />
