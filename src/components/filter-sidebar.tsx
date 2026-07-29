@@ -11,8 +11,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
 } from "@/lib/types";
-import { MAKES, getMake } from "@/data/makes";
-import { getCategory } from "@/data/categories";
+import { MAKES } from "@/data/makes";
+import { getCategory, makesDbFor } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
@@ -63,18 +63,80 @@ export function FilterSidebar({ mobile, onClose }: Props) {
     const list = (!category || category === "auto") ? MAKES.map((m) => ({ slug: m.slug, name: m.name })) : (categoryDef?.makes ?? []);
     return list.map((m) => ({ value: m.slug, label: m.name }));
   }, [category, categoryDef]);
-  const make = selectedMake && (!category || category === "auto") ? getMake(selectedMake) : undefined;
+  // Karlo 29.07: modeli iz baze TE kategorije (prije samo auto → moto i
+  // gospodarska marke nisu imale nijedan model ni ovdje u sidebaru).
+  const modelOptions: Opt[] = useMemo(() => {
+    if (!selectedMake) return [];
+    return (makesDbFor(category || "auto").find((m) => m.slug === selectedMake)?.models ?? [])
+      .map((m) => ({ value: m, label: m }));
+  }, [category, selectedMake]);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category || "auto"), [category]);
   const bodyOptions = filterDef.fields.find((f) => f.key === "bodyType")?.options ?? toOpts(BODY_TYPES);
   const fuelOptions = filterDef.fields.find((f) => f.key === "fuel")?.options ?? toOpts(FUEL_TYPES);
+  // U motou se polje zove "Pogon", ne "Gorivo" — uzmi naziv iz sheme.
+  const fuelLabel = filterDef.fields.find((f) => f.key === "fuel")?.label ?? "Gorivo";
   const subOpts: Opt[] = (categoryDef?.subcategories ?? [])
     .filter((s) => s.slug !== "auto-oglasi")
     .map((s) => ({ value: s.slug, label: s.name }));
+
+  /**
+   * Karlo 29.07: sidebar je bio HARDKODIRAN za auto pa moto nije imao "Stil",
+   * a kamioni "Tip vozila" — iako oboje postoji u shemi i radi u naprednoj.
+   * Sad čita ista `group: "Vrsta"` attr polja i poštuje `scope`, pa stoje
+   * ODMAH ispod Podkategorije (isti redoslijed kao napredna pretraga).
+   */
+  const subcategory = current.subcategory ?? "";
+  const vrstaFields = useMemo(
+    () =>
+      filterDef.fields.filter((f) => {
+        if (f.group !== "Vrsta" || f.storage !== "attr") return false;
+        if (f.searchable === false) return false;
+        if (f.scope && f.scope.length > 0) {
+          return subcategory ? f.scope.includes(subcategory) : false;
+        }
+        return true;
+      }),
+    [filterDef, subcategory]
+  );
+
+  // Isti gating kao napredna/objava: polje postoji samo ako ga kategorija ima
+  // I ako scope dopušta trenutnu podkategoriju.
+  const hasField = (key: string) =>
+    filterDef.fields.some((f) => {
+      if (f.key !== key) return false;
+      if (f.scope && f.scope.length > 0) {
+        return subcategory ? f.scope.includes(subcategory) : false;
+      }
+      return true;
+    });
 
   const body = (
     <div className="space-y-4">
       {subOpts.length > 0 && (
         <SelectField label="Podkategorija" value={current.subcategory ?? ""} onChange={(v) => update({ subcategory: v || null })} options={subOpts} placeholder="Sve podkategorije" />
+      )}
+
+      {/* Stil (moto) / Tip vozila (kamioni) — ODMAH ispod Podkategorije */}
+      {vrstaFields.map((f) =>
+        f.type === "multi" ? (
+          <MultiSelect
+            key={f.key}
+            label={f.label}
+            values={arr(`a.${f.key}`)}
+            onChange={(v) => setMulti(`a.${f.key}`, v)}
+            options={f.options ?? []}
+            placeholder="Sve"
+          />
+        ) : (
+          <SelectField
+            key={f.key}
+            label={f.label}
+            value={current[`a.${f.key}`] ?? ""}
+            onChange={(v) => update({ [`a.${f.key}`]: v || null })}
+            options={f.options ?? []}
+            placeholder="Sve"
+          />
+        )
       )}
 
       <div className="grid grid-cols-2 gap-2">
@@ -83,19 +145,31 @@ export function FilterSidebar({ mobile, onClose }: Props) {
       </div>
 
       <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
-      {make && (
-        <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={make.models.map((m) => ({ value: m, label: m }))} placeholder="Svi modeli" />
+      {modelOptions.length > 0 && (
+        <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
       )}
 
       <RangeSelect label="Cijena (€)" unit="€" minValue={current.priceMin ?? ""} maxValue={current.priceMax ?? ""} onMin={(v) => update({ priceMin: v || null })} onMax={(v) => update({ priceMax: v || null })} steps={PRICE_STEPS} />
       <RangeSelect label="Godina" minValue={current.yearMin ?? ""} maxValue={current.yearMax ?? ""} onMin={(v) => update({ yearMin: v || null })} onMax={(v) => update({ yearMax: v || null })} steps={YEARS} fmt={(n) => String(n)} />
-      <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
+      {hasField("km") && (
+        <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
+      )}
 
-      <MultiSelect label="Gorivo" values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
-      <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
-      <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
+      {hasField("fuel") && (
+        <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
+      )}
+      {hasField("transmission") && (
+        <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
+      )}
+      {/* Karlo 29.07: Karoserija se prikazuje samo ako je kategorija/podkategorija
+          stvarno ima — motocikl je nema, a prije je visjela svugdje. */}
+      {hasField("bodyType") && (
+        <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
+      )}
 
-      <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
+      {hasField("color") && (
+        <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
+      )}
 
       <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
       <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
