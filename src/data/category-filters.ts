@@ -39,7 +39,13 @@ export type FilterField = {
   min?: number;
   max?: number;
   step?: number;
+  // Fiksna ljestvica za "range" polja: umjesto dva slobodna brojčana polja
+  // renderira se Od/Do izbornik s ovim vrijednostima (kao Cijena/Kilometraža).
+  steps?: number[];
   options?: FilterOption[];
+  // Tekst "prazne" opcije u izborniku. SelectField uvijek sam renderira taj red
+  // (default "Sve"), pa ga NE treba dodavati i u `options` — bio bi duplikat.
+  placeholder?: string;
   storage: "column" | "attr";
   group?: string; // section header in sidebar (e.g. "Oprema → Sigurnost")
   shared?: boolean;
@@ -384,9 +390,9 @@ const MOTO_FIELDS: FilterField[] = [
   // Karlo 29.07: "Tip boje" (metalik/mat) izbačen iz MOTO — stvarao je drugu
   // rubriku "BOJA" ispod već postojeće sekcije "BOJE".
 
-  // Karlo 29.07: polje se zvalo "Oprema" pa je unutar rubrike "DODATNE OPCIJE"
-  // stajalo "Oprema" — ostatak starog naziva.
-  { key: "motoOptions", label: "Dodatna oprema", type: "multi", storage: "attr", group: "Dodatne opcije",
+  // Karlo 29.07 (2. runda): polje se zvalo "Dodatna oprema" unutar rubrike
+  // "DODATNE OPCIJE" — ujednačeno s nazivom rubrike.
+  { key: "motoOptions", label: "Dodatne opcije", type: "multi", storage: "attr", group: "Dodatne opcije",
     options: [
       { value: "abs", label: "ABS" },
       { value: "el-ovjes", label: "Električno podesiv ovjes" },
@@ -412,9 +418,11 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "garazirano", label: "Garažirano" },
     ] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
+  // Karlo 29.07 (2. runda): grupa "Ostalo" ukinuta u MOTO —
+  // "Garancija" je bila duplikat gornjeg osnovnog panela (TogglePill), a
+  // "Oldtimer" je premješten u rubriku "Dodatne opcije".
   // Karlo 27.07: iz grupe "Ostalo" izbačeni "Tip ponude" i "Na zalihi".
-  { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Ostalo" },
+  { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije" },
 ];
 
 // ── GOSPODARSKA — full 34-field taxonomy from avto.net ─────────────────
@@ -513,9 +521,11 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     options: [v("Ručni"), v("Automatski")] },
   { key: "powerKw",
     scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"], label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
-  // Karlo 27.07: "Obujam" izbačen iz Dostavne i Kamiona.
+  // Karlo 27.07: "Obujam" izbačen iz Kamiona.
+  // Karlo 29.07 (2. runda): DOSTAVNA ga opet ima — Od/Do izbornik kao u
+  // "Auto oglasi napredno" (ljestvica ENGINE_STEPS u napredno-form).
   { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 16000, step: 100, storage: "column", group: "Motor",
-    scope: ["autobusi", "utv", "najam"] },
+    scope: ["dostavna", "autobusi", "utv", "najam"] },
   // Karlo 27.07: "Emisijska norma" izbačena iz Dostavne i Kamiona.
   { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
     scope: ["autobusi", "utv", "najam"],
@@ -558,6 +568,26 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     storage: "attr", group: "Specifikacije", scope: ["kamioni"] },
   { key: "cargoLengthM", label: "Dužina tovarnog prostora", type: "range", unit: "m", min: 0, max: 18, step: 0.1,
     storage: "attr", group: "Specifikacije", scope: ["kamioni"] },
+  // ── Karlo 29.07 (2. runda): TERETNE PRIKOLICE — vlastita rubrika ──────
+  // Prikolice nemaju motor ni karoseriju; ključni su im osovine i mase.
+  { key: "trailerAxles", label: "Broj osovina", type: "select", storage: "attr",
+    group: "Osovine i nosivost", scope: ["prikolice"],
+    // "Nebitno" je prazna opcija koju SelectField sam renderira — kad bi stajala
+    // i u `options`, izbornik bi imao dva reda ("Sve" + "Nebitno") s istim učinkom.
+    placeholder: "Nebitno",
+    options: [
+      { value: "1", label: "1 osovina" },
+      { value: "2", label: "2 osovine" },
+      { value: "3", label: "3 osovine" },
+      { value: "3plus", label: "Više od 3 osovine" },
+    ] },
+  { key: "payloadKg", label: "Nosivost", type: "range", unit: "kg", storage: "attr",
+    group: "Osovine i nosivost", scope: ["prikolice"],
+    steps: [1000, 2800, 10000, 20000] },
+  { key: "gvwKg", label: "Max. ukupna masa", type: "range", unit: "kg", storage: "attr",
+    group: "Osovine i nosivost", scope: ["prikolice"],
+    steps: [1000, 2800, 10000, 20000, 40000] },
+
   // Karlo 29.07: "Kočni sustav" izbačen iz teretnih prikolica.
   { key: "brakes", label: "Kočni sustav", type: "select", storage: "attr", group: "Specifikacije",
     scope: ["autobusi", "utv", "najam"],
@@ -641,6 +671,14 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "garazirano", label: "Garažirano" },
     ] },
   { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Povijest",
+    scope: ["dostavna", "autobusi", "utv", "najam"],
+    options: DAMAGE_STATE_OPTIONS },
+  // Karlo 29.07 (2. runda): kod KAMIONA i TERETNIH PRIKOLICA "Povijest" je bila
+  // jedina rubrika u "Više filtera" i imala je samo Stanje — cijeli taj panel je
+  // ukinut, a Stanje je premješteno u gornju rubriku "Cijena, godina, kilometraža"
+  // (grupa "Cijena" se renderira UNUTAR te hardkodirane sekcije, vidi cijenaRest).
+  { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Cijena",
+    scope: ["kamioni", "prikolice"],
     options: DAMAGE_STATE_OPTIONS },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
     scope: ["autobusi", "utv", "najam"] },
@@ -1015,6 +1053,7 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
   // Stable order: Osnovno → Vrsta → Motor → Karoserija → Specifikacije → Oprema → ...
   const order = [
     "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Vrata i sjedala", "Boja",
+    "Osovine i nosivost",
     "Specifikacije", "Električna", "Dodatne opcije", "Pravno", "Povijest",
     "Udobnost", "Dimenzije", "Detalji", "Gume", "Felge", "Tekućine", "Ostalo",
   ];

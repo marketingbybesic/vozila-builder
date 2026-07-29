@@ -12,6 +12,20 @@ import { db } from "@/db";
 import { ShieldCheck, Zap, Users } from "lucide-react";
 import type { Listing } from "@/lib/types";
 
+/**
+ * ⏸ REKLAMNI BANNER — PRIVREMENO ISKLJUČEN (Karlo, 29.07.2026)
+ *
+ * Banner "Gume −40%" je gotov i testiran, samo se za sada ne prikazuje.
+ * Za aktivaciju: postavi na `true` i deployaj — ništa drugo ne treba.
+ *
+ * Što ostaje spremno u međuvremenu:
+ *  - komponenta `src/components/hero-banner.tsx` (desktop 112px / mobitel 16:9)
+ *  - 4 akcijska oglasa Guma Centra u bazi (Continental −40%, Bridgestone −34%,
+ *    Goodyear −30%, Nokian −28%) — vidljivi na
+ *    /oglasi?category=dijelovi&subcategory=gume
+ */
+const SHOW_HERO_BANNER = false;
+
 export default async function HomePage() {
   const popularMakes = POPULAR_MAKE_SLUGS.map(
     (slug) => MAKES.find((m) => m.slug === slug)!
@@ -63,19 +77,27 @@ export default async function HomePage() {
             <CategoryNav />
           </div>
 
-          {/* Karlo 29.07: reklamni banner — desktop odmah ispod pretrage i
-              trgovaca (pun raspon, nizak profil), mobitel na kraju sekcije. */}
-          <div className="hidden lg:block mt-3">
-            <HeroBanner />
-          </div>
+          {/* Reklamni banner — desktop ispod pretrage i trgovaca (pun raspon,
+              nizak profil), mobitel na kraju sekcije.
+              ⏸ Karlo 29.07: PRIVREMENO SAKRIVEN — aktivirat ćemo ga kasnije.
+              Za uključivanje: SHOW_HERO_BANNER = true (gore u ovoj datoteci).
+              Komponenta `hero-banner.tsx` i akcijski oglasi za gume ostaju
+              netaknuti, banner se samo ne renderira. */}
+          {SHOW_HERO_BANNER && (
+            <div className="hidden lg:block mt-3">
+              <HeroBanner />
+            </div>
+          )}
 
           <div className="lg:hidden mt-4">
             <DealerShowcaseMobile />
           </div>
 
-          <div className="lg:hidden mt-4">
-            <HeroBanner />
-          </div>
+          {SHOW_HERO_BANNER && (
+            <div className="lg:hidden mt-4">
+              <HeroBanner />
+            </div>
+          )}
         </Container>
       </section>
 

@@ -36,9 +36,20 @@ export function formatDate(d: string | Date): string {
   return dateFmt.format(new Date(d));
 }
 
+/**
+ * Karlo 29.07: uzrok React hydration greške #418 — server i preglednik zovu
+ * `Date.now()` u razmaku od nekoliko stotina ms. Kad oglas leži točno na
+ * granici (npr. 23 h 59 min), server ispiše "prije 23 h", a klijent
+ * "prije 1 dan" → React prijavi neslaganje teksta.
+ *
+ * Referentno vrijeme zaokružujemo na punu minutu, pa obje strane računaju iz
+ * iste vrijednosti osim u rijetkom slučaju prelaska minute (a i tada je razlika
+ * bezopasna, jer se granice mjere u satima i danima).
+ */
 export function timeAgo(d: string | Date): string {
   const date = new Date(d);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  const nowRounded = Math.floor(Date.now() / 60_000) * 60_000;
+  const seconds = Math.floor((nowRounded - date.getTime()) / 1000);
   if (seconds < 60) return "upravo sad";
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `prije ${minutes} min`;

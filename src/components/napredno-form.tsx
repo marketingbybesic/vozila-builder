@@ -45,7 +45,7 @@ const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i
 type AttrValue = string | string[] | boolean | undefined;
 
 // Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji"]);
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost"]);
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
@@ -371,6 +371,26 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       );
     }
     if (f.type === "range") {
+      // Polja s fiksnom ljestvicom (`steps`) dobivaju Od/Do izbornik umjesto
+      // dva slobodna brojčana polja — isti pattern kao Cijena/Kilometraža.
+      if (f.steps && f.steps.length > 0) {
+        const raw = (attrs[f.key] as string | undefined) ?? "";
+        const [lo, hi] = raw.includes("..") ? raw.split("..") : ["", ""];
+        const setRange = (min: string, max: string) =>
+          setAttr(f.key, min || max ? `${min}..${max}` : undefined);
+        return (
+          <RangeSelect
+            key={f.key}
+            label={f.label}
+            unit={f.unit}
+            minValue={lo}
+            maxValue={hi}
+            onMin={(v) => setRange(v, hi)}
+            onMax={(v) => setRange(lo, v)}
+            steps={f.steps}
+          />
+        );
+      }
       return (
         <RangeInput
           key={f.key}
@@ -389,6 +409,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           value={(attrs[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
           options={f.options ?? []}
+          {...(f.placeholder ? { placeholder: f.placeholder } : {})}
         />
       );
     }
