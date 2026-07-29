@@ -384,7 +384,9 @@ const MOTO_FIELDS: FilterField[] = [
   // Karlo 29.07: "Tip boje" (metalik/mat) izbačen iz MOTO — stvarao je drugu
   // rubriku "BOJA" ispod već postojeće sekcije "BOJE".
 
-  { key: "motoOptions", label: "Oprema", type: "multi", storage: "attr", group: "Dodatne opcije",
+  // Karlo 29.07: polje se zvalo "Oprema" pa je unutar rubrike "DODATNE OPCIJE"
+  // stajalo "Oprema" — ostatak starog naziva.
+  { key: "motoOptions", label: "Dodatna oprema", type: "multi", storage: "attr", group: "Dodatne opcije",
     options: [
       { value: "abs", label: "ABS" },
       { value: "el-ovjes", label: "Električno podesiv ovjes" },
@@ -400,7 +402,9 @@ const MOTO_FIELDS: FilterField[] = [
 
   { key: "damageState", label: "Stanje karoserije", type: "select", storage: "attr", group: "Povijest",
     options: DAMAGE_STATE_OPTIONS },
-  { key: "ownership", label: "Povijest", type: "multi", storage: "attr", group: "Povijest",
+  // Karlo 29.07: polje se zvalo "Povijest" isto kao rubrika u kojoj stoji —
+  // ujednačeno s ostalim kategorijama na "Vlasništvo".
+  { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     options: [
       { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },

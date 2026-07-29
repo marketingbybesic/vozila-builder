@@ -55,9 +55,9 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-6 shadow-xl border border-white/10"
+      className="flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-5 shadow-xl border border-white/10"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2">
           <Search className="size-4 text-[var(--color-accent-dark)]" />
           Brza pretraga auta
@@ -74,7 +74,7 @@ export function HeroSearch() {
       {/* Karlo 28.07: `content-between` je razvlačio 4 reda preko cijele visine
           susjednog panela → goleme praznine između polja. Ujednačen razmak
           (gap-y-3) drži polja skupa, a `mt-auto` gura gumb na dno. */}
-      <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
         {/* 1. Marka */}
         <label className="block text-xs">
           <span className="block mb-1 font-semibold uppercase tracking-wider text-[var(--color-muted)]">

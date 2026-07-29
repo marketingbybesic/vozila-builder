@@ -8,15 +8,17 @@ import { FEATURED_DEALERS, type Dealer } from "@/data/dealers";
 
 const PER_PAGE = 2; // max 2 trgovca, jedan ispod drugog
 
-/** One dealer block: header + 6 listings in a 3-col grid (2 rows). */
+/** One dealer block: header + 3 listings u jednom redu.
+    Karlo 29.07: bilo 6 (2 reda) — narančasti blok je bio dvostruko viši od
+    pretrage pa hero nije stao u jedan ekran. */
 function DealerBlock({ dealer }: { dealer: Dealer }) {
-  const cars = dealer.listings.slice(0, 6);
+  const cars = dealer.listings.slice(0, 3);
   return (
-    <div className="bg-white rounded-[var(--radius-md)] p-3 shadow-sm text-[var(--color-ink)]">
+    <div className="bg-white rounded-[var(--radius-md)] p-2.5 shadow-sm text-[var(--color-ink)]">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-2.5">
+      <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="size-9 rounded-full bg-[var(--color-ink)] text-white flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="size-8 rounded-full bg-[var(--color-ink)] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
             {dealer.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
           </div>
           <div className="min-w-0">
@@ -37,7 +39,7 @@ function DealerBlock({ dealer }: { dealer: Dealer }) {
         </Link>
       </div>
 
-      {/* 6 listings: 3 columns × 2 rows.
+      {/* 3 listings u jednom redu.
           Showcase kartice → dealer profil (stvarna ruta), NE pojedinačni oglas
           (ti demo oglasi nemaju DB stranicu → izbjegava 404 + prefetch greške). */}
       <div className="grid grid-cols-3 gap-1.5">
@@ -90,7 +92,7 @@ export function DealerShowcase() {
   const visible = FEATURED_DEALERS.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
   return (
-    <div className="bg-[var(--color-accent)] rounded-[var(--radius-lg)] p-4 md:p-5 shadow-xl border border-[var(--color-accent-dark)] h-full flex flex-col">
+    <div className="bg-[var(--color-accent)] rounded-[var(--radius-lg)] p-3 md:p-3.5 shadow-xl border border-[var(--color-accent-dark)] flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2 text-[var(--color-ink)]">
           <Star className="size-4 fill-[var(--color-ink)]" />

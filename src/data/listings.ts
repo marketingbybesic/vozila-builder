@@ -833,6 +833,67 @@ const EXTRA_SPECS: Spec[] = [
   },
 
   // ===== DIJELOVI (parts) =====
+
+  // Karlo 29.07: akcijski oglasi za banner "Gume do −40%" na naslovnici.
+  // Banner vodi na /oglasi?category=dijelovi&subcategory=gume — ponuda mora
+  // stvarno postojati, ne samo reklama.
+  {
+    category: "dijelovi", subcategory: "gume",
+    make: "Continental", model: "PremiumContact 7", variant: "205/55 R16",
+    year: 2025, priceEur: 312, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.tires),
+    description:
+      "AKCIJA −40%: set od 4 ljetne gume Continental PremiumContact 7, 205/55 R16. Redovna cijena 520 €, akcijska 312 €. Montaža i balansiranje gratis. Vrijedi do 30. 9.",
+    features: ["Akcija −40%", "Nove", "Set 4 kom", "Montaža gratis"],
+    sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
+    daysAgo: 1,
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "205", tireProfile: "55", tireDiameter: "16", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "gume",
+    make: "Bridgestone", model: "Blizzak 6", variant: "215/60 R17",
+    year: 2025, priceEur: 396, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "SUV", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.tires),
+    description:
+      "AKCIJA −34%: set od 4 zimske gume Bridgestone Blizzak 6, 215/60 R17. Redovna 600 €, akcijska 396 €. Montaža i balansiranje gratis.",
+    features: ["Akcija −34%", "Nove", "Set 4 kom", "Montaža gratis"],
+    sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
+    daysAgo: 1,
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "215", tireProfile: "60", tireDiameter: "17", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "gume",
+    make: "Goodyear", model: "Vector 4Seasons Gen-3", variant: "195/65 R15",
+    year: 2025, priceEur: 268, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Hatchback", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Velika Gorica", county: "Zagrebačka",
+    photos: pics(PHOTOS.tires),
+    description:
+      "AKCIJA −30%: set od 4 cjelogodišnje gume Goodyear Vector 4Seasons Gen-3, 195/65 R15. Redovna 383 €, akcijska 268 €.",
+    features: ["Akcija −30%", "Nove", "Set 4 kom", "Cjelogodišnje"],
+    sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
+    daysAgo: 2,
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "195", tireProfile: "65", tireDiameter: "15", tireSeason: ["Cjelogodišnje"], tireType: ["osobne"], shipping: true },
+  },
+  {
+    category: "dijelovi", subcategory: "gume",
+    make: "Nokian", model: "Hakkapeliitta R5", variant: "225/45 R18",
+    year: 2025, priceEur: 468, km: 0, fuel: "Benzin", transmission: "Ručni",
+    bodyType: "Limuzina", drive: "Prednji", color: "Crna",
+    engineCc: 0, powerKw: 0, city: "Zagreb", county: "Grad Zagreb",
+    photos: pics(PHOTOS.tires),
+    description:
+      "AKCIJA −28%: set od 4 zimske gume Nokian Hakkapeliitta R5, 225/45 R18. Redovna 650 €, akcijska 468 €. Montaža gratis uz kupnju seta.",
+    features: ["Akcija −28%", "Nove", "Set 4 kom", "Montaža gratis"],
+    sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
+    daysAgo: 3,
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "18", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
+  },
+
   {
     category: "dijelovi", subcategory: "gume",
     make: "Michelin", model: "Pilot Sport 4", variant: "225/45 R17",

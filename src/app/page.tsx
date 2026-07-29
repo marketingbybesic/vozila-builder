@@ -6,6 +6,7 @@ import { CategoryNav } from "@/components/category-nav";
 import { DealerShowcase, DealerShowcaseMobile } from "@/components/dealer-showcase";
 import { BrandLogo } from "@/components/brand-logo";
 import { NewListingsFeed } from "@/components/new-listings-feed";
+import { HeroBanner } from "@/components/hero-banner";
 import { MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
 import { db } from "@/db";
 import { ShieldCheck, Zap, Users } from "lucide-react";
@@ -27,8 +28,8 @@ export default async function HomePage() {
     <>
       {/* HERO: search left + dealers right on desktop, stacked on mobile */}
       <section className="relative overflow-hidden bg-[var(--color-ink)] text-white">
-        <Container className="relative py-5 md:py-8">
-          <div className="text-center mb-4 md:mb-5">
+        <Container className="relative py-4 md:py-5">
+          <div className="text-center mb-3 md:mb-4">
             <h1 className="font-display text-2xl md:text-3xl">
               Pronađi svoje vozilo
             </h1>
@@ -39,13 +40,15 @@ export default async function HomePage() {
 
           {/* Desktop: kategorije IZNAD tražilice — to je glavna navigacija,
               pa dobiva prvo mjesto i punu širinu (Karlo 28.07). */}
-          <div className="hidden lg:block mb-4">
+          <div className="hidden lg:block mb-3">
             <CategoryNav variant="bar" />
           </div>
 
           {/* Karlo 28.07: `items-stretch` je razvlačio panel pretrage na visinu
               trgovaca i ostavljao praznu rupu ispod polja → `items-start`. */}
-          <div className="grid lg:grid-cols-[1fr_1fr] gap-5 items-start">
+          {/* Karlo 29.07: bijeli panel širi, narančasti uži — hero mora stati
+              u jedan ekran na desktopu. */}
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-4 items-start">
             <HeroSearch />
             <div className="hidden lg:flex flex-col">
               <DealerShowcase />
@@ -60,8 +63,18 @@ export default async function HomePage() {
             <CategoryNav />
           </div>
 
+          {/* Karlo 29.07: reklamni banner — desktop odmah ispod pretrage i
+              trgovaca (pun raspon, nizak profil), mobitel na kraju sekcije. */}
+          <div className="hidden lg:block mt-3">
+            <HeroBanner />
+          </div>
+
           <div className="lg:hidden mt-4">
             <DealerShowcaseMobile />
+          </div>
+
+          <div className="lg:hidden mt-4">
+            <HeroBanner />
           </div>
         </Container>
       </section>
