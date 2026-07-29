@@ -116,6 +116,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   const isAuto = category === "auto";
   const isMoto = category === "moto";
+  const isGospodarska = category === "gospodarska";
 
   const makeOptions: Opt[] = useMemo(() => {
     const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
@@ -160,8 +161,20 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // ODMAH ispod podkategorije, a ne iza Cijene i Motora — zato se vadi iz
   // basicDynamic i renderira zasebno u 1. panelu.
   const vrstaGroup = dynamicGroups.find((g) => g.name === "Vrsta");
-  const basicDynamic = dynamicGroups.filter((g) => g.name !== "Vrsta" && BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name));
-  const advancedDynamic = dynamicGroups.filter((g) => !BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name));
+  // Karlo 29.07: preostala polja grupe "Motor" idu U hardkodiranu Motor sekciju
+  // (motorSection), a iz "Više filtera" se izuzimaju — inače dvije rubrike MOTOR.
+  const motorRest = dynamicGroups.find((g) => g.name === "Motor")?.fields ?? [];
+  // Isto za "Cijena" (PDV) i "Boja" (Tip boje) — inače nastaju duple rubrike.
+  const cijenaRest = dynamicGroups.find((g) => g.name === "Cijena")?.fields ?? [];
+  const bojaRest = dynamicGroups.find((g) => g.name === "Boja")?.fields ?? [];
+  const basicDynamic = dynamicGroups.filter(
+    (g) => !["Vrsta", "Motor", "Cijena", "Boja"].includes(g.name) &&
+           BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name)
+  );
+  const advancedDynamic = dynamicGroups.filter(
+    (g) => !["Motor", "Cijena", "Boja"].includes(g.name) &&
+           (!BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name))
+  );
 
   // Broj aktivnih atributa (za badge na "Više filtera").
   const attrActiveCount = useMemo(() => {
@@ -415,6 +428,52 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     );
   };
 
+  /**
+   * Karlo 29.07: Motor+karoserija izdvojen u varijablu jer se kod GOSPODARSKE
+   * renderira IZNAD cijene (Oblik karoserije je tamo prvi kriterij izbora),
+   * a kod ostalih kategorija ostaje na starom mjestu ispod cijene.
+   */
+  const bodyPicker = hasField("bodyType") ? (
+    <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
+      options={bodyOpts(filterDef)} cols={3} />
+  ) : null;
+
+  const motorSection =
+    hasField("engineCc") || hasField("powerKw") || hasField("fuel") || hasField("bodyType") ? (
+      <Panel>
+        <SectionHead icon={Gauge} title={hasField("bodyType") ? "Motor i karoserija" : "Motor"} />
+        {isGospodarska && bodyPicker}
+        {(hasField("engineCc") || hasField("powerKw")) && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {hasField("engineCc") && (
+              <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={isMoto ? MOTO_ENGINE_STEPS : ENGINE_STEPS} />
+            )}
+            {hasField("powerKw") && (
+              <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={isMoto ? MOTO_POWER_STEPS : POWER_STEPS} />
+            )}
+          </div>
+        )}
+        {(hasField("fuel") || hasField("transmission")) && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {hasField("fuel") && (
+              <MultiSelect label={fuelLabel(filterDef)} values={fuel} onChange={setFuel}
+                options={fuelOpts(filterDef)} placeholder="Sve" />
+            )}
+            {hasField("transmission") && (
+              <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
+                options={transmissionOpts(filterDef)} placeholder="Sve" />
+            )}
+          </div>
+        )}
+        {!isGospodarska && bodyPicker}
+        {/* Preostala Motor polja (Cilindri, Takt, Prijenos) — prije su išla u
+            "Više filtera" pod istim naslovom, pa je MOTOR bio dvaput. */}
+        {motorRest.length > 0 && (
+          <div className="grid sm:grid-cols-2 gap-3">{motorRest.map(renderField)}</div>
+        )}
+      </Panel>
+    ) : null;
+
   return (
     <form onSubmit={onSubmit} className="space-y-7 pb-28">
       {/* Izbornik glavnih kategorija SAMO na čistom /oglasi/napredno (bez ?category=) */}
@@ -493,6 +552,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
       </Panel>
 
+      {/* Karlo 29.07: kod GOSPODARSKE Motor i karoserija stoji IZNAD cijene. */}
+      {isGospodarska && motorSection}
+
       {/* ── 2. CIJENA, GODINA (+ km samo ako kategorija koristi km) ── */}
       <Panel>
         <SectionHead icon={Tag} title={hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
@@ -509,40 +571,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             <RangeSelect label="Kilometraža" unit="km" minValue={kmMin} maxValue={kmMax} onMin={setKmMin} onMax={setKmMax} steps={KM_STEPS} />
           )}
         </div>
+        {/* Karlo 29.07: polja grupe "Cijena" (PDV) idu OVDJE — prije su pravila
+            zasebnu rubriku "CIJENA" ispod, uz već postojeću "CIJENA, GODINA…". */}
+        {cijenaRest.length > 0 && (
+          <div className="grid sm:grid-cols-2 gap-3">{cijenaRest.map(renderField)}</div>
+        )}
       </Panel>
 
-      {/* ── 3. MOTOR + KAROSERIJA (samo polja koja kategorija koristi) ── */}
-      {(hasField("engineCc") || hasField("powerKw") || hasField("fuel") || hasField("bodyType")) && (
-        <Panel>
-          <SectionHead icon={Gauge} title={hasField("bodyType") ? "Motor i karoserija" : "Motor"} />
-          {(hasField("engineCc") || hasField("powerKw")) && (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {hasField("engineCc") && (
-                <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={engineMin} maxValue={engineMax} onMin={setEngineMin} onMax={setEngineMax} steps={isMoto ? MOTO_ENGINE_STEPS : ENGINE_STEPS} />
-              )}
-              {hasField("powerKw") && (
-                <RangeSelect label="Snaga (kW)" unit="kW" minValue={powerMin} maxValue={powerMax} onMin={setPowerMin} onMax={setPowerMax} steps={isMoto ? MOTO_POWER_STEPS : POWER_STEPS} />
-              )}
-            </div>
-          )}
-          {(hasField("fuel") || hasField("transmission")) && (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {hasField("fuel") && (
-                <MultiSelect label={fuelLabel(filterDef)} values={fuel} onChange={setFuel}
-                  options={fuelOpts(filterDef)} placeholder="Sve" />
-              )}
-              {hasField("transmission") && (
-                <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
-                  options={transmissionOpts(filterDef)} placeholder="Sve" />
-              )}
-            </div>
-          )}
-          {hasField("bodyType") && (
-            <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
-              options={bodyOpts(filterDef)} cols={3} />
-          )}
-        </Panel>
-      )}
+      {/* ── 3. MOTOR + KAROSERIJA — kod gospodarske je renderirana IZNAD cijene ── */}
+      {!isGospodarska && motorSection}
 
       {/* ── 5. Osnovne dinamičke grupe (Vrata i sjedala, PDV, Stil...) — IZNAD Boje ── */}
       {basicDynamic.length > 0 && (
@@ -563,6 +600,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
                 onChange={(v) => setAttr("upholsteryColor", v || undefined)}
                 options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
             </div>
+          )}
+          {/* Ne-auto kategorije: preostala Boja polja ovdje, ne kao zasebna rubrika. */}
+          {!isAuto && bojaRest.length > 0 && (
+            <div className="grid sm:grid-cols-2 gap-3">{bojaRest.map(renderField)}</div>
           )}
         </Panel>
       )}

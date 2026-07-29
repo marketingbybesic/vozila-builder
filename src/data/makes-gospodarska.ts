@@ -7,7 +7,7 @@ const M = (slug: string, name: string, country: string, models: string[]): CarMa
   slug, name, country, models,
 });
 
-export const GOSPODARSKA_MAKES: CarMake[] = [
+const GOSPODARSKA_MAKES_RAW: CarMake[] = [
   M("citroen", "Citroën", "Francuska", ["Berlingo", "Jumpy", "Jumper", "Nemo", "ë-Berlingo", "ë-Jumpy", "ë-Jumper"]),
   M("daf", "DAF", "Nizozemska", ["LF", "CF", "XF", "XD", "XG", "XG+", "XB", "95 XF", "105 XF"]),
   M("dacia", "Dacia", "Rumunjska", ["Dokker Van", "Logan Van", "Duster Van"]),
@@ -58,4 +58,16 @@ export const GOSPODARSKA_MAKES: CarMake[] = [
   M("brenderup", "Brenderup", "Danska", ["1205", "1305", "2260", "3251", "4260", "5375"]),
   M("tiki-treler", "Tiki Treler", "Norveška", ["CP 200", "CP 300", "CH 350", "Cargo"]),
   M("ostalo", "Ostalo", "—", []),
+];
+
+/**
+ * Karlo 29.07: marke MORAJU biti po abecedi (bilo je "Zontes" prije "Zero",
+ * "DAF" prije "Dacia", prikolični brendovi nabacani na kraj).
+ * Sortira se u kodu hrvatskim collationom pa novi unosi ne mogu razbiti red.
+ * "Ostalo" uvijek ostaje na dnu.
+ */
+export const GOSPODARSKA_MAKES: CarMake[] = [
+  ...GOSPODARSKA_MAKES_RAW.filter((m) => m.slug !== "ostalo")
+    .sort((a, b) => a.name.localeCompare(b.name, "hr")),
+  ...GOSPODARSKA_MAKES_RAW.filter((m) => m.slug === "ostalo"),
 ];

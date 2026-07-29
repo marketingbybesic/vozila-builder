@@ -7,7 +7,7 @@ const M = (slug: string, name: string, country: string, models: string[]): CarMa
   slug, name, country, models,
 });
 
-export const MOTO_MAKES: CarMake[] = [
+const MOTO_MAKES_RAW: CarMake[] = [
   M("aeon", "Aeon", "Tajvan", ["Cobra", "Revo", "Elite", "Urban", "My350"]),
   M("aprilia", "Aprilia", "Italija", [
     "RS 125", "RS 660", "RSV4", "Tuono 125", "Tuono 660", "Tuono V4", "Shiver 900",
@@ -137,4 +137,16 @@ export const MOTO_MAKES: CarMake[] = [
   M("zontes", "Zontes", "Kina", ["125 U", "125 X", "310 R", "310 T", "310 X", "350 T", "350 X", "703 F"]),
   M("zero", "Zero Motorcycles", "SAD", ["S", "SR", "SR/F", "SR/S", "DS", "DSR", "DSR/X", "FX", "FXE"]),
   M("ostalo", "Ostalo", "—", []),
+];
+
+/**
+ * Karlo 29.07: marke MORAJU biti po abecedi (bilo je "Zontes" prije "Zero",
+ * "DAF" prije "Dacia", prikolični brendovi nabacani na kraj).
+ * Sortira se u kodu hrvatskim collationom pa novi unosi ne mogu razbiti red.
+ * "Ostalo" uvijek ostaje na dnu.
+ */
+export const MOTO_MAKES: CarMake[] = [
+  ...MOTO_MAKES_RAW.filter((m) => m.slug !== "ostalo")
+    .sort((a, b) => a.name.localeCompare(b.name, "hr")),
+  ...MOTO_MAKES_RAW.filter((m) => m.slug === "ostalo"),
 ];
