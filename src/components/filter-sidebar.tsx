@@ -140,7 +140,11 @@ export function FilterSidebar({ mobile, onClose }: Props) {
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        <MultiSelect label="Tip ponude" values={arr("offerType")} onChange={(v) => setMulti("offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+        {/* Karlo 30.07: filter je bio MRTAV — pisao se kao goli `offerType`, a polje je
+            `storage:"attr"`, pa ga `parseFilters` nikad nije uhvatio (nije ni u
+            RESERVED_PARAMS ni `a.`-prefiksiran) → korisnik filtrira, ništa se ne mijenja.
+            Attr polja MORAJU ići kroz `a.` prefiks. */}
+        <MultiSelect label="Tip ponude" values={arr("a.offerType").length ? arr("a.offerType") : arr("offerType")} onChange={(v) => setMulti("a.offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
         <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
       </div>
 

@@ -1,12 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signInAction, type AuthResult } from "@/actions/auth";
 
 export function SignInForm() {
+  // Karlo 30.07: proxy.ts stavi ?next=<put> kad zaštićena ruta odbije pristup.
+  // Bez ovog skrivenog polja server akcija ga ne vidi i korisnik uvijek padne
+  // na /moj-racun umjesto na stranicu koju je tražio.
+  const nextParam = useSearchParams().get("next") ?? "";
   const [state, formAction, pending] = useActionState<AuthResult | undefined, FormData>(
     signInAction,
     undefined
@@ -14,6 +19,7 @@ export function SignInForm() {
 
   return (
     <form action={formAction} className="mt-8 space-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-6">
+      <input type="hidden" name="next" value={nextParam} />
       {state && !state.ok && (
         <div className="text-sm bg-[var(--color-danger)]/10 text-[var(--color-danger)] rounded-md px-3 py-2 border border-[var(--color-danger)]/20">
           {state.error}

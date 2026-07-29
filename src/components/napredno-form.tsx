@@ -96,7 +96,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const [bodyType, setBodyType] = useState<string[]>(gArr("bodyType"));
   const [color, setColor] = useState<string[]>(gArr("color"));
   const [condition, setCondition] = useState<string[]>(gArr("condition"));
-  const [offerType, setOfferType] = useState<string[]>(gArr("offerType"));
+  // `a.offerType` je ispravan ključ (attr polje). Stari goli `offerType` čitamo kao
+  // fallback da linkovi/bookmarkovi iz prije popravka i dalje rade.
+  const [offerType, setOfferType] = useState<string[]>(
+    gArr("a.offerType").length ? gArr("a.offerType") : gArr("offerType")
+  );
   const [sellerType, setSellerType] = useState<string[]>(gArr("sellerType"));
   const [county, setCounty] = useState(g("county"));
   const [showWithoutPrice, setShowWithoutPrice] = useState(sp.get("hidePriceless") !== "1");
@@ -256,7 +260,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     for (const [name, vs] of [
       ["fuel", fuel], ["transmission", transmission], ["bodyType", bodyType],
       ["color", color], ["condition", condition],
-      ["offerType", offerType], ["sellerType", sellerType],
+      // Karlo 30.07: `offerType` je `storage:"attr"`, ne kolona — bez `a.` prefiksa
+      // `parseFilters` ga TIHO ODBACI i filter "Tip ponude" ne radi ništa.
+      ["a.offerType", offerType], ["sellerType", sellerType],
     ] as const) {
       if (vs.length) out.set(name, vs.join(","));
     }

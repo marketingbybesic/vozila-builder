@@ -17,6 +17,23 @@ const SignUpInput = z.object({
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
+/**
+ * Kamo preusmjeriti nakon prijave/registracije.
+ *
+ * Karlo 30.07: `proxy.ts` postavi `?next=<put>` kad nas zaštićena ruta odbije, ali
+ * su oba akcijska handlera hardkodirala `/moj-racun` → duboki link se gubio
+ * (klik na "Objavi oglas" bez prijave te nakon prijave odveo na račun, ne na objavu).
+ *
+ * `next` dolazi iz URL-a, pa mu se NE VJERUJE: primamo samo relativne putanje.
+ * Odbijamo `//host` (protokol-relativni URL) i `/\host` — oboje vode van sajta.
+ */
+function safeNext(raw: FormDataEntryValue | null): string {
+  const v = typeof raw === "string" ? raw.trim() : "";
+  if (!v.startsWith("/")) return "/moj-racun";
+  if (v.startsWith("//") || v.startsWith("/\\")) return "/moj-racun";
+  return v;
+}
+
 export async function signUpAction(_prev: AuthResult | undefined, formData: FormData): Promise<AuthResult> {
   const parsed = SignUpInput.safeParse({
     email: formData.get("email"),
@@ -39,7 +56,7 @@ export async function signUpAction(_prev: AuthResult | undefined, formData: Form
     phone: parsed.data.phone,
   });
   await createSessionCookie(user.id);
-  redirect("/moj-racun");
+  redirect(safeNext(formData.get("next")));
 }
 
 const SignInInput = z.object({
@@ -60,7 +77,7 @@ export async function signInAction(_prev: AuthResult | undefined, formData: Form
   if (!valid) return { ok: false, error: "Neispravan e-mail ili lozinka" };
   if (user.bannedAt) return { ok: false, error: "Račun je blokiran. Kontaktirajte podršku." };
   await createSessionCookie(user.id);
-  redirect("/moj-racun");
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function signOutAction() {

@@ -149,5 +149,7 @@ export type ListingFilters = {
   county?: string;
   sort?: SortOption;
   page?: number;
+  /** Sakrij oglase bez cijene (priceEur = 0). URL: `hidePriceless=1`. */
+  hidePriceless?: boolean;
   attrs?: Record<string, string | number | boolean | string[]>;
 };

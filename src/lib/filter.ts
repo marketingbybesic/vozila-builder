@@ -50,6 +50,10 @@ export function parseFilters(
     county: asString(sp.county),
     sort: (asString(sp.sort) as SortOption) ?? "newest",
     page: asNumber(sp.page) ?? 1,
+    // Karlo 30.07: napredna forma piše `hidePriceless=1` kad je toggle
+    // "Prikaži oglase bez cijene" ISKLJUČEN, ali ga nitko nije čitao → toggle
+    // nije imao nikakav efekt. Vidi granu u applyFilters().
+    hidePriceless: asString(sp.hidePriceless) === "1",
     attrs: parseAttrs(sp),
   };
 }
@@ -158,6 +162,7 @@ export function applyFilters(
     if (f.subcategory && l.subcategory !== f.subcategory) return false;
     if (f.make && slugify(l.make) !== f.make) return false;
     if (f.model && l.model !== f.model) return false;
+    if (f.hidePriceless && !(l.priceEur > 0)) return false;
     if (f.priceMin !== undefined && l.priceEur < f.priceMin) return false;
     if (f.priceMax !== undefined && l.priceEur > f.priceMax) return false;
     if (f.yearMin !== undefined && l.year < f.yearMin) return false;

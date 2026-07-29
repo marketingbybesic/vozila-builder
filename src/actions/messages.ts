@@ -32,3 +32,27 @@ export async function markThreadReadAction(threadId: string) {
   await db().markThreadRead(threadId, user.id);
   revalidatePath("/moj-racun/poruke");
 }
+
+/**
+ * Dohvati poruke jedne nizanke (za Inbox kad korisnik prebaci razgovor).
+ * Karlo 30.07: Inbox je do sada imao hardkodirane poruke i "Pošalji" je samo
+ * čistio polje — backend (`listThreads`/`getThreadMessages`/`sendMessage`) je
+ * već postojao i radio, samo UI nije bio spojen.
+ */
+export async function getThreadMessagesAction(threadId: string) {
+  const user = await requireUser();
+  const messages = await db().getThreadMessages(threadId, user.id);
+  await db().markThreadRead(threadId, user.id);
+  return messages.map((m) => ({
+    id: m.id,
+    body: m.body,
+    createdAt: m.createdAt,
+    fromMe: m.fromUserId === user.id,
+    read: Boolean(m.readAt),
+  }));
+}
+
+/** Odgovor unutar postojeće nizanke — `sendMessage` sam razrješava thread po oglasu. */
+export async function replyToThreadAction(input: { listingId: string; body: string }) {
+  return sendMessageAction(input);
+}

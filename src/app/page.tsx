@@ -31,9 +31,13 @@ export default async function HomePage() {
     (slug) => MAKES.find((m) => m.slug === slug)!
   );
   let latest: Listing[] = [];
+  // Karlo 30.07: podnaslov je tvrdio "12.847 oglasa" kao literal — broj nije imao
+  // veze s bazom. `listListings` već vraća `total`, samo se nije koristio.
+  let totalListings = 0;
   try {
     const result = await db().listListings({ sort: "newest", page: 1 });
     latest = result.items.slice(0, 12);
+    totalListings = result.total;
   } catch (err) {
     console.warn("[home] listListings failed:", err);
   }
@@ -50,7 +54,10 @@ export default async function HomePage() {
               Pronađi svoje vozilo
             </h1>
             <p className="mt-1 text-sm text-white/75">
-              Pretraži 12.847 oglasa — auti, motori, gospodarska, mehanizacija, kamperi i dijelovi
+              {totalListings > 0
+                ? `Pretraži ${totalListings.toLocaleString("hr-HR")} oglasa`
+                : "Pretraži oglase"}{" "}
+              — auti, motori, gospodarska, mehanizacija, kamperi i dijelovi
             </p>
           </div>
 
