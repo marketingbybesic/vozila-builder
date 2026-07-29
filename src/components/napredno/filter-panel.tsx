@@ -38,7 +38,7 @@ export function FilterPanel({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Zatvori filtere"
-            className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl border border-[var(--color-line)] text-sm font-medium text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-3 rounded-[var(--radius-md)] border border-[var(--color-line-soft)] text-sm font-medium text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 transition-colors"
           >
             <X className="size-4" /> Zatvori
           </button>

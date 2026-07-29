@@ -12,7 +12,10 @@ export function ListingCard({ listing, variant = "grid" }: { listing: Listing; v
   return (
     <Link
       href={`/oglasi/${listing.slug}`}
-      className="group relative flex flex-col bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden transition-all duration-200 hover:border-[var(--color-ink-soft)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+      /* Kartica se čita kao FOTOGRAFIJA s podacima, ne kao ograđena kutija: okvir
+         je zamijenjen elevationom (prije: okvir + sjena na hoveru + linija iznad
+         cijene = trostruko ograđivanje istog sadržaja). */
+      className="group relative flex flex-col bg-[var(--color-surface)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-flat)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-1"
     >
       <div className="relative aspect-[4/3] bg-[var(--color-line)] overflow-hidden">
         <Image
@@ -66,7 +69,7 @@ export function ListingCard({ listing, variant = "grid" }: { listing: Listing; v
           </span>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-[var(--color-line)] flex items-end justify-between gap-2">
+        <div className="mt-auto pt-3 border-t border-[var(--color-line-soft)] flex items-end justify-between gap-2">
           <div>
             <div className="font-display text-xl text-[var(--color-ink)] tracking-tight inline-flex items-baseline gap-2 flex-wrap">
               {formatPrice(listing.priceEur)}
@@ -100,7 +103,7 @@ function ListingRow({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/oglasi/${listing.slug}`}
-      className="group relative flex bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden transition-all duration-200 hover:border-[var(--color-ink-soft)] hover:shadow-[var(--shadow-card-hover)]"
+      className="group relative flex bg-[var(--color-surface)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-flat)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)]"
     >
       <div className="relative w-32 sm:w-52 shrink-0 self-stretch min-h-[112px] bg-[var(--color-line)] overflow-hidden">
         <Image

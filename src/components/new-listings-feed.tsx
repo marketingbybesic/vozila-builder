@@ -11,7 +11,7 @@ function MiniCard({ listing, entering }: { listing: Listing; entering: boolean }
   return (
     <Link
       href={`/oglasi/${listing.slug}`}
-      className={`group flex gap-3 bg-[var(--color-surface)] rounded-[var(--radius-md)] border border-[var(--color-line)] p-2.5 transition-all duration-500 hover:border-[var(--color-ink-soft)] hover:shadow-[var(--shadow-card)] ${
+      className={`group flex gap-3 bg-[var(--color-surface)] rounded-[var(--radius-md)] shadow-[var(--shadow-flat)] p-2.5 transition-all duration-500 hover:shadow-[var(--shadow-card)] ${
         entering ? "animate-slide-up" : ""
       }`}
     >

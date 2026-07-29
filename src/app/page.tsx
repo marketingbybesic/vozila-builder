@@ -115,7 +115,8 @@ export default async function HomePage() {
       </section>
 
       {/* BRAND LOGOS */}
-      <section className="border-b border-[var(--color-line)] bg-[var(--color-surface)]">
+      {/* Kontrast bijelo-na-#FAFAF7 već razdvaja sekcije — okvir je bio suvišan. */}
+      <section className="bg-[var(--color-surface)]">
         <Container className="py-8 md:py-10">
           <div className="flex items-end justify-between mb-4 md:mb-6">
             <div>
@@ -137,7 +138,7 @@ export default async function HomePage() {
               <Link
                 key={make.slug}
                 href={`/oglasi?make=${make.slug}`}
-                className="group flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-ink)] transition-all"
+                className="group flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-[var(--radius-md)] bg-[var(--color-bg)] hover:bg-[var(--color-line-soft)] transition-all"
               >
                 <BrandLogo slug={make.slug} className="size-9" />
                 <span className="text-[9px] leading-tight font-medium text-[var(--color-ink)] text-center truncate w-full">{make.name}</span>
@@ -149,7 +150,7 @@ export default async function HomePage() {
               <Link
                 key={make.slug}
                 href={`/oglasi?make=${make.slug}`}
-                className="group flex flex-col items-center justify-center gap-3 py-5 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg)] hover:border-[var(--color-ink)] hover:shadow-[var(--shadow-card)] transition-all"
+                className="group flex flex-col items-center justify-center gap-3 py-5 rounded-[var(--radius-md)] bg-[var(--color-bg)] hover:bg-[var(--color-line-soft)] hover:shadow-[var(--shadow-flat)] transition-all"
               >
                 <BrandLogo slug={make.slug} className="size-20" />
                 <span className="text-sm font-medium text-[var(--color-ink)] group-hover:text-[var(--color-accent-dark)]">
@@ -185,12 +186,12 @@ export default async function HomePage() {
       )}
 
       {/* VALUE PROPS */}
-      <section className="py-6 md:py-16 bg-[var(--color-surface)] border-y border-[var(--color-line)]">
+      <section className="py-8 md:py-20 bg-[var(--color-surface)]">
         <Container>
           <div className="grid grid-cols-3 gap-3 md:gap-8">
             <div className="flex flex-col items-center text-center md:items-start md:text-left">
-              <div className="size-10 md:size-12 rounded-[var(--radius-md)] bg-[var(--color-accent)]/15 text-[var(--color-accent-dark)] flex items-center justify-center mb-2 md:mb-5">
-                <ShieldCheck className="size-5 md:size-6" />
+              <div className="size-10 md:size-12 rounded-full bg-[var(--color-ink)] text-[var(--color-accent)] flex items-center justify-center mb-2 md:mb-5">
+                <ShieldCheck className="size-4.5 md:size-5" strokeWidth={1.5} />
               </div>
               <h3 className="font-display text-sm md:text-xl mb-1 md:mb-2">Provjereni prodavači</h3>
               <p className="text-[11px] md:text-sm text-[var(--color-ink-soft)] leading-relaxed hidden md:block">
@@ -198,8 +199,8 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center md:items-start md:text-left">
-              <div className="size-10 md:size-12 rounded-[var(--radius-md)] bg-[var(--color-accent)]/15 text-[var(--color-accent-dark)] flex items-center justify-center mb-2 md:mb-5">
-                <Zap className="size-5 md:size-6" />
+              <div className="size-10 md:size-12 rounded-full bg-[var(--color-ink)] text-[var(--color-accent)] flex items-center justify-center mb-2 md:mb-5">
+                <Zap className="size-4.5 md:size-5" strokeWidth={1.5} />
               </div>
               <h3 className="font-display text-sm md:text-xl mb-1 md:mb-2">Pametna pretraga</h3>
               <p className="text-[11px] md:text-sm text-[var(--color-ink-soft)] leading-relaxed hidden md:block">
@@ -207,8 +208,8 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center md:items-start md:text-left">
-              <div className="size-10 md:size-12 rounded-[var(--radius-md)] bg-[var(--color-accent)]/15 text-[var(--color-accent-dark)] flex items-center justify-center mb-2 md:mb-5">
-                <Users className="size-5 md:size-6" />
+              <div className="size-10 md:size-12 rounded-full bg-[var(--color-ink)] text-[var(--color-accent)] flex items-center justify-center mb-2 md:mb-5">
+                <Users className="size-4.5 md:size-5" strokeWidth={1.5} />
               </div>
               <h3 className="font-display text-sm md:text-xl mb-1 md:mb-2">Direktan kontakt</h3>
               <p className="text-[11px] md:text-sm text-[var(--color-ink-soft)] leading-relaxed hidden md:block">
@@ -256,7 +257,7 @@ export default async function HomePage() {
       </section>
 
       {/* POPULARNA PRETRAGA — pill links */}
-      <section className="py-8 md:py-14 bg-[var(--color-surface)] border-y border-[var(--color-line)]">
+      <section className="py-10 md:py-20 bg-[var(--color-surface)]">
         <Container>
           <h2 className="font-display text-xl md:text-3xl mb-4 md:mb-6">Popularna pretraga</h2>
           <div className="flex flex-wrap gap-1.5 md:gap-2">

@@ -125,7 +125,7 @@ export default async function ListingDetailPage({
 
             <section>
               <h2 className="font-display text-2xl mb-4">Osnovni podaci</h2>
-              <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+              <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
                 <SpecItem icon={<Calendar className="size-4" />} label="Godina" value={`${listing.year}.`} />
                 <SpecItem icon={<Gauge className="size-4" />} label="Kilometraža" value={formatKm(listing.km)} />
                 <SpecItem icon={<Fuel className="size-4" />} label="Gorivo" value={listing.fuel} />
@@ -151,7 +151,7 @@ export default async function ListingDetailPage({
             {(listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked) && (
               <section>
                 <h2 className="font-display text-2xl mb-4">Povijest vozila</h2>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
                   {listing.accidentHistory && <SpecItem label="Nesreće" value={listing.accidentHistory} />}
                   {listing.serviceHistory && <SpecItem label="Servisna knjižica" value={listing.serviceHistory} />}
                   {listing.importedFrom && <SpecItem label="Uvezen iz" value={listing.importedFrom} />}
@@ -162,7 +162,7 @@ export default async function ListingDetailPage({
 
             <section>
               <h2 className="font-display text-2xl mb-4">Opis</h2>
-              <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 text-[var(--color-ink-soft)] leading-relaxed whitespace-pre-line">
+              <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 text-[var(--color-ink-soft)] leading-relaxed whitespace-pre-line">
                 {listing.description}
               </div>
             </section>
@@ -209,7 +209,7 @@ export default async function ListingDetailPage({
           </div>
 
           <aside className="lg:sticky lg:top-20 lg:self-start space-y-4">
-            <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-card)]">
               <div className="font-display text-4xl text-[var(--color-ink)] tracking-tight flex items-baseline gap-3 flex-wrap">
                 {formatPrice(listing.priceEur)}
                 {listing.originalPriceEur && listing.originalPriceEur > listing.priceEur && (
@@ -265,7 +265,7 @@ export default async function ListingDetailPage({
               </div>
             </div>
 
-            <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5 text-sm space-y-2">
+            <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 text-sm space-y-2">
               <div className="font-medium text-[var(--color-ink)]">Spremno za izračun</div>
               <p className="text-xs text-[var(--color-muted)] leading-relaxed">
                 Mjesečna rata uz 20% predujma i 5 godina otplate približno

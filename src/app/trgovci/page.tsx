@@ -34,7 +34,7 @@ export default function TrgovciPage() {
         {FEATURED_DEALERS.map((dealer) => (
           <article
             key={dealer.id}
-            className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 md:p-5 transition-shadow hover:shadow-[var(--shadow-card)]"
+            className="rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] bg-[var(--color-surface)] p-4 md:p-5 transition-shadow hover:shadow-[var(--shadow-card)]"
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-3 min-w-0">

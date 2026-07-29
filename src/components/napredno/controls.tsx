@@ -91,10 +91,22 @@ export function BodyTypePicker({
   );
 }
 
+/**
+ * Osnova svih polja filtera.
+ *
+ * Prije: `rounded-xl` (22px) + puni okvir → svako polje je bilo zaobljena kapsula,
+ * a dvanaest kapsula u nizu čita se kao generički obrazac, ne kao alat u magazinu.
+ * Sada: plosnata površina (`radius-md`), bez vidljivog ruba u mirnom stanju —
+ * polje se od podloge odvaja vrlo tihom sjenom, a okvir se POJAVLJUJE na
+ * hover/fokus, gdje i nosi informaciju. Visina i padding su nepromijenjeni
+ * (raspored se ne smije mijenjati).
+ */
 const fieldBase =
-  "w-full h-12 px-3.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-sm " +
-  "text-[var(--color-ink)] transition-colors focus:outline-none focus:border-[var(--color-accent)] " +
-  "focus:ring-2 focus:ring-[var(--color-accent)]/25";
+  "w-full h-12 px-3.5 rounded-[var(--radius-md)] border border-transparent " +
+  "bg-[var(--color-surface)] shadow-[var(--shadow-flat)] text-sm " +
+  "text-[var(--color-ink)] transition-all hover:border-[var(--color-line)] " +
+  "focus:outline-none focus:border-[var(--color-accent)] " +
+  "focus:ring-2 focus:ring-[var(--color-accent)]/20";
 
 export function Label({
   children, required, optional,
@@ -130,9 +142,12 @@ function useDismiss(open: boolean, onClose: () => void) {
   return ref;
 }
 
+/* ⚠️ JEDINA iznimka od "bez okvira": lebdeći popover je bijel na svijetloj podlozi,
+   pa mu okvir daje definiciju — bez njega "pluta" bez granice. Okvir ostaje, ali
+   uz jaču sjenu i manji radius da se uklopi u ostatak sustava. */
 const panelWrapCls =
-  "absolute z-30 mt-2 w-full rounded-xl border border-[var(--color-line)] " +
-  "bg-[var(--color-surface)] shadow-xl shadow-black/10 overflow-hidden";
+  "absolute z-30 mt-2 w-full rounded-[var(--radius-md)] border border-[var(--color-line)] " +
+  "bg-[var(--color-surface)] shadow-[0_12px_32px_rgb(10_22_40/14%)] overflow-hidden";
 const panelScrollCls = "max-h-64 overflow-y-auto p-1.5 scrollbar-visible";
 
 /**

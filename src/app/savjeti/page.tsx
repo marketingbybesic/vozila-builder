@@ -41,7 +41,7 @@ export default function SavjetiPage() {
               <Link
                 key={g.href}
                 href={g.href}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 hover:border-[var(--color-accent)] hover:shadow-md transition-all group"
+                className="rounded-[var(--radius-md)] shadow-[var(--shadow-flat)] bg-[var(--color-surface)] p-5 hover:border-[var(--color-accent)] hover:shadow-md transition-all group"
               >
                 <div className="size-10 rounded-xl bg-[var(--color-accent)]/12 text-[var(--color-accent-dark)] grid place-items-center mb-3">
                   <Icon className="size-5" />

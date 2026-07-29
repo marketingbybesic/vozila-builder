@@ -39,7 +39,7 @@ export default async function MojRacunPage() {
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-5">
+            <div key={s.label} className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
               <div className="flex items-start justify-between">
                 <Icon className="size-5 text-[var(--color-muted)]" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-success)] inline-flex items-center gap-0.5">
