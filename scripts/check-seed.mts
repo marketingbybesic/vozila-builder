@@ -67,4 +67,23 @@ console.log(bad.length ? `\n⚠️ NEPOSTOJEĆI subcategory slug: ${bad.join(", 
 const noImg = LISTINGS.filter((l) => !l.images?.length).length;
 console.log(noImg ? `\n⚠️ oglasa bez slike: ${noImg}` : `✅ svi oglasi imaju sliku`);
 
-if (under.length || collisions.length || bad.length || noImg) process.exit(1);
+// ── 5) enum vrijednosti izvan dopuštenog skupa ────────────────────────────
+// Nalaz 30.07.2026: 15 oglasa u Supabaseu imalo je body_type "Kombi"/"Terenac"/"MPV".
+// `applyFilters` radi nad tipiziranim skupom pa su TIHO ispadali iz svakog upita —
+// /oglasi je pokazivao 1151 umjesto 1224. Tip ih ne hvata jer dolaze iz baze, ne iz koda.
+const ENUMS: Record<string, string[]> = {
+  bodyType: ["Microcar", "Limuzina", "Hatchback", "Karavan", "Coupe", "Cabrio", "SUV", "Monovolumen", "Pickup"],
+  fuel: ["Benzin", "Dizel", "Hibrid", "Električni", "Plin"],
+  transmission: ["Ručni", "Automatski"],
+  drive: ["Prednji", "Stražnji", "4x4"],
+  condition: ["Rabljeno", "Novo", "Oldtimer"],
+};
+const enumErrs: string[] = [];
+for (const [field, allowed] of Object.entries(ENUMS)) {
+  const badVals = [...new Set(LISTINGS.map((l) => l[field as keyof typeof l] as string))]
+    .filter((v) => v && !allowed.includes(v));
+  if (badVals.length) enumErrs.push(`${field}: ${badVals.join(", ")}`);
+}
+console.log(enumErrs.length ? `\n⚠️ enum izvan skupa:\n   ${enumErrs.join("\n   ")}` : `✅ svi enumi u dopuštenom skupu`);
+
+if (under.length || collisions.length || bad.length || noImg || enumErrs.length) process.exit(1);
