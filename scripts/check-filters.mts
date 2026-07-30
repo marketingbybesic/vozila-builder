@@ -27,6 +27,8 @@ const CASES: Array<[string, string]> = [
   ["mehanizacija", "poljoprivredni-strojevi"],
   ["mehanizacija", "vilicari"],
   ["mehanizacija", "gradevinski-strojevi"],
+  ["prosti-cas", "kamperi"],
+  ["prosti-cas", "kamp-prikolice"],
 ];
 
 let problems = 0;

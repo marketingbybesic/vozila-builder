@@ -46,6 +46,10 @@ export type FilterField = {
   // Tekst "prazne" opcije u izborniku. SelectField uvijek sam renderira taj red
   // (default "Sve"), pa ga NE treba dodavati i u `options` — bio bi duplikat.
   placeholder?: string;
+  // `range` + `steps` + `maxOnly`: renderira SAMO gornju granicu ("do max"),
+  // bez Od polja. Karlo 30.07 za NDM kamp prikolica — kupca zanima samo koliko
+  // smije vući, donja granica nema smisla.
+  maxOnly?: boolean;
   storage: "column" | "attr";
   group?: string; // section header in sidebar (e.g. "Oprema → Sigurnost")
   shared?: boolean;
@@ -839,17 +843,16 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
 
   // Dodatne opcije — Karlo nije tražio promjenu, ali polja koja su bila vezana
   // uz izbačene rubrike dobivaju scope da ne vise prazna.
-  { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["poljoprivredni-strojevi"] },
-  { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["poljoprivredni-strojevi"] },
-  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["poljoprivredni-strojevi"] },
-  { key: "cabin", label: "Klimatizirana kabina", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "rops", label: "ROPS (zaštita od prevrtanja)", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "fops", label: "FOPS (zaštita od pada predmeta)", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "gps", label: "GPS / Telematika", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-  { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Dodatne opcije" },
-
+  { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "cabin", label: "Klimatizirana kabina", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "rops", label: "ROPS (zaštita od prevrtanja)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "fops", label: "FOPS (zaštita od pada predmeta)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "gps", label: "GPS / Telematika", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
   // ── Karlo 30.07: nova rubrika "Stanje mehanizacije" ─────────────────────
   // Traži se za poljoprivredne i građevinske strojeve; dajemo je i preostalim
   // podkategorijama radi dosljednosti (ista logika Prikaži / Ne prikaži).
@@ -873,20 +876,25 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   { key: "dailyRate", label: "Dnevna cijena najma", type: "range", unit: "€", min: 0, max: 5000, step: 10, storage: "attr", group: "Ostalo", scope: ["najam"] },
   { key: "minRentalDays", label: "Min. dana najma", type: "select", storage: "attr", group: "Ostalo", scope: ["najam"],
     options: [1,3,7,14,30].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "operator", label: "S operaterom", type: "toggle", storage: "attr", group: "Ostalo", scope: ["najam"] },
-  { key: "delivery", label: "Dostava na lokaciju", type: "toggle", storage: "attr", group: "Ostalo", scope: ["najam"] },
+  { key: "operator", label: "S operaterom", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "delivery", label: "Dostava na lokaciju", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: [v("prodaja"), v("najam")] },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "serviceHistory", label: "Servisna evidencija", type: "toggle", storage: "attr", group: "Ostalo" },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "serviceHistory", label: "Servisna evidencija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 ];
 
 // ── PROSTI-CAS (leisure: campers, caravans, boats) — our taxonomy ──────
 const PROSTI_CAS_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_YEAR, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
+  // Karlo 30.07: podrubrika "Vrsta" duplirala je gornju Podkategoriju →
+  // ostaje samo za podkategorije koje nemaju vlastiti "Tip".
   { key: "subcategory", label: "Vrsta", type: "multi", storage: "column", group: "Vrsta",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila",
+            "e-bicikli", "e-skuteri", "kamping-oprema"],
     options: [
       { value: "kamperi", label: "Kamperi" },
       { value: "kamp-prikolice", label: "Kamp prikolice" },
@@ -909,12 +917,16 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "jahta", label: "Jahta" },
       { value: "radni", label: "Radni brod" },
     ] },
-  { key: "camperLayout", label: "Raspored kampera", type: "select", storage: "attr", group: "Vrsta", scope: ["kamperi"],
+  // Karlo 30.07: "Raspored kampera" → "Tip kampera", proširena lista.
+  { key: "camperLayout", label: "Tip kampera", type: "multi", storage: "attr", group: "Vrsta", scope: ["kamperi"],
     options: [
+      { value: "alkoven", label: "Alkoven" },
       { value: "poluintegralni", label: "Poluintegralni" },
       { value: "integralni", label: "Integralni" },
-      { value: "alkoven", label: "Alkoven" },
-      { value: "buscamper", label: "Bus camper / van" },
+      { value: "buscamper", label: "Bus camper / kombi" },
+      { value: "kastenwagen", label: "Kastenwagen" },
+      { value: "teretni-kamper", label: "Kamper na teretnom vozilu" },
+      { value: "ostalo", label: "Ostalo" },
     ] },
   { key: "eBikeType", label: "Tip e-bicikla", type: "select", storage: "attr", group: "Vrsta", scope: ["e-bicikli"],
     options: [
@@ -925,15 +937,48 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "sklopivi", label: "Sklopivi" },
     ] },
 
-  { key: "sleeps", label: "Broj spavanja", type: "select", storage: "attr", group: "Dimenzije",
+  // ── Karlo 30.07: "Dimenzije" → "Dimenzije i upotrebljivost" ──────────────
+  // "Broj spavanja" → "Broj ležišta" s Od/Do izbornikom (prije jedan select).
+  { key: "sleeps", label: "Broj ležišta", type: "range", storage: "attr",
+    group: "Dimenzije i upotrebljivost",
     scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "satorske-prikolice", "plovila"],
-    options: [2,3,4,5,6,7,8].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1, storage: "attr", group: "Dimenzije" },
-  { key: "widthM", label: "Širina", type: "range", unit: "m", min: 1.5, max: 5, step: 0.1, storage: "attr", group: "Dimenzije" },
-  { key: "heightM", label: "Visina", type: "range", unit: "m", min: 1.5, max: 4, step: 0.1, storage: "attr", group: "Dimenzije" },
-  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 7500, step: 50, storage: "attr", group: "Dimenzije" },
-  { key: "axles", label: "Broj osovina", type: "select", storage: "attr", group: "Dimenzije",
-    scope: ["kamp-prikolice", "satorske-prikolice"],
+    steps: [1, 2, 3, 4, 5, 6, 7, 8] },
+  // Dužina: kamperi kreću od 5 m, kamp prikolice od 3 m (manje su).
+  { key: "lengthM", label: "Dužina", type: "range", unit: "m", storage: "attr",
+    group: "Dimenzije i upotrebljivost", scope: ["kamperi"],
+    steps: [5, 6, 7, 8, 9, 10] },
+  { key: "lengthM", label: "Dužina", type: "range", unit: "m", storage: "attr",
+    group: "Dimenzije i upotrebljivost", scope: ["kamp-prikolice"],
+    steps: [3, 4, 5, 6, 7, 8, 9, 10] },
+  { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1,
+    storage: "attr", group: "Dimenzije i upotrebljivost",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila",
+            "e-bicikli", "e-skuteri", "kamping-oprema"] },
+  // KAMPERI: "Širina" zamijenjena "Brojem sjedala" (Karlov zahtjev).
+  { key: "seats", label: "Broj sjedala", type: "range", storage: "attr",
+    group: "Dimenzije i upotrebljivost", scope: ["kamperi"],
+    steps: [2, 3, 4, 5, 6] },
+  { key: "widthM", label: "Širina", type: "range", unit: "m", min: 1.5, max: 5, step: 0.1,
+    storage: "attr", group: "Dimenzije i upotrebljivost",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila"] },
+  // "Visina" izbačena iz kampera i kamp prikolica (ostaje ostalima).
+  { key: "heightM", label: "Visina", type: "range", unit: "m", min: 1.5, max: 4, step: 0.1,
+    storage: "attr", group: "Dimenzije i upotrebljivost",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice"] },
+  // KAMP PRIKOLICE: "Težina" → "Najveća dozvoljena masa (NDM)" — JEDAN izbornik
+  // "do max", pa je `steps` s praznim Od dijelom (renderira se kao raspon, ali
+  // korisnik popunjava samo Do).
+  { key: "gvwKg", label: "Najveća dozvoljena masa (NDM) u kg", type: "range", unit: "kg",
+    storage: "attr", group: "Dimenzije i upotrebljivost", scope: ["kamp-prikolice"],
+    maxOnly: true,
+    steps: [750, 1000, 1500, 2000, 2500, 3000, 3500] },
+  // "Težina" izbačena iz kampera i kamp prikolica.
+  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 7500, step: 50,
+    storage: "attr", group: "Dimenzije i upotrebljivost",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila"] },
+  // "Broj osovina" izbačen iz kamp prikolica (ostaje šatorskim).
+  { key: "axles", label: "Broj osovina", type: "select", storage: "attr",
+    group: "Dimenzije i upotrebljivost", scope: ["satorske-prikolice"],
     options: [1,2,3].map((n) => ({ value: String(n), label: `${n}` })) },
 
   // Motor kamper — samo kamperi/mobilne (domenska analiza)
@@ -972,24 +1017,25 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     options: [16,20,24,26,27.5,28,29].map((n) => ({ value: String(n), label: `${n}"` })) },
 
   // Udobnost (domenska analiza)
-  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost" },
+  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
   { key: "heating", label: "Grijanje", type: "select", storage: "attr", group: "Udobnost",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"],
     options: [
       { value: "plin", label: "Plinsko" },
       { value: "dizel", label: "Dizelsko" },
       { value: "truma", label: "Truma" },
       { value: "webasto", label: "Webasto" },
     ] },
-  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost" },
-  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost" },
-  { key: "mover", label: "Mover (manevarski pogon)", type: "toggle", storage: "attr", group: "Udobnost", scope: ["kamp-prikolice"] },
+  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  // Karlo 30.07: "Mover" uklonjen — cijela rubrika Udobnost izbačena iz kamp prikolica.
 
   // Plovila — navigacija (domenska analiza)
   { key: "boatGps", label: "GPS / ploter", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["plovila"] },
@@ -997,7 +1043,9 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "windlass", label: "Sidreno vitlo", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["plovila"] },
 
   // Ostalo (domenska analiza)
+  // Karlo 30.07: "Tip ponude" i "Garancija" izbrisani iz kampera i kamp prikolica.
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"],
     options: [v("prodaja"), v("najam")] },
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
     options: [
@@ -1005,7 +1053,14 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "servisna", label: "Servisna evidencija" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ] },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
+  { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["kamperi"] },
+  { key: "hideBroken", label: "Vozilo u kvaru", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["kamperi"] },
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
@@ -1141,7 +1196,7 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
   // Stable order: Osnovno → Vrsta → Motor → Karoserija → Specifikacije → Oprema → ...
   const order = [
     "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Vrata i sjedala", "Boja",
-    "Osovine i nosivost", "Nosivost, visina dizanja",
+    "Osovine i nosivost", "Nosivost, visina dizanja", "Dimenzije i upotrebljivost",
     // Karlo 30.07: stanje je odluka "hoću li ovo uopće vidjeti" → visoko, odmah
     // iza osnovnih svojstava, a ne zakopano među Dodatnim opcijama.
     "Stanje vozila", "Stanje mehanizacije",

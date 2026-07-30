@@ -48,7 +48,7 @@ type AttrValue = string | string[] | boolean | undefined;
 // Karlo 30.07: "Stanje vozila"/"Stanje mehanizacije" moraju biti ODMAH vidljivi —
 // odluka "prikaži oštećene?" je osnovna, ne napredna. Isto vrijedi za nosivost
 // viličara. Bez ovoga bi grupe završile skrivene iza gumba "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost", "Nosivost, visina dizanja", "Stanje vozila", "Stanje mehanizacije"]);
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost", "Nosivost, visina dizanja", "Dimenzije i upotrebljivost", "Stanje vozila", "Stanje mehanizacije"]);
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
@@ -400,6 +400,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             onMin={(v) => setRange(v, hi)}
             onMax={(v) => setRange(lo, v)}
             steps={f.steps}
+            maxOnly={f.maxOnly}
           />
         );
       }

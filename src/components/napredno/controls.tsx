@@ -419,21 +419,28 @@ export function ColorPicker({
 
 /** Range as two compact selects (od / do) sharing a row. */
 export function RangeSelect({
-  label, required, optional, unit, minValue, maxValue, onMin, onMax, steps, fmt,
+  label, required, optional, unit, minValue, maxValue, onMin, onMax, steps, fmt, maxOnly,
 }: {
   label: string; required?: boolean; optional?: boolean; unit?: string;
   minValue: string; maxValue: string;
   onMin: (v: string) => void; onMax: (v: string) => void;
   steps: number[]; fmt?: (n: number) => string;
+  /** Prikaži SAMO gornju granicu ("do max"), bez Od polja — npr. NDM prikolice. */
+  maxOnly?: boolean;
 }) {
   const render = (n: number) => (fmt ? fmt(n) : n.toLocaleString("hr-HR")) + (unit ? ` ${unit}` : "");
+  const opts = steps.map((s) => ({ value: String(s), label: render(s) }));
   return (
     <div>
       <Label required={required} optional={optional}>{label}</Label>
-      <div className="grid grid-cols-2 gap-2">
-        <SelectField value={minValue} onChange={onMin} placeholder="Od" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
-        <SelectField value={maxValue} onChange={onMax} placeholder="Do" options={steps.map((s) => ({ value: String(s), label: render(s) }))} />
-      </div>
+      {maxOnly ? (
+        <SelectField value={maxValue} onChange={onMax} placeholder="do max" options={opts} />
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField value={minValue} onChange={onMin} placeholder="Od" options={opts} />
+          <SelectField value={maxValue} onChange={onMax} placeholder="Do" options={opts} />
+        </div>
+      )}
     </div>
   );
 }
