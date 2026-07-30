@@ -24,7 +24,13 @@ export function parseFilters(
   return {
     q: asString(sp.q),
     category: asString(sp.category) as ListingFilters["category"],
-    subcategory: asString(sp.subcategory),
+    // `auto-oglasi` je ULAZNA TOČKA za naprednu pretragu, ne vrijednost filtera —
+    // nijedan oglas nema tu podkategoriju. Ako dođe iz URL-a, filtriranje po njoj
+    // vraća 0 rezultata (brojač je pokazivao "Prikaži 0 vozila" uz 1.224 oglasa
+    // u bazi). UI ga izuzima iz izbornika, ali URL može doći i izvana → ignoriraj.
+    subcategory: asString(sp.subcategory) === "auto-oglasi"
+      ? undefined
+      : asString(sp.subcategory),
     make: asString(sp.make),
     model: asString(sp.model),
     priceMin: asNumber(sp.priceMin),
@@ -93,6 +99,58 @@ function parseAttrs(
     any = true;
   }
   return any ? out : undefined;
+}
+
+/** Ključevi koji NISU obična podudarnost atributa, nego isključivanje skupine. */
+const STATE_TOGGLE_KEYS = ["hideDamaged", "hideBroken"] as const;
+
+/**
+ * Je li oglas "oštećen"?
+ *
+ * Karlo 30.07. je izbacio filter "Stanje karoserije", ali 1.224 oglasa u bazi
+ * već ima taj podatak — pa ga koristimo kao izvor istine umjesto da tražimo
+ * novi atribut koji nitko još nije upisao. Oštećenim se smatra i podkategorija
+ * "ostecen-u-kvaru", jer je tamo oštećenje sama definicija rubrike.
+ */
+function isDamaged(l: Listing): boolean {
+  if (l.subcategory === "ostecen-u-kvaru") return true;
+  const st = String(l.attributes?.damageState ?? "");
+  return st === "osteceno" || st === "lakse-popravljeno" || st === "veca-popravljena";
+}
+
+/**
+ * Je li oglas "u kvaru"?
+ *
+ * Postojeći atribut `engineRuns` ("Motor pali") je najbliži pouzdan signal:
+ * sve osim "da" znači da vozilo ne vozi. Prikolice nemaju motor pa nikad nisu
+ * "u kvaru" — zato im Karlo i nije tražio taj filter.
+ */
+function isBroken(l: Listing): boolean {
+  const runs = l.attributes?.engineRuns;
+  if (runs === undefined || runs === null || runs === "") return false;
+  return String(runs) !== "da";
+}
+
+function passesStateToggles(
+  l: Listing,
+  attrs: Record<string, unknown> | undefined
+): boolean {
+  if (!attrs) return true;
+  if (attrs.hideDamaged === "ne" && isDamaged(l)) return false;
+  if (attrs.hideBroken === "ne" && isBroken(l)) return false;
+  return true;
+}
+
+/** Ukloni toggle ključeve prije obične attr usporedbe (inače bi tražili vrijednost "ne"). */
+function omitStateToggles(
+  attrs: Record<string, string | number | boolean | string[]>
+): Record<string, string | number | boolean | string[]> {
+  const out: Record<string, string | number | boolean | string[]> = {};
+  for (const [k, v] of Object.entries(attrs)) {
+    if ((STATE_TOGGLE_KEYS as readonly string[]).includes(k)) continue;
+    out[k] = v;
+  }
+  return out;
 }
 
 function attrMatches(
@@ -191,7 +249,14 @@ export function applyFilters(
     if (f.condition && f.condition.length > 0 && !f.condition.includes(l.condition)) return false;
     if (f.sellerType && f.sellerType.length > 0 && !f.sellerType.includes(l.sellerType)) return false;
     if (f.county && l.county !== f.county) return false;
-    if (f.attrs && !attrMatches(l.attributes, f.attrs)) return false;
+
+    // Karlo 30.07: "Prikaz oštećenih / u kvaru" (hideDamaged/hideBroken) NISU
+    // obični attr filteri — ne traže oglase s tom vrijednošću, nego ISKLJUČUJU
+    // skupinu. Vrijednost "ne" znači "ne prikazuj", prazno znači "ne filtriraj"
+    // (zadano = sve se vidi, da oglasi ne nestaju bez korisnikova izbora).
+    if (!passesStateToggles(l, f.attrs)) return false;
+
+    if (f.attrs && !attrMatches(l.attributes, omitStateToggles(f.attrs))) return false;
     return true;
   });
 

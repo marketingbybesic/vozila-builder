@@ -45,7 +45,10 @@ const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i
 type AttrValue = string | string[] | boolean | undefined;
 
 // Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost"]);
+// Karlo 30.07: "Stanje vozila"/"Stanje mehanizacije" moraju biti ODMAH vidljivi —
+// odluka "prikaži oštećene?" je osnovna, ne napredna. Isto vrijedi za nosivost
+// viličara. Bez ovoga bi grupe završile skrivene iza gumba "Više filtera".
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost", "Nosivost, visina dizanja", "Stanje vozila", "Stanje mehanizacije"]);
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
@@ -202,7 +205,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (warranty) attrsClean.warranty = true;
     const f: ListingFilters = {
       category: category as ListingFilters["category"],
-      subcategory: subcategory || undefined,
+      // `auto-oglasi` je ulazna točka, ne vrijednost podkategorije — filtriranje
+      // po njoj daje 0 rezultata. `liveCount` ne ide kroz parseFilters, pa isto
+      // pravilo mora vrijediti i ovdje (inače gumb kaže "Prikaži 0 vozila").
+      subcategory: subcategory && subcategory !== "auto-oglasi" ? subcategory : undefined,
       make: make || undefined,
       model: model || undefined,
       q: q || undefined,

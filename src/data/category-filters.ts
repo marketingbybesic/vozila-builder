@@ -77,6 +77,31 @@ const DAMAGE_STATE_OPTIONS: FilterOption[] = [
   { value: "veca-popravljena", label: "Veća šteta popravljena" },
 ];
 
+/**
+ * Karlo 30.07.2026: "Stanje karoserije" (6 stupnjeva štete) zamijenjeno je
+ * UKLJUČI/ISKLJUČI logikom — kupca prvo zanima hoće li uopće vidjeti oštećena
+ * vozila, a tek onda koliko su oštećena.
+ *
+ * ZADANO = prikaži sve (Dinova odluka): prazna vrijednost znači "ne filtriraj",
+ * pa oštećeni oglasi NE nestaju dok korisnik to izričito ne odabere. Suprotno
+ * (skriveni po defaultu) bi tiho gasilo vidljivost prodavačima oštećenih vozila.
+ *
+ * "prikazi" je namjerno prazan string: identično je "ne filtriraj", a korisniku
+ * daje eksplicitan izbor u izborniku. Vidi filtriranje u lib/filter.ts.
+ */
+const SHOW_HIDE_OPTIONS: FilterOption[] = [
+  { value: "", label: "Prikaži" },
+  { value: "ne", label: "Ne prikaži" },
+];
+
+/** Vozila: dvije nove podrubrike umjesto starog "Stanje karoserije". */
+const VEHICLE_STATE_FIELDS: FilterField[] = [
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+];
+
 // ── Common fields routed to typed columns ──────────────────────────────
 const COMMON_PRICE: FilterField = {
   key: "priceEur", label: "Cijena (€)", type: "range", unit: "€",
@@ -243,9 +268,8 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "garazirano", label: "Garažirano" },
       { value: "zamjena", label: "Moguća zamjena" },
     ] },
-  // Damage state (attr.select). Karlo t.30: dodana opcija "za svoje godine primjereno"
-  { key: "damageState", label: "Stanje karoserije", type: "select", storage: "attr", group: "Povijest",
-    options: DAMAGE_STATE_OPTIONS },
+  // Karlo 30.07: "Stanje karoserije" izbačeno iz Povijesti → nova rubrika
+  // "Stanje vozila" (VEHICLE_STATE_FIELDS, dodana na dnu ovog niza).
   { key: "floodState", label: "Poplavljen", type: "select", storage: "attr", group: "Povijest",
     scope: ["ostecen-u-kvaru"],
     options: [
@@ -254,9 +278,8 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "da", label: "Da, sanirano" },
     ] },
 
-  // Registracija + povijest vlasništva (domenska analiza 2026-06-22)
-  { key: "firstRegistered", label: "Prva registracija", type: "text", storage: "attr", group: "Povijest" },
-  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
+  // Karlo 30.07: iz Povijesti izbačeni "Prva registracija", "Registriran do"
+  // i "Uvezeno iz" — datumska polja slobodnog unosa nisu se koristila za pretragu.
   { key: "serviceHistory", label: "Servisna evidencija", type: "select", storage: "attr", group: "Povijest",
     options: [
       { value: "potpuna", label: "Potpuna servisna" },
@@ -265,7 +288,6 @@ const AUTO_FIELDS: FilterField[] = [
     ] },
   { key: "numOwners", label: "Broj vlasnika", type: "select", storage: "attr", group: "Povijest",
     options: [1,2,3,4].map((n) => ({ value: String(n), label: n === 4 ? "4+" : `${n}` })) },
-  { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest" },
 
   // Oštećeni / u kvaru — samo ostecen-u-kvaru subkategorija (domenska analiza)
   { key: "engineRuns", label: "Motor pali", type: "select", storage: "attr", group: "Povijest",
@@ -310,6 +332,9 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "7d", label: "Posljednji tjedan" },
       { value: "30d", label: "Posljednji mjesec" },
     ] },
+
+  // Karlo 30.07: nova rubrika "Stanje vozila" umjesto "Stanje karoserije".
+  ...VEHICLE_STATE_FIELDS,
 ];
 
 // ── MOTO — full 26-field taxonomy from avto.net ────────────────────────
@@ -406,8 +431,7 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "zamjena", label: "Moguća zamjena" },
     ] },
 
-  { key: "damageState", label: "Stanje karoserije", type: "select", storage: "attr", group: "Povijest",
-    options: DAMAGE_STATE_OPTIONS },
+  // Karlo 30.07: "Stanje karoserije" → nova rubrika "Stanje vozila" (dno niza).
   // Karlo 29.07: polje se zvalo "Povijest" isto kao rubrika u kojoj stoji —
   // ujednačeno s ostalim kategorijama na "Vlasništvo".
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
@@ -417,12 +441,15 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
     ] },
-  { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest" },
+  // Karlo 30.07: "Registriran do" izbačen iz Povijesti.
   // Karlo 29.07 (2. runda): grupa "Ostalo" ukinuta u MOTO —
   // "Garancija" je bila duplikat gornjeg osnovnog panela (TogglePill), a
   // "Oldtimer" je premješten u rubriku "Dodatne opcije".
   // Karlo 27.07: iz grupe "Ostalo" izbačeni "Tip ponude" i "Na zalihi".
   { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije" },
+
+  // Karlo 30.07: nova rubrika "Stanje vozila" (motocikl/skuter/ATV — sve podkat.).
+  ...VEHICLE_STATE_FIELDS,
 ];
 
 // ── GOSPODARSKA — full 34-field taxonomy from avto.net ─────────────────
@@ -670,16 +697,19 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
     ] },
-  { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Povijest",
-    scope: ["dostavna", "autobusi", "utv", "najam"],
-    options: DAMAGE_STATE_OPTIONS },
-  // Karlo 29.07 (2. runda): kod KAMIONA i TERETNIH PRIKOLICA "Povijest" je bila
-  // jedina rubrika u "Više filtera" i imala je samo Stanje — cijeli taj panel je
-  // ukinut, a Stanje je premješteno u gornju rubriku "Cijena, godina, kilometraža"
-  // (grupa "Cijena" se renderira UNUTAR te hardkodirane sekcije, vidi cijenaRest).
-  { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Cijena",
-    scope: ["kamioni", "prikolice"],
-    options: DAMAGE_STATE_OPTIONS },
+  // Karlo 30.07: "Stanje" (6 stupnjeva štete) zamijenjeno rubrikom "Stanje vozila"
+  // s Prikaži/Ne prikaži logikom — vrijedi za dostavnu, kamione, autobuse, utv, najam.
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"] },
+  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"] },
+  // TERETNE PRIKOLICE dobivaju SAMO "Prikaz oštećenih" — prikolica nema motor,
+  // pa "u kvaru" nema smisla (Dinova potvrda 30.07, nije previd u Karlovom popisu).
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["prikolice"] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
     scope: ["autobusi", "utv", "najam"] },
   { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest",
@@ -697,16 +727,75 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
 const MEHANIZACIJA_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_YEAR, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
-  { key: "subcategory", label: "Vrsta", type: "multi", storage: "column", group: "Vrsta",
+  // Karlo 30.07: podrubrika "Vrsta" (duplirala je gornju Podkategoriju) IZBAČENA.
+  // Ostaje samo "Tip", s listom tipova po podkategoriji.
+  // Polja dijele isti `key` jer imaju DISJUNKTNE scope-ove (ista tehnika kao
+  // moto "Stil"): korisnik u svakoj podkategoriji vidi samo svoje tipove.
+  //
+  // ⚠️ Karlo je tražio "kao na avto.net". avto.net blokira dohvat (HTTP 403; i
+  // Camoufox zapne na search_category.asp), pa liste NISU doslovno prepisane s
+  // njihove stranice nego složene po istoj logici i prilagođene HR tržištu
+  // (npr. "vinogradarski/voćarski stroj" je ovdje relevantniji nego u SLO).
+  // Ako Karlo želi 1:1 avto.net popis, treba mi njihov screenshot dropdowna.
+  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["poljoprivredni-strojevi"],
     options: [
-      { value: "poljoprivredni-strojevi", label: "Poljoprivredni strojevi" },
-      { value: "vilicari", label: "Viličari" },
-      { value: "sumarski-strojevi", label: "Šumarski strojevi" },
-      { value: "komunalni-strojevi", label: "Komunalni strojevi" },
-      { value: "gradevinski-strojevi", label: "Građevinski strojevi" },
-      { value: "najam", label: "Ponude za najam" },
+      v("Traktor"),
+      { value: "traktor-gusjenicar", label: "Traktor gusjeničar" },
+      v("Kombajn"),
+      { value: "silokombajn", label: "Silokombajn" },
+      { value: "kosilica", label: "Kosilica" },
+      { value: "balirka", label: "Balirka" },
+      { value: "plug", label: "Plug" },
+      { value: "sijacica", label: "Sijačica" },
+      { value: "prskalica", label: "Prskalica" },
+      { value: "rasipac", label: "Rasipač gnojiva" },
+      { value: "freza", label: "Freza / tanjurača" },
+      { value: "prikolica", label: "Prikolica" },
+      { value: "cisterna", label: "Cisterna" },
+      { value: "utovarivac-celni", label: "Čelni utovarivač" },
+      { value: "vinogradarski", label: "Vinogradarski / voćarski stroj" },
+      { value: "ostalo", label: "Ostalo" },
     ] },
-  { key: "machineType", label: "Tip stroja", type: "multi", storage: "attr", group: "Vrsta",
+  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["vilicari"],
+    options: [
+      { value: "celni-dizel", label: "Čelni viličar — dizel" },
+      { value: "celni-plin", label: "Čelni viličar — plin / TNG" },
+      { value: "celni-elektro", label: "Čelni viličar — električni" },
+      { value: "ceoni-terenski", label: "Terenski viličar" },
+      { value: "regalni", label: "Regalni viličar" },
+      { value: "retrak", label: "Retrak" },
+      { value: "paletar", label: "Paletar" },
+      { value: "teleskopski", label: "Teleskopski manipulator" },
+      { value: "bocni", label: "Bočni viličar" },
+      { value: "vucni", label: "Vučni viličar" },
+      { value: "radna-platforma", label: "Radna platforma" },
+      { value: "ostalo", label: "Ostalo" },
+    ] },
+  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["gradevinski-strojevi"],
+    options: [
+      { value: "bager-gusjenicar", label: "Bager gusjeničar" },
+      { value: "bager-kotaci", label: "Bager na kotačima" },
+      { value: "mini-bager", label: "Mini bager" },
+      { value: "rovokopac", label: "Rovokopač" },
+      { value: "utovarivac", label: "Utovarivač" },
+      { value: "mini-utovarivac", label: "Mini utovarivač" },
+      { value: "buldozer", label: "Buldožer" },
+      { value: "greder", label: "Greder" },
+      { value: "valjak", label: "Valjak" },
+      { value: "dizalica", label: "Dizalica" },
+      { value: "dumper", label: "Dumper" },
+      { value: "kompresor", label: "Kompresor" },
+      { value: "agregat", label: "Agregat" },
+      { value: "drobilica", label: "Drobilica / sito" },
+      { value: "asfalter", label: "Stroj za asfalt" },
+      { value: "ostalo", label: "Ostalo" },
+    ] },
+  // Ostale podkategorije (šumarski, komunalni, najam) zadržavaju opću listu.
+  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: [
       v("Traktor"), v("Kombajn"), v("Bager"), v("Utovarivač"),
       { value: "rovokopac", label: "Rovokopač" },
@@ -715,50 +804,41 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
       { value: "cistilica", label: "Čistilica" },
       { value: "prikljucni", label: "Priključni stroj" },
     ] },
+
+  // Karlo 30.07: rubrike MOTOR i SPECIFIKACIJE IZBAČENE iz poljoprivrednih,
+  // viličara i građevinskih strojeva. Polja niže zadržavaju scope na preostale
+  // podkategorije (šumarski / komunalni / najam) gdje su i dalje korisna.
   { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: ["Dizel","Električni","Hibrid","Plin"].map(v) },
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: [v("Ručni"), v("Automatski"), { value: "hidrostatski", label: "Hidrostatski" }] },
-  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
-  { key: "powerHp", label: "Snaga", type: "range", unit: "KS", min: 0, max: 800, step: 5, storage: "attr", group: "Motor" },
+  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "powerHp", label: "Snaga", type: "range", unit: "KS", min: 0, max: 800, step: 5, storage: "attr", group: "Motor",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 
-  // Univerzalno (domenska analiza: operatingHours KLJUČNO, weightKg)
-  { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", publishRequired: true },
-  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije" },
+  { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", publishRequired: true,
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 
-  // Građevinski strojevi / bagri (domenska analiza)
-  { key: "bucketCapacity", label: "Kapacitet žlice", type: "range", unit: "m³", min: 0, max: 5, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
-  { key: "diggingDepthM", label: "Dubina kopanja", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
-  { key: "reachM", label: "Doseg", type: "range", unit: "m", min: 0, max: 25, step: 0.5, storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"] },
-  { key: "undercarriage", label: "Podvozje", type: "select", storage: "attr", group: "Specifikacije", scope: ["gradevinski-strojevi"],
-    options: [
-      { value: "gusjenice", label: "Gusjenice" },
-      { value: "kotaci", label: "Kotači" },
-    ] },
+  // ── VILIČARI: nova rubrika "Nosivost, visina dizanja" (Karlo 30.07) ──────
+  // Od/Do izbornik s fiksnom ljestvicom (`steps`), isti pattern kao Cijena.
+  { key: "liftCapacityKg", label: "Nosivost u kg", type: "range", unit: "kg", storage: "attr",
+    group: "Nosivost, visina dizanja", scope: ["vilicari"],
+    steps: [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000, 20000] },
+  { key: "liftHeightMm", label: "Visina dizanja u mm", type: "range", unit: "mm", storage: "attr",
+    group: "Nosivost, visina dizanja", scope: ["vilicari"],
+    steps: [1000, 2000, 3000, 5000] },
 
-  // Utovarivač / viličar (domenska analiza)
-  { key: "liftCapacityKg", label: "Nosivost", type: "range", unit: "kg", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", scope: ["vilicari", "gradevinski-strojevi"] },
-  { key: "liftHeightM", label: "Visina dizanja", type: "range", unit: "m", min: 0, max: 15, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["vilicari", "gradevinski-strojevi"] },
-  { key: "mastHeightRaisedM", label: "Visina jarbola (podignut)", type: "range", unit: "m", min: 0, max: 15, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["vilicari"] },
-  { key: "tireType", label: "Vrsta guma", type: "select", storage: "attr", group: "Specifikacije", scope: ["vilicari"],
-    options: [
-      { value: "pneumatske", label: "Pneumatske" },
-      { value: "pune", label: "Pune (super-elastik)" },
-    ] },
+  // Nosivost za građevinske strojeve ostaje u Specifikacijama samo tamo gdje
+  // rubrika još postoji (Karlo je Specifikacije izbacio iz gradevinski-strojevi).
+  { key: "bucketCapacity", label: "Kapacitet žlice", type: "range", unit: "m³", min: 0, max: 5, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["sumarski-strojevi"] },
 
-  // Kombajn / poljoprivredni (domenska analiza)
-  { key: "workingWidthM", label: "Radni zahvat", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["poljoprivredni-strojevi"] },
-  { key: "bunkerCapacityL", label: "Kapacitet bunkera", type: "range", unit: "L", min: 0, max: 15000, step: 100, storage: "attr", group: "Specifikacije", scope: ["poljoprivredni-strojevi"] },
-
-  // Šumarski strojevi (domenska analiza)
-  { key: "craneReachM", label: "Doseg dizalice", type: "range", unit: "m", min: 0, max: 12, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["sumarski-strojevi"] },
-  { key: "winchCapacityKg", label: "Nosivost vitla", type: "range", unit: "kg", min: 0, max: 20000, step: 100, storage: "attr", group: "Specifikacije", scope: ["sumarski-strojevi"] },
-
-  // Komunalni strojevi (domenska analiza)
-  { key: "containerCapacityL", label: "Kapacitet spremnika", type: "range", unit: "L", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", scope: ["komunalni-strojevi"] },
-  { key: "sweepingWidthM", label: "Širina čišćenja", type: "range", unit: "m", min: 0, max: 6, step: 0.1, storage: "attr", group: "Specifikacije", scope: ["komunalni-strojevi"] },
-
-  // Traktor — priključci (domenska analiza)
+  // Dodatne opcije — Karlo nije tražio promjenu, ali polja koja su bila vezana
+  // uz izbačene rubrike dobivaju scope da ne vise prazna.
   { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Dodatne opcije" },
   { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["poljoprivredni-strojevi"] },
   { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["poljoprivredni-strojevi"] },
@@ -770,16 +850,24 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Dodatne opcije" },
   { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Dodatne opcije" },
 
-  // Povijest (domenska analiza)
+  // ── Karlo 30.07: nova rubrika "Stanje mehanizacije" ─────────────────────
+  // Traži se za poljoprivredne i građevinske strojeve; dajemo je i preostalim
+  // podkategorijama radi dosljednosti (ista logika Prikaži / Ne prikaži).
+  { key: "hideDamaged", label: "Mehanizacija oštećena", type: "select", storage: "attr",
+    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+  { key: "hideBroken", label: "Mehanizacija u kvaru", type: "select", storage: "attr",
+    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+
+  // Povijest — Karlo 30.07: "Stanje" (6 stupnjeva) izbačeno, gore je zamjena.
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: [
       { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ] },
-  { key: "damageState", label: "Stanje", type: "select", storage: "attr", group: "Povijest",
-    options: DAMAGE_STATE_OPTIONS },
-  { key: "registeredForRoad", label: "Registriran za cestu", type: "toggle", storage: "attr", group: "Povijest" },
+  { key: "registeredForRoad", label: "Registriran za cestu", type: "toggle", storage: "attr", group: "Povijest",
+    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 
   // Najam — samo najam subkategorija (domenska analiza)
   { key: "dailyRate", label: "Dnevna cijena najma", type: "range", unit: "€", min: 0, max: 5000, step: 10, storage: "attr", group: "Ostalo", scope: ["najam"] },
@@ -1053,7 +1141,10 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
   // Stable order: Osnovno → Vrsta → Motor → Karoserija → Specifikacije → Oprema → ...
   const order = [
     "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Vrata i sjedala", "Boja",
-    "Osovine i nosivost",
+    "Osovine i nosivost", "Nosivost, visina dizanja",
+    // Karlo 30.07: stanje je odluka "hoću li ovo uopće vidjeti" → visoko, odmah
+    // iza osnovnih svojstava, a ne zakopano među Dodatnim opcijama.
+    "Stanje vozila", "Stanje mehanizacije",
     "Specifikacije", "Električna", "Dodatne opcije", "Pravno", "Povijest",
     "Udobnost", "Dimenzije", "Detalji", "Gume", "Felge", "Tekućine", "Ostalo",
   ];
