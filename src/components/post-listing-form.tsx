@@ -159,6 +159,9 @@ export function PostListingForm() {
   const specFields = useMemo(
     () => filterDef.fields.filter((f) => {
       if (SKIP_KEYS.has(f.key)) return false;
+      // Polja koja postoje samo kao filter pretrage (npr. "Prikaz oštećenih")
+      // nemaju smisla u objavi — prodavač ne bira hoće li se oglas prikazivati.
+      if (f.searchOnly) return false;
       if (f.scope && f.scope.length > 0) {
         return s.subcategory ? f.scope.includes(s.subcategory) : false;
       }
@@ -211,7 +214,11 @@ export function PostListingForm() {
   };
 
   const stepValid = useMemo(() => {
-    if (step === 1) return !!s.category;
+    // Karlo 30.07: podkategorija je OBAVEZNA kad postoji.
+    // Sva specifikacijska polja su scope-ana po podkategoriji — bez nje objava
+    // prikazuje prazan korak "Specifikacije" (gospodarska 40→0 polja, slobodno
+    // vrijeme 48→1), pa oglas nema podatke po kojima ga pretraga filtrira.
+    if (step === 1) return !!s.category && (subcatOptions.length === 0 || !!s.subcategory);
     if (step === 2) return !!(s.make && s.model && s.year && s.condition);
     if (step === 3) return requiredSpecKeys.every(specValueFilled);
     if (step === 4) return s.photos.length >= 1;

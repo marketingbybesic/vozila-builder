@@ -56,6 +56,15 @@ export type FilterField = {
   // Konzistentnost pretraga↔objava (sve opcionalno, additivno):
   publishRequired?: boolean;   // objava: polje je obavezno
   searchable?: boolean;        // pretraga: prikaži kao filter (default true ako neoznačeno)
+  /**
+   * Polje postoji SAMO u pretrazi, nikad u objavi oglasa.
+   *
+   * Karlo 30.07: "Prikaz oštećenih / u kvaru" je kupčev filter ("sakrij mi
+   * oštećene"), a ne podatak koji prodavač upisuje — nitko ne bira hoće li se
+   * njegov oglas prikazivati. Bez ove zastavice objava je tražila da prodavač
+   * popuni Prikaži/Ne prikaži, što nema smisla.
+   */
+  searchOnly?: boolean;
   scope?: string[];            // podkategorije na koje se polje odnosi (prazno = sve)
 };
 
@@ -98,11 +107,38 @@ const SHOW_HIDE_OPTIONS: FilterOption[] = [
   { value: "ne", label: "Ne prikaži" },
 ];
 
+/**
+ * PRODAVAČEVA strana istog podatka.
+ *
+ * Kupac filtrira "Prikaz oštećenih / u kvaru" (VEHICLE_STATE_FIELDS, searchOnly),
+ * ali taj filter mora imati što čitati — `isDamaged()`/`isBroken()` u lib/filter.ts
+ * gledaju `damageState` i `engineRuns`. Bez ovih polja u objavi prodavač nema
+ * načina označiti oštećeno vozilo, pa bi filter uvijek vraćao sve.
+ *
+ * `searchable: false` → ne pojavljuju se kao filter (Karlo je izbacio stari
+ * izbornik "Stanje karoserije"), ali se popunjavaju pri objavi.
+ */
+const SELLER_STATE_FIELDS: FilterField[] = [
+  { key: "damageState", label: "Oštećenja na vozilu", type: "select", storage: "attr",
+    group: "Stanje vozila", searchable: false, placeholder: "Bez oštećenja",
+    options: [
+      { value: "osteceno", label: "Vozilo je oštećeno" },
+      { value: "lakse-popravljeno", label: "Lakša šteta, popravljeno" },
+      { value: "veca-popravljena", label: "Veća šteta, popravljena" },
+    ] },
+  { key: "engineRuns", label: "Vozilo je u voznom stanju", type: "select", storage: "attr",
+    group: "Stanje vozila", searchable: false, placeholder: "Da, pali i vozi",
+    options: [
+      { value: "pali-ne-vozi", label: "Pali, ali ne vozi" },
+      { value: "ne-pali", label: "Ne pali (u kvaru)" },
+    ] },
+];
+
 /** Vozila: dvije nove podrubrike umjesto starog "Stanje karoserije". */
 const VEHICLE_STATE_FIELDS: FilterField[] = [
-  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
-  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr",
+  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
 ];
 
@@ -339,6 +375,7 @@ const AUTO_FIELDS: FilterField[] = [
 
   // Karlo 30.07: nova rubrika "Stanje vozila" umjesto "Stanje karoserije".
   ...VEHICLE_STATE_FIELDS,
+  ...SELLER_STATE_FIELDS,
 ];
 
 // ── MOTO — full 26-field taxonomy from avto.net ────────────────────────
@@ -454,6 +491,7 @@ const MOTO_FIELDS: FilterField[] = [
 
   // Karlo 30.07: nova rubrika "Stanje vozila" (motocikl/skuter/ATV — sve podkat.).
   ...VEHICLE_STATE_FIELDS,
+  ...SELLER_STATE_FIELDS,
 ];
 
 // ── GOSPODARSKA — full 34-field taxonomy from avto.net ─────────────────
@@ -703,17 +741,32 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
   // Karlo 30.07: "Stanje" (6 stupnjeva štete) zamijenjeno rubrikom "Stanje vozila"
   // s Prikaži/Ne prikaži logikom — vrijedi za dostavnu, kamione, autobuse, utv, najam.
-  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"] },
-  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr",
+  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"] },
   // TERETNE PRIKOLICE dobivaju SAMO "Prikaz oštećenih" — prikolica nema motor,
   // pa "u kvaru" nema smisla (Dinova potvrda 30.07, nije previd u Karlovom popisu).
-  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr",
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["prikolice"] },
+  // Prodavačeva strana (gospodarska): bez ovoga filter "Prikaz oštećenih" nema što čitati.
+  { key: "damageState", label: "Oštećenja na vozilu", type: "select", storage: "attr",
+    group: "Stanje vozila", searchable: false, placeholder: "Bez oštećenja",
+    options: [
+      { value: "osteceno", label: "Vozilo je oštećeno" },
+      { value: "lakse-popravljeno", label: "Lakša šteta, popravljeno" },
+      { value: "veca-popravljena", label: "Veća šteta, popravljena" },
+    ] },
+  { key: "engineRuns", label: "Vozilo je u voznom stanju", type: "select", storage: "attr",
+    group: "Stanje vozila", searchable: false, placeholder: "Da, pali i vozi",
+    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"],
+    options: [
+      { value: "pali-ne-vozi", label: "Pali, ali ne vozi" },
+      { value: "ne-pali", label: "Ne pali (u kvaru)" },
+    ] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
     scope: ["autobusi", "utv", "najam"] },
   { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest",
@@ -856,9 +909,9 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   // ── Karlo 30.07: nova rubrika "Stanje mehanizacije" ─────────────────────
   // Traži se za poljoprivredne i građevinske strojeve; dajemo je i preostalim
   // podkategorijama radi dosljednosti (ista logika Prikaži / Ne prikaži).
-  { key: "hideDamaged", label: "Mehanizacija oštećena", type: "select", storage: "attr",
+  { key: "hideDamaged", label: "Mehanizacija oštećena", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
-  { key: "hideBroken", label: "Mehanizacija u kvaru", type: "select", storage: "attr",
+  { key: "hideBroken", label: "Mehanizacija u kvaru", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
 
   // Povijest — Karlo 30.07: "Stanje" (6 stupnjeva) izbačeno, gore je zamjena.
@@ -1055,10 +1108,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     ] },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
-  { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr",
+  { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["kamperi"] },
-  { key: "hideBroken", label: "Vozilo u kvaru", type: "select", storage: "attr",
+  { key: "hideBroken", label: "Vozilo u kvaru", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["kamperi"] },
 ];
