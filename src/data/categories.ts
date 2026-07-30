@@ -88,7 +88,22 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
   { slug: "plovila", name: "Plovila" },
   { slug: "e-bicikli", name: "E-bicikli" },
   { slug: "e-skuteri", name: "E-skuteri" },
-  { slug: "kamping-oprema", name: "Kamping oprema" },
+  // Karlo 30.07: "Kamping oprema" → "Oprema za kampere i kamping" + 2. nivo.
+  // Jedina rubrika u SLOBODNOM VREMENU s djecom (ostale su ravne) — drill-down
+  // radi isto kao u DIJELOVIMA (`subChildHref` → `a.vrsta=<slug>`).
+  {
+    slug: "kamping-oprema",
+    name: "Oprema za kampere i kamping",
+    children: [
+      { slug: "kamper-dijelovi-nadogradnje", name: "Dijelovi i nadogradnje za kampere" },
+      { slug: "kamper-grijanje-plin", name: "Grijanje, hlađenje i plin" },
+      { slug: "kamper-voda-sanitarije", name: "Voda i sanitarije" },
+      { slug: "kamper-struja-solari", name: "Struja, solari i autonomija" },
+      { slug: "kamper-tende-predsatori", name: "Tende, predšatori i vanjska oprema" },
+      { slug: "kamper-namjestaj", name: "Namještaj i oprema za kampiranje" },
+      { slug: "kamping-oprema-ostalo", name: "Ostalo" },
+    ],
+  },
 ];
 
 // DIJELOVI I OPREMA — 2-nivoa struktura (avto.net "Rezervni deli in oprema").
@@ -135,6 +150,8 @@ const DIJELOVI_SUBS: Subcategory[] = [
       { slug: "alarmi-zastita", name: "Alarmi i zaštita" },
       { slug: "djecja-sjedalica", name: "Dječje sjedalice" },
       { slug: "obavezna-oprema", name: "Obavezna i sigurnosna oprema" },
+      // Karlo 30.07: naknadno dodano, izričito ISPRED "Ostalo".
+      { slug: "auto-kuke", name: "Auto kuke" },
       { slug: "auto-oprema-ostalo", name: "Ostalo" },
     ],
   },
