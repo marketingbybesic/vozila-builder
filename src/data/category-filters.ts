@@ -156,20 +156,40 @@ const SHOW_HIDE_OPTIONS: FilterOption[] = [
  * `searchable: false` → ne pojavljuju se kao filter (Karlo je izbacio stari
  * izbornik "Stanje karoserije"), ali se popunjavaju pri objavi.
  */
+/**
+ * Karlo 31.07: umjesto padajućih izbornika, "Stanje vozila" su KVAČICE.
+ *
+ * Dva para se međusobno isključuju (obrađuje `toggleSellerState` u objavi):
+ *   vozno stanje  ⇄  nije u voznom stanju
+ *   neoštećeno    ⇄  oštećeno
+ * Uključivanje jednog GASI drugoga; oba nikad ne mogu biti upaljena.
+ *
+ * ⚠️ Vrijednosti se i dalje spremaju u `damageState` i `engineRuns` jer
+ * `isDamaged()`/`isBroken()` u lib/filter.ts čitaju upravo te ključeve —
+ * promjena ključa tiho bi razbila kupčev filter "sakrij oštećene".
+ * Zato su kvačice `searchOnly: false` prikaz iste stvari, ne novi podatak.
+ */
+export const SELLER_STATE_DEFAULTS = {
+  whole: true,      // prodaje se u cijelosti
+  roadworthy: true, // u voznom stanju
+  undamaged: true,  // neoštećeno
+} as const;
+
 const SELLER_STATE_FIELDS: FilterField[] = [
-  { key: "damageState", label: "Oštećenja na vozilu", type: "select", storage: "attr",
-    group: "Stanje vozila", searchable: false, placeholder: "Bez oštećenja",
-    options: [
-      { value: "osteceno", label: "Vozilo je oštećeno" },
-      { value: "lakse-popravljeno", label: "Lakša šteta, popravljeno" },
-      { value: "veca-popravljena", label: "Veća šteta, popravljena" },
-    ] },
-  { key: "engineRuns", label: "Vozilo je u voznom stanju", type: "select", storage: "attr",
-    group: "Stanje vozila", searchable: false, placeholder: "Da, pali i vozi",
-    options: [
-      { value: "pali-ne-vozi", label: "Pali, ali ne vozi" },
-      { value: "ne-pali", label: "Ne pali (u kvaru)" },
-    ] },
+  { key: "soldWhole", label: "Vozilo se prodaje u cijelosti", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "roadworthy", label: "U voznom stanju", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "notRoadworthy", label: "Nije u voznom stanju", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "undamaged", label: "Neoštećeno", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "damaged", label: "Oštećeno", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "broken", label: "U kvaru", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
+  { key: "raceCar", label: "Trkaći auto", type: "toggle", storage: "attr",
+    group: "Stanje vozila", searchable: false },
 ];
 
 /**
@@ -261,25 +281,72 @@ const AUTO_FIELDS: FilterField[] = [
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
   { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 8000, step: 100, storage: "column", group: "Motor" },
 
-  { key: "bodyType", label: "Karoserija", type: "multi", storage: "column", group: "Karoserija",
+  // Karlo 31.07: "Karoserija" → "Oblik karoserije" (rubrika se i dalje zove
+  // Karoserija i sada stoji PRVA, iznad Osnovnog — vidi `order` u groupFields).
+  { key: "bodyType", label: "Oblik karoserije", type: "multi", storage: "column", group: "Karoserija",
     options: [
       v("Microcar"), v("Limuzina"), v("Hatchback"), v("Karavan"),
       v("Monovolumen"), v("SUV"), v("Coupe"), v("Cabrio"), v("Pickup"),
     ] },
-  { key: "drive", label: "Pogon", type: "multi", storage: "column", group: "Karoserija",
-    options: [v("Prednji"), v("Stražnji"), v("4x4")] },
-  // Karlo t.16: dodana klizna vrata
+  // Karlo 31.07: "Pogon" izbačen iz Karoserije — pogon je svojstvo motora,
+  // ne oblika. ⚠️ `drive` je TIPIZIRANI STUPAC i ostaje u bazi (akcija ga i
+  // dalje zahtijeva); miče se samo iz ovog izbornika.
+  // Karlo 31.07: klizna vrata NISU broj vrata nego zasebna oznaka (auto može
+  // imati 5 vrata OD KOJIH su neka klizna). Prije su bila u istoj listi, pa se
+  // moralo birati ili broj ili "klizna".
   { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Vrata i sjedala",
-    options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }, { value: "klizna", label: "Klizna vrata" }] },
+    options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }] },
+  { key: "slidingDoors", label: "Klizna vrata", type: "toggle", storage: "attr", group: "Vrata i sjedala" },
   // Karlo t.17: dodan broj 3
   { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Vrata i sjedala",
     options: [2,3,4,5,7,9].map((n) => ({ value: String(n), label: `${n}` })) },
+  // Karlo 31.07: tapacirung + njegova boja (obje uz Vrata i sjedala).
+  { key: "upholstery", label: "Tapacirung", type: "select", storage: "attr", group: "Vrata i sjedala",
+    options: [
+      { value: "tkanina", label: "Tkanina" },
+      { value: "velur", label: "Velur" },
+      { value: "alkantara", label: "Alkantara" },
+      { value: "umjetna-koza", label: "Umjetna koža" },
+      { value: "koza", label: "Koža" },
+      { value: "nappa-koza", label: "Nappa koža" },
+      { value: "designo-koza", label: "Designo koža" },
+      { value: "djelomicna-koza", label: "Djelomična koža" },
+    ] },
+  { key: "upholsteryColor", label: "Boja tapacirunga", type: "select", storage: "attr", group: "Vrata i sjedala",
+    options: [
+      { value: "svijetlosiva", label: "Svijetlosiva" },
+      { value: "tamnosiva", label: "Tamnosiva" },
+      { value: "krem-bez", label: "Krem bež" },
+      { value: "crna", label: "Crna" },
+      { value: "plava", label: "Plava" },
+      { value: "zelena", label: "Zelena" },
+      { value: "crvena", label: "Crvena" },
+      { value: "bordo-crvena", label: "Bordo crvena" },
+      { value: "smeda", label: "Smeđa" },
+      { value: "bijela", label: "Bijela" },
+    ] },
   { key: "color", label: "Boja vozila", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Siva","Srebrna","Plava","Crvena","Zelena","Smeđa","Žuta","Narančasta"].map(v) },
+  // Karlo 31.07: tip boje (metalik/mat) postojao je SAMO hardkodiran u naprednoj
+  // pretrazi, pa ga prodavač nije mogao upisati. Sad je pravo polje sheme →
+  // vide ga sve tri komponente (pretraga, sidebar, objava).
+  { key: "colorType", label: "Tip boje", type: "select", storage: "attr", group: "Boja",
+    options: [{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }] },
 
   // Emisijska norma + registracija (domenska analiza 2026-06-22)
   { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
     options: ["EURO 3","EURO 4","EURO 5","EURO 6","EURO 6d","EURO 7"].map(v) },
+  // Karlo 31.07: CO2 i potrošnja idu POKRAJ emisijske norme (ista rubrika).
+  // Mjerna jedinica stoji fiksno uz prozorčić — NumberField je renderira kao
+  // sufiks, korisnik upisuje samo broj.
+  { key: "co2", label: "Emisija CO2", type: "range", unit: "g/km", min: 0, max: 500, step: 5,
+    storage: "attr", group: "Motor" },
+  { key: "fuelConsumption", label: "Kombinirana potrošnja", type: "range", unit: "l/100km",
+    min: 0, max: 30, step: 1, storage: "attr", group: "Motor" },
+
+  // Karlo 31.07: Garancija POKRAJ kilometraže — kvačica "ima garanciju".
+  // Bez `group` → pada u "Osnovno", isto gdje je i COMMON_KM.
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr" },
 
   // EV — samo eko subkategorija (domenska analiza: evRange, batteryCapacity, chargerType, hybridType, heatPump)
   { key: "evRange", label: "Doseg (WLTP)", type: "range", unit: "km", min: 0, max: 1000, step: 10,
@@ -378,6 +445,8 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
       { value: "zamjena", label: "Moguća zamjena" },
+      // Karlo 31.07
+      { value: "nikad-karamboliran", label: "Nikad karambolirano" },
     ] },
   // Karlo 30.07: "Stanje karoserije" izbačeno iz Povijesti → nova rubrika
   // "Stanje vozila" (VEHICLE_STATE_FIELDS, dodana na dnu ovog niza).
@@ -400,14 +469,10 @@ const AUTO_FIELDS: FilterField[] = [
   { key: "numOwners", label: "Broj vlasnika", type: "select", storage: "attr", group: "Povijest",
     options: [1,2,3,4].map((n) => ({ value: String(n), label: n === 4 ? "4+" : `${n}` })) },
 
-  // Oštećeni / u kvaru — samo ostecen-u-kvaru subkategorija (domenska analiza)
-  { key: "engineRuns", label: "Motor pali", type: "select", storage: "attr", group: "Povijest",
-    scope: ["ostecen-u-kvaru"], publishRequired: true,
-    options: [
-      { value: "da", label: "Da, pali i vozi" },
-      { value: "pali-ne-vozi", label: "Pali, ne vozi" },
-      { value: "ne", label: "Ne pali" },
-    ] },
+  // Karlo 31.07: "Motor pali" (padajući, samo ostecen-u-kvaru) IZBAČEN — sada
+  // isti podatak nosi kvačica "U voznom stanju" / "U kvaru" u rubrici
+  // "Stanje vozila", i to za SVE podkategorije. Da je ostao, prodavač
+  // oštećenog auta imao bi dva izbornika koja pišu u isti `engineRuns`.
   { key: "damageLocation", label: "Lokacija oštećenja", type: "multi", storage: "attr", group: "Povijest",
     scope: ["ostecen-u-kvaru"],
     options: [
@@ -1310,9 +1375,11 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
     if (!groups.has(g)) groups.set(g, []);
     groups.get(g)!.push(f);
   }
-  // Stable order: Osnovno → Vrsta → Motor → Karoserija → Specifikacije → Oprema → ...
+  // Karlo 31.07: KAROSERIJA je sada PRVA, iznad "Osnovno" — oblik vozila je
+  // prvo o čemu prodavač/kupac razmišlja, pa je bilo neprirodno da je zakopana
+  // ispod motora.
   const order = [
-    "Osnovno", "Vrsta", "Cijena", "Motor", "Karoserija", "Vrata i sjedala", "Boja",
+    "Karoserija", "Osnovno", "Vrsta", "Cijena", "Motor", "Vrata i sjedala", "Boja",
     "Osovine i nosivost", "Nosivost, visina dizanja", "Dimenzije i upotrebljivost",
     // Karlo 30.07: stanje je odluka "hoću li ovo uopće vidjeti" → visoko, odmah
     // iza osnovnih svojstava, a ne zakopano među Dodatnim opcijama.

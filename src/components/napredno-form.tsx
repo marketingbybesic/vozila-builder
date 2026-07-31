@@ -621,16 +621,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         <Panel>
           <SectionHead icon={Palette} title="Boje" />
           <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
-          {isAuto && (
-            <div className="grid sm:grid-cols-2 gap-3">
-              <MultiSelect label="Tip boje" values={(attrs.colorType as string[] | undefined) ?? []}
-                onChange={(v) => setAttr("colorType", v)}
-                options={[{ value: "metalik", label: "Metalik" }, { value: "mat", label: "Mat" }]} placeholder="Sve" />
-              <SelectField label="Boja unutrašnjosti" value={(attrs.upholsteryColor as string) ?? ""}
-                onChange={(v) => setAttr("upholsteryColor", v || undefined)}
-                options={["Crna", "Bež", "Smeđa", "Siva", "Bijela", "Crvena"].map((c) => ({ value: c, label: c }))} />
-            </div>
-          )}
+          {/* Karlo 31.07: "Tip boje" i "Boja tapacirunga" bili su OVDJE hardkodirani,
+              pa ih je vidjela samo napredna pretraga — prodavač ih nije mogao
+              upisati. Sada su prava polja sheme (group "Boja" / "Vrata i sjedala")
+              i renderiraju se dinamički kao i sva ostala; hardkodirani duplikat
+              je uklonjen da se ne prikažu dvaput. */}
           {/* Ne-auto kategorije: preostala Boja polja ovdje, ne kao zasebna rubrika. */}
           {!isAuto && bojaRest.length > 0 && (
             <div className="grid sm:grid-cols-2 gap-3">{bojaRest.map(renderField)}</div>

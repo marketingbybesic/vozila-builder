@@ -84,12 +84,18 @@ type State = {
   email: string;
 };
 
+/**
+ * Karlo 31.07: "po defaultu je da" — vozilo se prodaje u cijelosti, u voznom
+ * je stanju i neoštećeno. Prodavač mijenja samo ako NIJE tako.
+ */
+const STATE_DEFAULTS: Attrs = { soldWhole: true, roadworthy: true, undamaged: true };
+
 const empty: State = {
   category: "auto", subcategory: "",
   make: "", model: "", variant: "", year: "", condition: "Rabljeno",
   fuel: "", transmission: "", bodyType: "", drive: "", color: "",
   km: "", engineCc: "", powerKw: "", doors: "5", seats: "5",
-  attributes: {},
+  attributes: { ...STATE_DEFAULTS },
   photos: [],
   priceEur: "", description: "",
   county: "", city: "",
@@ -115,6 +121,25 @@ export function PostListingForm() {
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
   const setAttr = (key: string, v: State["attributes"][string]) =>
     setS((p) => ({ ...p, attributes: { ...p.attributes, [key]: v } }));
+
+  /**
+   * Karlo 31.07: kvačice u "Stanju vozila" idu u PAROVIMA koji se isključuju.
+   * Uključivanje jedne gasi njezin par (i obrnuto), pa vozilo nikad ne može
+   * biti istovremeno vozno i nevozno, ni oštećeno i neoštećeno.
+   */
+  const STATE_PAIRS: Record<string, string> = {
+    roadworthy: "notRoadworthy", notRoadworthy: "roadworthy",
+    undamaged: "damaged", damaged: "undamaged",
+  };
+  const toggleSellerState = (key: string, on: boolean) =>
+    setS((p) => {
+      const next = { ...p.attributes, [key]: on };
+      const pair = STATE_PAIRS[key];
+      // Gasi suprotnu kvačicu samo pri UKLJUČIVANJU — gašenjem obje korisnik
+      // smije ostaviti "neizjašnjeno".
+      if (pair && on) next[pair] = false;
+      return { ...p, attributes: next };
+    });
 
   const categoryDef = getCategory(s.category);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(s.category), [s.category]);
@@ -197,7 +222,7 @@ export function PostListingForm() {
       make: "", model: "",
       fuel: "", transmission: "", bodyType: "", drive: "", color: "",
       km: "", engineCc: "", powerKw: "",
-      attributes: {},
+      attributes: { ...STATE_DEFAULTS },
     }));
   };
 
@@ -280,6 +305,26 @@ export function PostListingForm() {
     const attributes: Attrs = { ...s.attributes };
     // Subcategory ide u attributes (akcija ga ne prima kao stupac).
     if (s.subcategory) attributes.subcategory = s.subcategory;
+
+    /**
+     * ⚠️ Kvačice "Stanja vozila" → `damageState` / `engineRuns`.
+     *
+     * Kupčev filter "Prikaz oštećenih / u kvaru" NE ČITA nove kvačice nego
+     * `isDamaged()`/`isBroken()` u lib/filter.ts, a oni gledaju baš ta dva
+     * ključa. Bez ovog prevođenja oglas označen kao oštećen prošao bi kroz
+     * filter "sakrij oštećene" — kvar koji se ne vidi u objavi, nego tek
+     * kupcu u rezultatima.
+     */
+    if (attributes.damaged === true) {
+      attributes.damageState = "osteceno";
+    } else if (attributes.undamaged === true) {
+      delete attributes.damageState;
+    }
+    if (attributes.broken === true || attributes.notRoadworthy === true) {
+      attributes.engineRuns = attributes.broken === true ? "ne-pali" : "pali-ne-vozi";
+    } else if (attributes.roadworthy === true) {
+      attributes.engineRuns = "da";
+    }
 
     start(async () => {
       const res = await createListingAction({
@@ -389,11 +434,17 @@ export function PostListingForm() {
 
     // ── ATTR polja (jsonb) ──
     if (f.type === "toggle") {
+      // Kvačice iz "Stanja vozila" idu kroz toggleSellerState (parovi se gase).
+      const paired = f.group === "Stanje vozila";
       return (
         <TogglePill
           key={f.key}
           on={Boolean(s.attributes[f.key])}
-          onClick={() => setAttr(f.key, !s.attributes[f.key])}
+          onClick={() =>
+            paired
+              ? toggleSellerState(f.key, !s.attributes[f.key])
+              : setAttr(f.key, !s.attributes[f.key])
+          }
           label={f.label}
         />
       );
