@@ -157,7 +157,7 @@ export default async function HomePage() {
       {/* BRAND LOGOS */}
       {/* Kontrast bijelo-na-#FAFAF7 već razdvaja sekcije — okvir je bio suvišan. */}
       <section className="bg-[var(--color-surface)]">
-        <Container className="py-8 md:py-10">
+        <Container className="py-[34px] md:py-[55px]">
           <div className="flex items-end justify-between mb-4 md:mb-6">
             <div>
               <h2 className="font-display text-xl md:text-3xl">Popularne marke</h2>
@@ -190,9 +190,13 @@ export default async function HomePage() {
               <Link
                 key={make.slug}
                 href={`/oglasi?make=${make.slug}`}
-                className="group flex flex-col items-center justify-center gap-3 py-5 rounded-[var(--radius-md)] bg-[var(--color-bg)] hover:bg-[var(--color-line-soft)] hover:shadow-[var(--shadow-flat)] transition-all"
+                /* Dino 31.07: kartice marki bile su prazni sivi pravokutnici — logo je
+                   plivao u praznini. Sada: suptilan gradijent (svjetlo pada odozgo),
+                   logo se blago podiže i poveća na hover, naziv dobiva akcent.
+                   Dimenzije i mreža 5×2 NEPROMIJENJENE. */
+                className="group flex flex-col items-center justify-center gap-[13px] py-[21px] rounded-[var(--radius-md)] bg-gradient-to-b from-white to-[var(--color-bg)] shadow-[var(--shadow-flat)] hover:shadow-[var(--shadow-card)] hover:-translate-y-0.5 transition-all duration-200"
               >
-                <BrandLogo slug={make.slug} className="size-20" />
+                <BrandLogo slug={make.slug} className="size-20 transition-transform duration-200 group-hover:scale-110" />
                 <span className="text-sm font-medium text-[var(--color-ink)] group-hover:text-[var(--color-accent-dark)]">
                   {make.name}
                 </span>
@@ -204,7 +208,7 @@ export default async function HomePage() {
 
       {/* NEW LISTINGS — animated feed */}
       {latest.length > 0 && (
-        <section className="py-8 md:py-16">
+        <section className="py-[34px] md:py-[89px]">
           <Container>
             <div className="flex items-end justify-between mb-4 md:mb-6">
               <div>
@@ -226,7 +230,7 @@ export default async function HomePage() {
       )}
 
       {/* VALUE PROPS */}
-      <section className="py-8 md:py-20 bg-[var(--color-surface)]">
+      <section className="py-[34px] md:py-[89px] bg-[var(--color-surface)]">
         <Container>
           <div className="grid grid-cols-3 gap-3 md:gap-8">
             <div className="flex flex-col items-center text-center md:items-start md:text-left">
@@ -261,8 +265,15 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[var(--color-ink)] text-white">
-        <Container className="py-10 md:py-16">
+      {/* Dino 31.07: bio je gol tamni blok. Sad isti jezik kao hero — dijagonalni
+          gradijent + suptilan zlatni sjaj u kutu, pa se čita kao dio istog sustava,
+          a ne kao odsječen pravokutnik. Sadržaj i raspored nepromijenjeni. */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[var(--color-ink)] via-[#0d1f3d] to-[var(--color-ink)] text-white">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 size-[380px] rounded-full bg-[var(--color-accent)]/10 blur-3xl"
+        />
+        <Container className="relative py-[34px] md:py-[89px]">
           <div className="text-center md:text-left md:grid md:grid-cols-[1.2fr_auto] md:gap-12 md:items-center">
             <div>
               <h2 className="font-display text-3xl md:text-5xl">
@@ -297,7 +308,7 @@ export default async function HomePage() {
       </section>
 
       {/* POPULARNA PRETRAGA — pill links */}
-      <section className="py-10 md:py-20 bg-[var(--color-surface)]">
+      <section className="py-[34px] md:py-[89px] bg-[var(--color-surface)]">
         <Container>
           <h2 className="font-display text-xl md:text-3xl mb-4 md:mb-6">Popularna pretraga</h2>
           <div className="flex flex-wrap gap-1.5 md:gap-2">
