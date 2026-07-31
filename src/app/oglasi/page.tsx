@@ -39,7 +39,7 @@ export default async function OglasiPage({
   const filterCount = activeFilterCount(filters);
 
   return (
-    <Container className="py-8 md:py-12">
+    <Container className="py-[34px] md:py-[55px]">
       <div className="mb-8 md:mb-10">
         <h1 className="font-display text-3xl md:text-4xl tracking-tight">
           {filters.make

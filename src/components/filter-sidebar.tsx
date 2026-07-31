@@ -216,9 +216,15 @@ export function FilterSidebar({ mobile, onClose }: Props) {
 
   // ── Desktop: sticky sidebar ──
   return (
-    <aside className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin pr-1">
+    /* Dino 31.07: filter je bio niz od 12 identičnih polja koja lebde na pozadini —
+       najveći ostatak "generičkog" dojma. Sada je jedna ploha (bijela kartica s
+       elevationom) pa se čita kao ALAT, a ne kao obrazac. Polja i redoslijed
+       ostaju identični. Padding 21 px (Fibonacci). */
+    <aside className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin">
+      <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] ring-1 ring-[var(--color-line-soft)] p-[21px]">
       {body}
       {pending && <span className="block text-xs text-[var(--color-muted)] animate-pulse mt-3">Učitavanje...</span>}
+      </div>
       {panelOpen && <FilterPanel onClose={() => setPanelOpen(false)} />}
     </aside>
   );
