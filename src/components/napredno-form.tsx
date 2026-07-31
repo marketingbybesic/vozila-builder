@@ -626,8 +626,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               upisati. Sada su prava polja sheme (group "Boja" / "Vrata i sjedala")
               i renderiraju se dinamički kao i sva ostala; hardkodirani duplikat
               je uklonjen da se ne prikažu dvaput. */}
-          {/* Ne-auto kategorije: preostala Boja polja ovdje, ne kao zasebna rubrika. */}
-          {!isAuto && bojaRest.length > 0 && (
+          {/* Preostala Boja polja (npr. "Tip boje") idu ovdje, ne kao zasebna rubrika.
+              ⚠️ Prije je ovo bilo `!isAuto` jer je AUTO imao hardkodirani "Tip boje";
+              otkad je on pravo polje sheme, uvjet `!isAuto` bi ga za AUTO — jedinu
+              kategoriju koja ga ima — potpuno sakrio. */}
+          {bojaRest.length > 0 && (
             <div className="grid sm:grid-cols-2 gap-3">{bojaRest.map(renderField)}</div>
           )}
         </Panel>
