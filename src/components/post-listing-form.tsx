@@ -562,7 +562,10 @@ export function PostListingForm() {
                 />
               )}
               <TextField
-                label="Izvedba (opcionalno)"
+                /* Karlo 31.07: "(opcionalno)" nije govorilo ČEMU polje služi.
+                   Vrijednost završava u naslovu oglasa (buildListing slaže
+                   marka + model + izvedba), pa oznaka to sad i kaže. */
+                label="Izvedba (tekst u naslovu oglasa)"
                 value={s.variant}
                 onChange={(v) => set("variant", v)}
                 placeholder="npr. 2.0 TDI Style DSG"
