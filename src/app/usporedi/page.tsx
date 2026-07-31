@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/db";
 import { formatPrice, formatKm, formatPower } from "@/lib/utils";
+import { listingHasField } from "@/lib/listing-fields";
 import type { Listing } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -47,19 +48,23 @@ export default async function ComparePage({
     );
   }
 
-  type Row = { label: string; render: (l: Listing) => React.ReactNode };
-  const rows: Row[] = [
+  // Karlo 31.07: tablica je prikazivala SVE auto-retke za sve oglase, pa je
+  // usporedba filtera za traktor imala "Karoserija / Vrata / Sjedala".
+  // `key` veže redak uz polje sheme — redak se prikazuje samo ako ga barem
+  // jedan uspoređivani oglas stvarno ima (lib/listing-fields.ts).
+  type Row = { label: string; key?: string; render: (l: Listing) => React.ReactNode };
+  const allRows: Row[] = [
     { label: "Cijena", render: (l) => <span className="font-display text-lg">{formatPrice(l.priceEur)}</span> },
     { label: "Godina", render: (l) => `${l.year}.` },
-    { label: "Kilometri", render: (l) => formatKm(l.km) },
-    { label: "Snaga", render: (l) => formatPower(l.powerKw) },
-    { label: "Gorivo", render: (l) => l.fuel },
-    { label: "Mjenjač", render: (l) => l.transmission },
-    { label: "Pogon", render: (l) => l.drive },
-    { label: "Karoserija", render: (l) => l.bodyType },
-    { label: "Boja", render: (l) => l.color },
-    { label: "Vrata", render: (l) => l.doors },
-    { label: "Sjedala", render: (l) => l.seats },
+    { label: "Kilometri", key: "km", render: (l) => formatKm(l.km) },
+    { label: "Snaga", key: "powerKw", render: (l) => formatPower(l.powerKw) },
+    { label: "Gorivo", key: "fuel", render: (l) => l.fuel },
+    { label: "Mjenjač", key: "transmission", render: (l) => l.transmission },
+    { label: "Pogon", key: "drive", render: (l) => l.drive },
+    { label: "Karoserija", key: "bodyType", render: (l) => l.bodyType },
+    { label: "Boja", key: "color", render: (l) => l.color },
+    { label: "Vrata", key: "doors", render: (l) => l.doors },
+    { label: "Sjedala", key: "seats", render: (l) => l.seats },
     { label: "Lokacija", render: (l) => `${l.city}, ${l.county}` },
     { label: "Stanje", render: (l) => l.condition },
     { label: "Prodavač", render: (l) => l.sellerName },
@@ -79,6 +84,12 @@ export default async function ComparePage({
       ),
     },
   ];
+
+  // Redak bez `key` je univerzalan (cijena, lokacija, prodavač). Redak s `key`
+  // ostaje samo ako ga barem jedan uspoređivani oglas stvarno ima.
+  const rows = allRows.filter(
+    (r) => !r.key || items.some((l) => listingHasField(l, r.key!))
+  );
 
   return (
     <Container className="py-8 md:py-12">

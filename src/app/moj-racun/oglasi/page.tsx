@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ListingRowActions } from "@/components/listing-row-actions";
 import { requireUser } from "@/lib/session";
 import { db } from "@/db";
+import { cardSummary } from "@/lib/listing-fields";
 import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Moji oglasi" };
@@ -67,7 +68,7 @@ export default async function MyListingsPage() {
                     {l.variant && <span className="italic font-normal text-[var(--color-ink-soft)]">{l.variant}</span>}
                   </h3>
                   <div className="text-xs text-[var(--color-muted)]">
-                    {l.year}. · {formatKm(l.km)} · {l.fuel} · {l.city}
+                    {[...cardSummary(l), l.city].join(" · ")}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-[var(--color-ink-soft)] pt-1">
                     <span className="inline-flex items-center gap-1">

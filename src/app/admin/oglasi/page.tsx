@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/db";
+import { cardSummary } from "@/lib/listing-fields";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatKm } from "@/lib/utils";
 import { AdminListingRowActions } from "@/components/admin-listing-row-actions";
@@ -81,7 +82,7 @@ export default async function AdminListingsPage({
                       {l.title}
                     </Link>
                     <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                      {l.city} · {formatKm(l.km)} · {l.year}
+                      {[l.city, ...cardSummary(l)].join(" · ")}
                     </div>
                   </td>
                   <td className="px-3 py-3 text-xs text-[var(--color-ink-soft)] min-w-[180px]">

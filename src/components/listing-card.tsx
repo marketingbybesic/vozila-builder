@@ -4,7 +4,8 @@ import { MapPin, Gauge, Calendar, Fuel } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SaveButton } from "@/components/save-button";
 import { CompareButton } from "@/components/compare-button";
-import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
+import { formatPrice, timeAgo } from "@/lib/utils";
+import { cardSummary } from "@/lib/listing-fields";
 import type { Listing } from "@/lib/types";
 
 export function ListingCard({ listing, variant = "grid" }: { listing: Listing; variant?: "grid" | "list" }) {
@@ -54,19 +55,16 @@ export function ListingCard({ listing, variant = "grid" }: { listing: Listing; v
           )}
         </div>
 
+        {/* Karlo 31.07: prije je kartica UVIJEK pisala godinu/km/gorivo, pa je
+            oglas za filter pokazivao "0 km · Benzin" s ikonom pumpe. Sada sažetak
+            dolazi iz sheme (lib/listing-fields.ts) i prilagođen je kategoriji. */}
         <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="size-3" />
-            {listing.year}.
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Gauge className="size-3" />
-            {formatKm(listing.km)}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Fuel className="size-3" />
-            {listing.fuel}
-          </span>
+          {cardSummary(listing).map((part, i) => (
+            <span key={part} className="inline-flex items-center gap-1">
+              {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3" />}
+              {part}
+            </span>
+          ))}
         </div>
 
         <div className="mt-auto pt-3 border-t border-[var(--color-line-soft)] flex items-end justify-between gap-2">
@@ -127,9 +125,12 @@ function ListingRow({ listing }: { listing: Listing }) {
             <p className="text-xs text-[var(--color-muted)] line-clamp-1 mt-0.5">{listing.variant}</p>
           )}
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--color-ink-soft)] mt-1.5">
-            <span className="inline-flex items-center gap-1"><Calendar className="size-3" />{listing.year}.</span>
-            <span className="inline-flex items-center gap-1"><Gauge className="size-3" />{formatKm(listing.km)}</span>
-            <span className="inline-flex items-center gap-1"><Fuel className="size-3" />{listing.fuel}</span>
+            {cardSummary(listing).map((part, i) => (
+              <span key={part} className="inline-flex items-center gap-1">
+                {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3" />}
+                {part}
+              </span>
+            ))}
             <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{listing.city}</span>
           </div>
         </div>

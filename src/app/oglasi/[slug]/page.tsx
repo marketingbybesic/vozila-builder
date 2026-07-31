@@ -18,6 +18,7 @@ import {
   timeAgo,
   formatDate,
 } from "@/lib/utils";
+import { listingHasField, specGroupsFor, isVehicle, cardSummary } from "@/lib/listing-fields";
 import {
   Phone,
   MessageSquare,
@@ -51,13 +52,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const listing = await db().getListingBySlug(slug);
   if (!listing) return { title: "Oglas nije pronađen" };
+  // Karlo 31.07: metapodaci su bezuvjetno ubacivali km i gorivo — pa je i SEO
+  // opis filtera za traktor tvrdio "0 km · Benzin". Sad se koristi isti sažetak
+  // kao na kartici (lib/listing-fields.ts), koji je prilagođen kategoriji.
+  const summary = cardSummary(listing).join(" · ");
   return {
     title: `${listing.make} ${listing.model} ${listing.year}. — ${formatPrice(listing.priceEur)}`,
-    description: `${listing.title} · ${formatKm(listing.km)} · ${listing.fuel} · ${listing.city}. ${listing.description.slice(0, 140)}`,
+    description: `${listing.title}${summary ? ` · ${summary}` : ""} · ${listing.city}. ${listing.description.slice(0, 140)}`,
     openGraph: {
       title: `${listing.make} ${listing.model} ${listing.year}.`,
-      description: `${formatPrice(listing.priceEur)} · ${formatKm(listing.km)} · ${listing.city}`,
-      images: [{ url: listing.images[0] }],
+      description: `${formatPrice(listing.priceEur)}${summary ? ` · ${summary}` : ""} · ${listing.city}`,
+      // Oglas bez slike davao je `url: undefined` → neispravan og:image.
+      images: listing.images?.[0] ? [{ url: listing.images[0] }] : undefined,
     },
   };
 }
@@ -72,6 +78,8 @@ export default async function ListingDetailPage({
   if (!listing) notFound();
 
   const related = await db().getRelatedListings(listing, 4);
+  // Specifikacije iz sheme — samo popunjena polja relevantna za ovu kategoriju.
+  const specGroups = specGroupsFor(listing);
 
   const featuresByCategory = FEATURE_CATEGORIES.map((cat) => ({
     name: cat.name,
@@ -123,32 +131,70 @@ export default async function ListingDetailPage({
 
             <ImageGallery images={listing.images} alt={listing.title} />
 
+            {/* Karlo 31.07: prije su se OVDJE bezuvjetno ispisivale auto-kolone —
+                filter za traktor je pokazivao "0 km · Benzin · Limuzina · Vrata 4".
+                Sada se pita shema (lib/listing-fields.ts): prikazuje se samo ono
+                što ta kategorija/podkategorija stvarno ima, uključujući atribute
+                (širina gume, nosivost viličara, broj ležišta kampera) koji se
+                dosad nisu prikazivali NIGDJE. */}
             <section>
               <h2 className="font-display text-2xl mb-4">Osnovni podaci</h2>
               <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
                 <SpecItem icon={<Calendar className="size-4" />} label="Godina" value={`${listing.year}.`} />
-                <SpecItem icon={<Gauge className="size-4" />} label="Kilometraža" value={formatKm(listing.km)} />
-                <SpecItem icon={<Fuel className="size-4" />} label="Gorivo" value={listing.fuel} />
-                <SpecItem icon={<Cog className="size-4" />} label="Mjenjač" value={listing.transmission} />
-                <SpecItem label="Karoserija" value={listing.bodyType} />
-                <SpecItem label="Pogon" value={listing.drive} />
-                <SpecItem label="Snaga" value={formatPower(listing.powerKw)} />
-                {listing.engineCc > 0 && (
+                {listingHasField(listing, "km") && listing.km > 0 && (
+                  <SpecItem icon={<Gauge className="size-4" />} label="Kilometraža" value={formatKm(listing.km)} />
+                )}
+                {listingHasField(listing, "fuel") && listing.fuel && (
+                  <SpecItem icon={<Fuel className="size-4" />} label="Gorivo" value={listing.fuel} />
+                )}
+                {listingHasField(listing, "transmission") && listing.transmission && (
+                  <SpecItem icon={<Cog className="size-4" />} label="Mjenjač" value={listing.transmission} />
+                )}
+                {listingHasField(listing, "bodyType") && listing.bodyType && (
+                  <SpecItem label="Karoserija" value={listing.bodyType} />
+                )}
+                {listingHasField(listing, "drive") && listing.drive && (
+                  <SpecItem label="Pogon" value={listing.drive} />
+                )}
+                {listingHasField(listing, "powerKw") && listing.powerKw > 0 && (
+                  <SpecItem label="Snaga" value={formatPower(listing.powerKw)} />
+                )}
+                {listingHasField(listing, "engineCc") && listing.engineCc > 0 && (
                   <SpecItem label="Obujam" value={`${listing.engineCc} cm³`} />
                 )}
-                <SpecItem label="Boja" value={listing.color} />
-                <SpecItem label="Vrata" value={String(listing.doors)} />
-                <SpecItem label="Sjedala" value={String(listing.seats)} />
-                {listing.firstRegistered && (
+                {listingHasField(listing, "color") && listing.color && (
+                  <SpecItem label="Boja" value={listing.color} />
+                )}
+                {listingHasField(listing, "doors") && listing.doors > 0 && (
+                  <SpecItem label="Vrata" value={String(listing.doors)} />
+                )}
+                {listingHasField(listing, "seats") && listing.seats > 0 && (
+                  <SpecItem label="Sjedala" value={String(listing.seats)} />
+                )}
+                {isVehicle(listing) && listing.firstRegistered && (
                   <SpecItem label="Prva registracija" value={listing.firstRegistered} />
                 )}
-                {listing.registrationUntil && (
+                {isVehicle(listing) && listing.registrationUntil && (
                   <SpecItem label="Registriran do" value={listing.registrationUntil} />
                 )}
               </dl>
             </section>
 
-            {(listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked) && (
+            {/* Specifikacije iz sheme (atributi) — gume dobiju širinu/profil/sezonu,
+                viličari nosivost i visinu dizanja, kamperi broj ležišta. */}
+            {specGroups.map((g) => (
+              <section key={g.name}>
+                <h2 className="font-display text-2xl mb-4">{g.name}</h2>
+                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
+                  {g.items.map((it) => (
+                    <SpecItem key={it.label} label={it.label} value={it.value} />
+                  ))}
+                </dl>
+              </section>
+            ))}
+
+            {/* VIN, servisna knjižica i nesreće nemaju smisla za dio ili gumu. */}
+            {isVehicle(listing) && (listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked) && (
               <section>
                 <h2 className="font-display text-2xl mb-4">Povijest vozila</h2>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
@@ -195,7 +241,9 @@ export default async function ListingDetailPage({
                 <div>
                   <h3 className="font-display text-lg">Prije nego što platiš</h3>
                   <p className="mt-1 text-sm text-white/70 leading-relaxed">
-                    Nikad ne uplaćuj kaparu prije nego što fizički pregledaš vozilo. Provjeri VIN preko HAK servisa i dokumente vozila kod ovlaštenog ispitivača. Ako prodavač odbija susret uživo, prijavi oglas.
+                    {isVehicle(listing)
+                      ? "Nikad ne uplaćuj kaparu prije nego što fizički pregledaš vozilo. Provjeri VIN preko HAK servisa i dokumente vozila kod ovlaštenog ispitivača. Ako prodavač odbija susret uživo, prijavi oglas."
+                      : "Nikad ne uplaćuj unaprijed prije nego što provjeriš artikl i prodavača. Traži fotografije stvarnog artikla i broj s kataloga, te provjeri odgovara li dio tvojem vozilu. Ako prodavač odbija susret ili pouzeće, prijavi oglas."}
                   </p>
                   <Link
                     href="/savjeti/prijevara"
@@ -265,6 +313,8 @@ export default async function ListingDetailPage({
               </div>
             </div>
 
+            {/* Kredit na filter za traktor od 246 € nema smisla — samo vozila. */}
+            {isVehicle(listing) && (
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 text-sm space-y-2">
               <div className="font-medium text-[var(--color-ink)]">Spremno za izračun</div>
               <p className="text-xs text-[var(--color-muted)] leading-relaxed">
@@ -275,6 +325,7 @@ export default async function ListingDetailPage({
                 Izračunaj kredit →
               </Link>
             </div>
+            )}
           </aside>
         </div>
       </Container>

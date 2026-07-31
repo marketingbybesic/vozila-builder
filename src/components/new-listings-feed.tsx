@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MapPin, Gauge, Calendar, Fuel } from "lucide-react";
 import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
+import { cardSummary } from "@/lib/listing-fields";
 
 function MiniCard({ listing, entering }: { listing: Listing; entering: boolean }) {
   return (
@@ -38,9 +39,12 @@ function MiniCard({ listing, entering }: { listing: Listing; entering: boolean }
             dugo gorivo ("Električni") gurne karticu preko ruba i cijela
             stranica dobije horizontalni scroll na 390px ekranu. */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0 text-[10px] text-[var(--color-ink-soft)] mt-1.5">
-          <span className="inline-flex items-center gap-0.5 shrink-0"><Calendar className="size-3" />{listing.year}</span>
-          <span className="inline-flex items-center gap-0.5 shrink-0"><Gauge className="size-3" />{formatKm(listing.km)}</span>
-          <span className="inline-flex items-center gap-0.5 min-w-0"><Fuel className="size-3 shrink-0" /><span className="truncate">{listing.fuel}</span></span>
+          {cardSummary(listing).map((part, i) => (
+            <span key={part} className={"inline-flex items-center gap-0.5 " + (i === 2 ? "min-w-0" : "shrink-0")}>
+              {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3 shrink-0" />}
+              <span className={i === 2 ? "truncate" : ""}>{part}</span>
+            </span>
+          ))}
         </div>
         <div className="font-display text-base mt-1">{formatPrice(listing.priceEur)}</div>
       </div>
