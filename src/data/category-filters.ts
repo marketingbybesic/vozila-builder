@@ -22,6 +22,8 @@
  *    dijelovi taxonomies are our own (avto.net stubs those forms).
  */
 
+import { CATEGORIES } from "./categories";
+
 export type FilterFieldType =
   | "range"
   | "select"
@@ -30,6 +32,36 @@ export type FilterFieldType =
   | "toggle";
 
 export type FilterOption = { value: string; label: string };
+
+/**
+ * Karlo 31.07: podrubrika "Vrsta" je u SLOBODNOM VREMENU i DIJELOVIMA ponavljala
+ * popis podkategorija (9 odnosno 12 istih stavki koje već stoje u gornjoj
+ * "Podkategorija"), umjesto da nudi ono što je unutar odabrane podkategorije.
+ *
+ * Ovaj generator izvodi polje IZ SAME TAKSONOMIJE (`categories.ts`):
+ *  - podkategorija IMA djecu  → "Vrsta" nudi tu djecu (npr. Auto dijelovi →
+ *    Motor/Kočnice/Filteri…), i filtrira po `attributes.vrsta` — isti ključ koji
+ *    objava sada popunjava i po kojem radi drill-down iz izbornika.
+ *  - podkategorija NEMA djecu → polja nema (Mobilne kućice, Moduli za kamper,
+ *    Šatorske prikolice, E-bicikli, E-skuteri…).
+ *
+ * Time ručni popis ne može više odlutati od taksonomije.
+ */
+function vrstaFromChildren(categorySlug: string): FilterField[] {
+  const cat = CATEGORIES.find((c) => c.slug === categorySlug);
+  if (!cat) return [];
+  return cat.subcategories
+    .filter((sub) => (sub.children?.length ?? 0) > 0)
+    .map((sub) => ({
+      key: "vrsta",
+      label: "Vrsta",
+      type: "multi" as const,
+      storage: "attr" as const,
+      group: "Vrsta",
+      scope: [sub.slug],
+      options: (sub.children ?? []).map((ch) => ({ value: ch.slug, label: ch.name })),
+    }));
+}
 
 export type FilterField = {
   key: string;
@@ -945,20 +977,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 
   // Karlo 30.07: podrubrika "Vrsta" duplirala je gornju Podkategoriju →
   // ostaje samo za podkategorije koje nemaju vlastiti "Tip".
-  { key: "subcategory", label: "Vrsta", type: "multi", storage: "column", group: "Vrsta",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila",
-            "e-bicikli", "e-skuteri", "kamping-oprema"],
-    options: [
-      { value: "kamperi", label: "Kamperi" },
-      { value: "kamp-prikolice", label: "Kamp prikolice" },
-      { value: "mobilne-kucice", label: "Mobilne kućice" },
-      { value: "moduli-za-kamper", label: "Moduli za kamper" },
-      { value: "satorske-prikolice", label: "Šatorske prikolice" },
-      { value: "plovila", label: "Plovila" },
-      { value: "e-bicikli", label: "E-bicikli" },
-      { value: "e-skuteri", label: "E-skuteri" },
-      { value: "kamping-oprema", label: "Kamping oprema" },
-    ] },
+  ...vrstaFromChildren("prosti-cas"),
 
   // Tip — po subkategoriji (domenska analiza)
   { key: "boatType", label: "Tip plovila", type: "multi", storage: "attr", group: "Vrsta", scope: ["plovila"],
@@ -1120,21 +1139,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 const DIJELOVI_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
-  { key: "subcategory", label: "Vrsta", type: "multi", storage: "column", group: "Vrsta",
-    options: [
-      { value: "auto-dijelovi", label: "Auto dijelovi" },
-      { value: "auto-dodatna-oprema", label: "Auto dodatna oprema" },
-      { value: "multimedija", label: "Multimedija" },
-      { value: "moto-dijelovi", label: "Moto dijelovi i oprema" },
-      { value: "za-gospodarska", label: "Za gospodarska vozila" },
-      { value: "za-gradevinske-strojeve", label: "Za građevinske strojeve" },
-      { value: "za-poljoprivredne-strojeve", label: "Za poljoprivredne strojeve" },
-      { value: "za-vilicare", label: "Za viličare" },
-      { value: "servisna-oprema", label: "Servisna oprema" },
-      { value: "gume", label: "Gume" },
-      { value: "felge", label: "Felge" },
-      { value: "ulja-tekucine", label: "Ulja i tekućine" },
-    ] },
+  ...vrstaFromChildren("dijelovi"),
   { key: "partType", label: "Tip dijela", type: "select", storage: "attr", group: "Detalji",
     options: [
       v("Karoserija"), v("Motor"), v("Mjenjač"), v("Kočnice"),
