@@ -29,7 +29,13 @@ export type FilterFieldType =
   | "select"
   | "multi"
   | "text"
-  | "toggle";
+  | "toggle"
+  /**
+   * Mjesec (padajući 1-12) + godina (ručni unos), spremljeno kao JEDNA
+   * vrijednost "YYYY-MM". Karlo 31.07 za "Prva registracija" i
+   * "Tehnički vrijedi do" — dva prozorčića, jedan podatak.
+   */
+  | "monthyear";
 
 export type FilterOption = { value: string; label: string };
 
@@ -165,6 +171,39 @@ const SELLER_STATE_FIELDS: FilterField[] = [
       { value: "ne-pali", label: "Ne pali (u kvaru)" },
     ] },
 ];
+
+/**
+ * DOKUMENTI — Karlo 31.07, korak 2 "Osnovno" u objavi oglasa.
+ *
+ * Broj šasije (VIN), prva registracija i tehnički vrijedi do. Sve troje je
+ * `searchable: false`: Karlo je 30.07 izbacio "Prvu registraciju" i
+ * "Registriran do" IZ PRETRAGE (datumska polja slobodnog unosa se nisu
+ * koristila za filtriranje), ali prodavač ih i dalje treba upisati — kupcu
+ * su to prve tri stvari koje pogleda na oglasu.
+ *
+ * Zato ne idu ni kroz `searchOnly` (to bi ih sakrilo iz objave) nego kroz
+ * `searchable: false` = objava + prikaz oglasa, bez filtera.
+ *
+ * `scope` je namjerno UŽI od kategorije — traktoru/viličaru/šatorskoj prikolici
+ * tehnički pregled nema smisla, e-biciklu ni VIN.
+ */
+function documentFields(scope?: string[]): FilterField[] {
+  const base = scope && scope.length > 0 ? { scope } : {};
+  return [
+    { key: "vin", label: "Broj šasije (VIN)", type: "text", storage: "attr",
+      group: "Dokumenti", searchable: false,
+      placeholder: "17 znakova, npr. WVWZZZ1KZAW123456", ...base },
+    { key: "firstRegistration", label: "Prva registracija", type: "monthyear", storage: "attr",
+      group: "Dokumenti", searchable: false, ...base },
+    { key: "roadworthyUntil", label: "Tehnički vrijedi do", type: "monthyear", storage: "attr",
+      group: "Dokumenti", searchable: false, ...base },
+  ];
+}
+
+/** Vozila bez tehničkog pregleda (mehanizacija): samo broj šasije/serijski broj. */
+function vinOnlyField(scope?: string[], label = "Broj šasije (VIN)"): FilterField[] {
+  return documentFields(scope).slice(0, 1).map((f) => ({ ...f, label }));
+}
 
 /** Vozila: dvije nove podrubrike umjesto starog "Stanje karoserije". */
 const VEHICLE_STATE_FIELDS: FilterField[] = [
@@ -408,6 +447,9 @@ const AUTO_FIELDS: FilterField[] = [
   // Karlo 30.07: nova rubrika "Stanje vozila" umjesto "Stanje karoserije".
   ...VEHICLE_STATE_FIELDS,
   ...SELLER_STATE_FIELDS,
+
+  // Karlo 31.07: VIN + prva registracija + tehnički (svi osobni auti).
+  ...documentFields(),
 ];
 
 // ── MOTO — full 26-field taxonomy from avto.net ────────────────────────
@@ -524,6 +566,10 @@ const MOTO_FIELDS: FilterField[] = [
   // Karlo 30.07: nova rubrika "Stanje vozila" (motocikl/skuter/ATV — sve podkat.).
   ...VEHICLE_STATE_FIELDS,
   ...SELLER_STATE_FIELDS,
+
+  // Karlo 31.07: dokumenti samo za vozila koja se REGISTRIRAJU. Minimoto,
+  // go-kart, motorne sanke, e-bicikl i e-skuter nemaju ni VIN ni tehnički.
+  ...documentFields(["motocikl", "skuter", "moped", "atv-utv", "oldtimer", "e-moto", "najam", "moto-ostalo"]),
 ];
 
 // ── GOSPODARSKA — full 34-field taxonomy from avto.net ─────────────────
@@ -810,6 +856,10 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
 
   // Karlo 27.07: grupa "Ostalo" izbačena iz GOSPODARSKE — "Tip ponude" i
   // "Garancija" već stoje u gornjem osnovnom panelu, ovdje su bili duplikat.
+
+  // Karlo 31.07: dokumenti. Teretna prikolica NEMA VIN u istom smislu, ali IMA
+  // broj šasije i tehnički — pa dobiva sve troje kao i ostala vozila.
+  ...documentFields(),
 ];
 
 // ── MEHANIZACIJA (machinery) — auto.net stub, our taxonomy ─────────────
@@ -969,6 +1019,10 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
     options: [v("prodaja"), v("najam")] },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
   { key: "serviceHistory", label: "Servisna evidencija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+
+  // Karlo 31.07: mehanizacija ima serijski broj, ali NEMA tehnički pregled
+  // (bager i viličar se ne registriraju za cestu), pa samo taj jedan podatak.
+  ...vinOnlyField(undefined, "Broj šasije / serijski broj"),
 ];
 
 // ── PROSTI-CAS (leisure: campers, caravans, boats) — our taxonomy ──────
@@ -1133,6 +1187,11 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "hideBroken", label: "Vozilo u kvaru", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
     scope: ["kamperi"] },
+
+  // Karlo 31.07: dokumenti samo za ono što ide na cestu s tablicama —
+  // kamper i kamp prikolica. Mobilna kućica, modul, šatorska prikolica,
+  // plovilo, bicikl i kamping oprema nemaju ni šasiju ni tehnički.
+  ...documentFields(["kamperi", "kamp-prikolice"]),
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────

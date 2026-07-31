@@ -22,7 +22,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  SelectField, MultiSelect, NumberField, BodyTypePicker,
+  SelectField, MultiSelect, NumberField, BodyTypePicker, MonthYearField,
   ColorPicker, CategoryCards, SubcategoryButtons, TogglePill, TextField, type Opt,
 } from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
@@ -45,6 +45,9 @@ const COLUMN_KEYS = new Set([
 // ili se ovdje ne prikazuju kao spec (cijena/županija/prodavač/starost oglasa idu drugdje).
 const SKIP_KEYS = new Set([
   "priceEur", "year", "county", "sellerType", "condition", "subcategory", "adAge",
+  // Karlo 31.07: dokumenti se renderiraju ručno u koraku 2 ("Osnovno"),
+  // pa ih korak 3 ("Specifikacije") ne smije ponoviti.
+  "vin", "firstRegistration", "roadworthyUntil",
 ]);
 
 type Attrs = Record<string, string | string[] | boolean | undefined>;
@@ -158,14 +161,17 @@ export function PostListingForm() {
 
   // hasField gating (mirror napredno-form) — uključujući `scope`, da objava ne
   // traži polje koje pretraga za tu podkategoriju uopće ne prikazuje.
-  const hasField = (key: string) =>
-    filterDef.fields.some((f) => {
+  const fieldDef = (key: string) =>
+    filterDef.fields.find((f) => {
       if (f.key !== key) return false;
       if (f.scope && f.scope.length > 0) {
         return s.subcategory ? f.scope.includes(s.subcategory) : false;
       }
       return true;
     });
+  const hasField = (key: string) => fieldDef(key) !== undefined;
+  /** Oznaka iz sheme (mehanizacija zove VIN "Broj šasije / serijski broj"). */
+  const labelOf = (key: string, fallback: string) => fieldDef(key)?.label ?? fallback;
 
   // Spec polja koja se renderiraju u koraku 2 (schema-driven), uz scope filtriranje.
   const specFields = useMemo(
@@ -577,6 +583,36 @@ export function PostListingForm() {
                 placeholder="Odaberi godinu"
                 options={Array.from({ length: 37 }, (_, i) => 2026 - i).map((y) => ({ value: String(y), label: `${y}.` }))}
               />
+              {/* Karlo 31.07: prva registracija ide ODMAH ISPOD godine proizvodnje —
+                  mjesec iz padajućeg, godina ručno. */}
+              {hasField("firstRegistration") && (
+                <MonthYearField
+                  label={labelOf("firstRegistration", "Prva registracija")}
+                  optional
+                  value={(s.attributes.firstRegistration as string) ?? ""}
+                  onChange={(v) => setAttr("firstRegistration", v)}
+                />
+              )}
+              {hasField("roadworthyUntil") && (
+                <MonthYearField
+                  label={labelOf("roadworthyUntil", "Tehnički vrijedi do")}
+                  optional
+                  value={(s.attributes.roadworthyUntil as string) ?? ""}
+                  onChange={(v) => setAttr("roadworthyUntil", v)}
+                  /* Tehnički se izdaje unaprijed, ne unatrag — nema smisla nuditi
+                     1950. Donja granica je prošla godina (zaostali/istekli tehnički). */
+                  minYear={new Date().getFullYear() - 1}
+                />
+              )}
+              {hasField("vin") && (
+                <TextField
+                  label={labelOf("vin", "Broj šasije (VIN)")}
+                  optional
+                  value={(s.attributes.vin as string) ?? ""}
+                  onChange={(v) => setAttr("vin", v.toUpperCase().slice(0, 17) || undefined)}
+                  placeholder="npr. WVWZZZ1KZAW123456"
+                />
+              )}
             </div>
             <Field label="Stanje">
               <div className="grid grid-cols-3 gap-2">

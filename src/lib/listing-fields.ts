@@ -58,6 +58,12 @@ function attrLabel(field: FilterField, raw: unknown): string | null {
   }
   if (raw === true) return "Da";
   const s = String(raw);
+  // "YYYY-MM" (prva registracija, tehnički vrijedi do) → "7/2019".
+  // Bez ovoga bi prikaz oglasa pokazivao sirovi "2019-07".
+  if (field.type === "monthyear") {
+    const m = /^(\d{4})-(\d{2})$/.exec(s);
+    return m ? `${Number(m[2])}/${m[1]}` : null;
+  }
   // Raspon "min..max" (npr. nosivost) → čitljivo
   if (s.includes("..")) {
     const [lo, hi] = s.split("..");

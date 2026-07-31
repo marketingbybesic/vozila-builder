@@ -511,6 +511,94 @@ export function TextField({
   );
 }
 
+const MONTHS = [
+  "Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj",
+  "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac",
+];
+
+/**
+ * Mjesec (padajući 1-12) + godina (ručni unos) — Karlo 31.07 za
+ * "Prva registracija" i "Tehnički vrijedi do".
+ *
+ * Dva prozorčića, ali JEDNA spremljena vrijednost "YYYY-MM" — inače bi prikaz
+ * oglasa pokazivao odvojeno "7" i "2019" bez ikakvog značenja. Dok je upisan
+ * samo jedan od dva podatka, vrijednost je `undefined` (ništa se ne sprema),
+ * pa polupopunjeno polje ne može zaprljati bazu.
+ */
+export function MonthYearField({
+  label, required, optional, value, onChange, minYear = 1950, maxYear = 2035,
+}: {
+  label?: string; required?: boolean; optional?: boolean;
+  value: string; onChange: (v: string | undefined) => void;
+  minYear?: number; maxYear?: number;
+}) {
+  /**
+   * ⚠️ Draft state je OBAVEZAN, ne udobnost.
+   *
+   * Polje sprema JEDNU vrijednost "YYYY-MM", a prikazuje dva inputa. Da su oba
+   * inputa čitala isključivo iz `value`, svaki nepotpun međukorak (upisana samo
+   * godina, ili godina u tijeku tipkanja "2"→"20"→"201") spremio bi `undefined`
+   * i time OBRISAO korisniku i drugi input. Zato se tipkano drži lokalno, a
+   * `value` se dira samo kad je par potpun i valjan.
+   */
+  const parsed = (() => {
+    const m = /^(\d{4})-(\d{1,2})$/.exec(value ?? "");
+    return m ? { y: m[1], mo: String(Number(m[2])) } : { y: "", mo: "" };
+  })();
+  const [draft, setDraft] = useState<{ y: string; mo: string } | null>(null);
+  // Vanjska vrijednost pobjeđuje dok korisnik nije počeo tipkati po ovom polju.
+  const monthRaw = draft ? draft.mo : parsed.mo;
+  const yearRaw = draft ? draft.y : parsed.y;
+
+  const commit = (mo: string, y: string) => {
+    setDraft({ mo, y });
+    const yr = Number(y);
+    const ok =
+      Boolean(mo) && y.length === 4 && Number.isFinite(yr) && yr >= minYear && yr <= maxYear;
+    onChange(ok ? `${yr}-${String(Number(mo)).padStart(2, "0")}` : undefined);
+  };
+
+  const yearInvalid =
+    yearRaw.length === 4 && (Number(yearRaw) < minYear || Number(yearRaw) > maxYear);
+
+  return (
+    <div className="block">
+      {label && <Label required={required} optional={optional}>{label}</Label>}
+      <div className="grid grid-cols-2 gap-2">
+        <select
+          value={monthRaw}
+          onChange={(e) => commit(e.target.value, yearRaw)}
+          aria-label={`${label ?? ""} - mjesec`}
+          className={fieldBase + " appearance-none cursor-pointer"}
+        >
+          <option value="">Mjesec</option>
+          {MONTHS.map((name, i) => (
+            <option key={name} value={String(i + 1)}>{`${i + 1}. ${name}`}</option>
+          ))}
+        </select>
+        <input
+          value={yearRaw}
+          onChange={(e) => commit(monthRaw, e.target.value.replace(/\D/g, "").slice(0, 4))}
+          type="text"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="Godina"
+          aria-label={`${label ?? ""} - godina`}
+          aria-invalid={yearInvalid || undefined}
+          className={
+            fieldBase + (yearInvalid ? " border-[var(--color-danger)] hover:border-[var(--color-danger)]" : "")
+          }
+        />
+      </div>
+      {yearInvalid && (
+        <span className="mt-1 block text-[11px] text-[var(--color-danger)]">
+          Godina mora biti između {minYear}. i {maxYear}.
+        </span>
+      )}
+    </div>
+  );
+}
+
 /**
  * Brojčani unos (precizan ručni upis) — za km, kW, cm³, radne sate, težinu...
  * Sprema čisti broj (string bez razmaka); prikazuje grupirano (95.473) + sufiks jedinice.
