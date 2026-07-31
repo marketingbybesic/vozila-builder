@@ -121,10 +121,9 @@ export function PostListingForm() {
     () => (categoryDef?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })),
     [categoryDef]
   );
-  // Podkategorije (pills) — izuzmi "auto-oglasi" (to je napredna pretraga, ne podtip).
+  // Karlo 31.07: "Osobni auto" je sad PRAVA podkategorija — više se ne izuzima.
   const subcatOptions: Opt[] = useMemo(
     () => (categoryDef?.subcategories ?? [])
-      .filter((sc) => sc.slug !== "auto-oglasi")
       .map((sc) => ({ value: sc.slug, label: sc.name })),
     [categoryDef]
   );

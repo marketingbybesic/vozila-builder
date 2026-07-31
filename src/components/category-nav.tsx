@@ -180,11 +180,7 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                   ) : (
                     <li key={sub.slug}>
                       <Link
-                        href={
-                          openCategory.slug === "auto" && sub.slug === "auto-oglasi"
-                            ? `/oglasi/napredno?category=auto`
-                            : subcategoryHref(openCategory.slug, sub.slug)
-                        }
+                        href={subcategoryHref(openCategory.slug, sub.slug)}
                         className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                       >
                         {sub.name}

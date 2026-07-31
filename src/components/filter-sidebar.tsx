@@ -76,7 +76,6 @@ export function FilterSidebar({ mobile, onClose }: Props) {
   // U motou se polje zove "Pogon", ne "Gorivo" — uzmi naziv iz sheme.
   const fuelLabel = filterDef.fields.find((f) => f.key === "fuel")?.label ?? "Gorivo";
   const subOpts: Opt[] = (categoryDef?.subcategories ?? [])
-    .filter((s) => s.slug !== "auto-oglasi")
     .map((s) => ({ value: s.slug, label: s.name }));
 
   /**

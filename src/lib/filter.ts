@@ -24,13 +24,10 @@ export function parseFilters(
   return {
     q: asString(sp.q),
     category: asString(sp.category) as ListingFilters["category"],
-    // `auto-oglasi` je ULAZNA TOČKA za naprednu pretragu, ne vrijednost filtera —
-    // nijedan oglas nema tu podkategoriju. Ako dođe iz URL-a, filtriranje po njoj
-    // vraća 0 rezultata (brojač je pokazivao "Prikaži 0 vozila" uz 1.224 oglasa
-    // u bazi). UI ga izuzima iz izbornika, ali URL može doći i izvana → ignoriraj.
-    subcategory: asString(sp.subcategory) === "auto-oglasi"
-      ? undefined
-      : asString(sp.subcategory),
+    // Karlo 31.07: `auto-oglasi` je sad PRAVA podkategorija ("Osobni auto") —
+    // prije je bila ulazna točka za naprednu pretragu i morala se ignorirati
+    // jer je nijedan oglas nije imao. Sada se filtrira normalno.
+    subcategory: asString(sp.subcategory),
     make: asString(sp.make),
     model: asString(sp.model),
     priceMin: asNumber(sp.priceMin),

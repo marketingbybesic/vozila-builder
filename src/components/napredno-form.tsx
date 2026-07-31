@@ -205,10 +205,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (warranty) attrsClean.warranty = true;
     const f: ListingFilters = {
       category: category as ListingFilters["category"],
-      // `auto-oglasi` je ulazna točka, ne vrijednost podkategorije — filtriranje
-      // po njoj daje 0 rezultata. `liveCount` ne ide kroz parseFilters, pa isto
-      // pravilo mora vrijediti i ovdje (inače gumb kaže "Prikaži 0 vozila").
-      subcategory: subcategory && subcategory !== "auto-oglasi" ? subcategory : undefined,
+      subcategory: subcategory || undefined,
       make: make || undefined,
       model: model || undefined,
       q: q || undefined,
@@ -554,7 +551,6 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             value={subcategory}
             onChange={setSubcategory}
             options={categoryDef.subcategories
-              .filter((s) => s.slug !== "auto-oglasi")
               .map((s) => ({ value: s.slug, label: s.name }))}
             placeholder="Sve podkategorije"
           />

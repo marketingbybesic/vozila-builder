@@ -37,7 +37,11 @@ const SLUG = (s: string) =>
 const AUTO_SUBS: Subcategory[] = [
   // "Auto oglasi" = primary entry → opens advanced auto search (avto.net logic).
   // Novi/Rabljeni removed as separate subcats; new/used is now a filter (condition).
-  { slug: "auto-oglasi", name: "Auto oglasi - Napredno" },
+  // Karlo 31.07: "Auto oglasi - Napredno" → "Osobni auto". Prije je ovo bila
+  // ULAZNA TOČKA za naprednu pretragu (izuzimala se iz svih izbornika i filtera),
+  // sad je PRAVA podkategorija — obični osobni automobili. Slug ostaje
+  // `auto-oglasi` da postojeći linkovi i bookmarkovi ne puknu.
+  { slug: "auto-oglasi", name: "Osobni auto" },
   { slug: "trkaci", name: "Trkaći auti" },
   { slug: "eko", name: "Eko (hibrid + EV)" },
   { slug: "luksuzni", name: "Luksuzni" },

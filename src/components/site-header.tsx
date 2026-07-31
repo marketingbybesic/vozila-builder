@@ -153,11 +153,10 @@ export function SiteHeader() {
                         return (
                           <Link
                             key={sub.slug}
-                            href={
-                              cat.slug === "auto" && sub.slug === "auto-oglasi"
-                                ? `/oglasi/napredno?category=auto`
-                                : subcategoryHref(cat.slug, sub.slug)
-                            }
+                            /* Karlo 31.07: "Osobni auto" je sad prava podkategorija —
+                               vodi na svoje rezultate kao i sve ostale, ne na
+                               praznu naprednu pretragu bez podkategorije. */
+                            href={subcategoryHref(cat.slug, sub.slug)}
                             onClick={closeMenu}
                             className="px-3 py-2 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
                           >
