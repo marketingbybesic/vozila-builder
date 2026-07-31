@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, User, Plus, SlidersHorizontal, Menu, X, ChevronDown } from "lucide-react";
+import { Heart, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
 import { HeaderSearch } from "@/components/header-search";
 import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
@@ -42,11 +42,17 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/oglasi/napredno"
-            className="hidden sm:flex h-10 w-10 items-center justify-center rounded-md text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40"
+            className="hidden sm:flex h-10 items-center justify-center gap-1.5 rounded-md px-2.5 text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 hover:text-[var(--color-ink)] transition-colors"
             aria-label="Napredna pretraga"
             title="Napredna pretraga"
           >
-            <SlidersHorizontal className="size-4" />
+            {/* Dino 31.07: bila ikona klizača (filteri) — nema smisla jer link
+                vodi na PRETRAGU, ne na postavke.
+                ⚠️ Samo povećalo bi se ponavljalo s onim u tražilici lijevo (dvije
+                identične ikone u istom zaglavlju). Zato povećalo + riječ
+                "Napredno" — odmah se zna da je to detaljna pretraga. */}
+            <Search className="size-4" />
+            <span className="text-xs font-medium">Napredno</span>
           </Link>
           <Link
             href="/moj-racun/spremljeno"
