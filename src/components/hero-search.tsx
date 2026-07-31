@@ -55,7 +55,10 @@ export function HeroSearch() {
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-4 md:p-5 shadow-xl border border-white/10"
+      /* Dino 31.07: panel sad "pluta" nad fotografijom — dublja sjena daje
+           odvojenost od slike, a suptilan svijetli rub gore hvata svjetlo
+           (kao staklo). Padding po Fibonacciju: 21 px / 34 px. */
+      className="flex flex-col bg-[var(--color-bg)] text-[var(--color-ink)] rounded-[var(--radius-lg)] p-[21px] md:p-[34px] shadow-[0_24px_64px_rgb(2_8_20/55%)] ring-1 ring-white/15"
     >
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2">

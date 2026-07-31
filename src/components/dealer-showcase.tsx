@@ -91,27 +91,31 @@ export function DealerShowcase() {
 
   const visible = FEATURED_DEALERS.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 
+  // Dino 31.07: puna narančasta uz hero fotografiju tukla se sa slikom i
+  // nadglasavala tražilicu (najvažniji element). Sada tamna staklena ploha sa
+  // ZLATNIM rubom — isti brand-akcent, ali se uklapa u fotografiju. Naslov i
+  // cijene ostaju narančasti, pa Premium trgovci i dalje "svijetle".
   return (
-    <div className="bg-[var(--color-accent)] rounded-[var(--radius-lg)] p-3 md:p-3.5 shadow-xl border border-[var(--color-accent-dark)] flex flex-col h-full">
+    <div className="bg-[var(--color-ink)]/85 backdrop-blur-sm rounded-[var(--radius-lg)] p-[13px] md:p-[21px] shadow-[0_24px_64px_rgb(2_8_20/55%)] ring-1 ring-[var(--color-accent)]/45 flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2 text-[var(--color-ink)]">
-          <Star className="size-4 fill-[var(--color-ink)]" />
+        <h2 className="font-display text-lg md:text-xl tracking-tight inline-flex items-center gap-2 text-[var(--color-accent)]">
+          <Star className="size-4 fill-[var(--color-accent)]" />
           Premium trgovci
         </h2>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-medium text-[var(--color-accent-dark)]">
+          <span className="text-[10px] font-medium text-white/60">
             {page + 1}/{totalPages}
           </span>
           <button
             onClick={prev}
-            className="size-6 rounded bg-white/30 text-[var(--color-ink)] flex items-center justify-center hover:bg-white/50 transition-colors"
+            className="size-6 rounded bg-white/10 text-white/80 flex items-center justify-center hover:bg-white/20 hover:text-white transition-colors"
             aria-label="Prethodni"
           >
             <ChevronLeft className="size-3.5" />
           </button>
           <button
             onClick={next}
-            className="size-6 rounded bg-white/30 text-[var(--color-ink)] flex items-center justify-center hover:bg-white/50 transition-colors"
+            className="size-6 rounded bg-white/10 text-white/80 flex items-center justify-center hover:bg-white/20 hover:text-white transition-colors"
             aria-label="Sljedeći"
           >
             <ChevronRight className="size-3.5" />
@@ -136,7 +140,7 @@ export function DealerShowcase() {
             key={i}
             onClick={() => setPage(i)}
             className={`size-2 rounded-full transition-colors ${
-              i === page ? "bg-[var(--color-ink)]" : "bg-white/40"
+              i === page ? "bg-[var(--color-accent)]" : "bg-white/25"
             }`}
             aria-label={`Stranica ${i + 1}`}
           />

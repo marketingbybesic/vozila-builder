@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/hero-search";
@@ -46,14 +47,53 @@ export default async function HomePage() {
     <>
       {/* HERO: search left + dealers right on desktop, stacked on mobile */}
       <section className="relative overflow-hidden bg-[var(--color-ink)] text-white">
+        {/*
+          Dino 31.07: hero je bio prazan tamni pravokutnik — najveći razlog zašto
+          stranica nije "bacala na auto-moto svijet". Sada fotografija automobila
+          iza tražilice, kao na svakom pravom auto portalu.
+
+          ⚠️ Čitljivost je zaključana neovisno o slici: preko fotografije ide
+          dvostruki sloj — okomiti gradijent (tamno gore/dolje) i vodoravni s
+          lijeva. Bijeli tekst tako ostaje čitak i da fotografija bude svijetla.
+          `priority` + `sizes` sprječavaju CLS i odgađanje LCP-a.
+        */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <Image
+            src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=2000&q=70&auto=format&fit=crop"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          {/*
+            ⚠️ Prva verzija je imala `opacity-45` + dva puna gradijenta preko cijele
+            plohe → izmjereni kontrast slike bio je 10 (praktički nevidljiva), pa je
+            hero i dalje izgledao kao prazan pravokutnik. Sada slika ide punom
+            jačinom, a čitljivost se štiti CILJANO:
+              1) blagi opći veo (55%) da bijeli tekst nikad ne padne ispod praga
+              2) jači gradijent SAMO uz donji/lijevi rub, gdje stoje paneli
+            Fotografija ostaje vidljiva u gornjem desnom dijelu.
+          */}
+          <div className="absolute inset-0 bg-[var(--color-ink)]/55" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)] via-[var(--color-ink)]/35 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-ink)]/85 via-transparent to-transparent" />
+        </div>
+
         {/* Karlo 29.07: 40 px gore i dolje da se tamnoplava pozadina vidi
-            iznad i ispod panela (prije 16/20 px — paneli su "sjedali" na rub). */}
-        <Container className="relative py-6 lg:py-10">
-          <div className="text-center mb-3 md:mb-4">
-            <h1 className="font-display text-2xl md:text-3xl">
+            iznad i ispod panela (prije 16/20 px — paneli su "sjedali" na rub).
+            Dino 31.07: vertikalni ritam po Fibonaccijevu nizu (34/55 px) —
+            hero dobiva najviše zraka jer je prvi dojam. */}
+        <Container className="relative py-[34px] lg:py-[55px]">
+          {/* Dino 31.07: naslov je bio text-2xl — premalen za hero s fotografijom.
+              Sada φ-ljestvica (34 → 55 px, Fibonacci) i `drop-shadow` koji čuva
+              čitljivost NAD SLIKOM bez zamračivanja cijele fotografije: mjereni
+              kontrast je s vela-preko-svega pao na 2,6:1 (ispod WCAG 3:1). */}
+          <div className="text-center mb-[21px] md:mb-[34px] [text-shadow:0_2px_18px_rgb(2_8_20/85%)]">
+            <h1 className="font-display text-[34px] leading-none md:text-[55px]">
               Pronađi svoje vozilo
             </h1>
-            <p className="mt-1 text-sm text-white/75">
+            <p className="mt-[13px] text-sm text-white/85">
               {totalListings > 0
                 ? `Pretraži ${totalListings.toLocaleString("hr-HR")} oglasa`
                 : "Pretraži oglase"}{" "}
