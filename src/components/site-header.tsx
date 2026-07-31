@@ -69,9 +69,12 @@ export function SiteHeader() {
             <MessageSquare className="size-4" />
           </Link>
           <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+            {/* Dino 31.07: "Prijava" → "Moj račun". Link i dalje vodi na /prijava —
+                proxy.ts ionako preusmjeri neprijavljenog korisnika s /moj-racun
+                natrag na prijavu, pa je ovako jedan korak manje. */}
             <Link href="/prijava">
               <User className="size-4" />
-              Prijava
+              Moj račun
             </Link>
           </Button>
           <Button asChild variant="accent" size="sm">
@@ -184,7 +187,7 @@ export function SiteHeader() {
               onClick={closeMenu}
               className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
             >
-              Prijava
+              Moj račun
             </Link>
             <Link
               href="/moj-racun/spremljeno"

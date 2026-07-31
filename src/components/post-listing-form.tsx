@@ -127,6 +127,19 @@ export function PostListingForm() {
       .map((sc) => ({ value: sc.slug, label: sc.name })),
     [categoryDef]
   );
+  /**
+   * Karlo 31.07: podkategorije koje imaju JOŠ JEDNU razinu (Auto dijelovi,
+   * Oprema za kampere i kamping…) moraju se moći odabrati do kraja — prodavač
+   * bira točan tip artikla, ne samo skupinu.
+   *
+   * ⚠️ Bez ovoga drugi nivo nikad nije bio popunjen: pretraga ga filtrira preko
+   * `attributes.vrsta` (vidi `subChildHref`), a objava taj atribut nije nigdje
+   * postavljala — pa su sve podrubrike 2. nivoa vraćale 0 rezultata.
+   */
+  const childOptions: Opt[] = useMemo(() => {
+    const sub = (categoryDef?.subcategories ?? []).find((sc) => sc.slug === s.subcategory);
+    return (sub?.children ?? []).map((c) => ({ value: c.slug, label: c.name }));
+  }, [categoryDef, s.subcategory]);
   // Karlo 27.07: modeli dolaze iz baze TE kategorije (auto/moto/gospodarska).
   // Kategorije bez baze i dalje padaju na slobodan tekstualni unos.
   const modelOptions: Opt[] = useMemo(
@@ -217,7 +230,15 @@ export function PostListingForm() {
     // Sva specifikacijska polja su scope-ana po podkategoriji — bez nje objava
     // prikazuje prazan korak "Specifikacije" (gospodarska 40→0 polja, slobodno
     // vrijeme 48→1), pa oglas nema podatke po kojima ga pretraga filtrira.
-    if (step === 1) return !!s.category && (subcatOptions.length === 0 || !!s.subcategory);
+    if (step === 1)
+      return (
+        !!s.category &&
+        (subcatOptions.length === 0 || !!s.subcategory) &&
+        // Karlo 31.07: ako podkategorija ima 2. nivo, i on je obavezan — inače
+        // prodavač preskoči izbor, `attributes.vrsta` ostane prazan i oglas se
+        // NIKAD ne pojavi u toj podrubrici (isti razlog kao i za podkategoriju).
+        (childOptions.length === 0 || !!s.attributes.vrsta)
+      );
     if (step === 2) return !!(s.make && s.model && s.year && s.condition);
     if (step === 3) return requiredSpecKeys.every(specValueFilled);
     if (step === 4) return s.photos.length >= 1;
@@ -487,7 +508,26 @@ export function PostListingForm() {
                 <SubcategoryButtons
                   options={subcatOptions}
                   value={s.subcategory}
-                  onChange={(v) => set("subcategory", v)}
+                  onChange={(v) => {
+                    set("subcategory", v);
+                    // promjena podkategorije poništava izbor 2. nivoa
+                    setAttr("vrsta", undefined);
+                  }}
+                />
+              </div>
+            )}
+
+            {/* 2. nivo — samo za podkategorije koje ga imaju. Sprema se u
+                `attributes.vrsta`, isti ključ po kojem pretraga filtrira. */}
+            {childOptions.length > 0 && (
+              <div className="space-y-3 animate-fade-in">
+                <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
+                  Vrsta artikla
+                </div>
+                <SubcategoryButtons
+                  options={childOptions}
+                  value={(s.attributes.vrsta as string) ?? ""}
+                  onChange={(v) => setAttr("vrsta", v || undefined)}
                 />
               </div>
             )}

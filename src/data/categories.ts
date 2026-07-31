@@ -48,6 +48,7 @@ const AUTO_SUBS: Subcategory[] = [
   { slug: "oldtimer", name: "Oldtimer" },
   { slug: "ostecen-u-kvaru", name: "Oštećeni i u kvaru" },
   { slug: "najam", name: "Ponude za najam" },
+  { slug: "auto-ostalo", name: "Ostalo" },
 ];
 
 const MOTO_SUBS: Subcategory[] = [
@@ -63,6 +64,7 @@ const MOTO_SUBS: Subcategory[] = [
   { slug: "e-bicikl", name: "E-bicikl" },
   { slug: "e-moto", name: "E-moto" },
   { slug: "najam", name: "Ponude za najam" },
+  { slug: "moto-ostalo", name: "Ostalo" },
 ];
 
 const GOSPODARSKA_SUBS: Subcategory[] = [
@@ -72,6 +74,7 @@ const GOSPODARSKA_SUBS: Subcategory[] = [
   { slug: "prikolice", name: "Teretne prikolice" },
   { slug: "utv", name: "UTV vozila" },
   { slug: "najam", name: "Ponude za najam" },
+  { slug: "gospodarska-ostalo", name: "Ostalo" },
 ];
 
 const MEHANIZACIJA_SUBS: Subcategory[] = [
@@ -81,6 +84,7 @@ const MEHANIZACIJA_SUBS: Subcategory[] = [
   { slug: "komunalni-strojevi", name: "Komunalni strojevi" },
   { slug: "gradevinski-strojevi", name: "Građevinski strojevi" },
   { slug: "najam", name: "Ponude za najam" },
+  { slug: "mehanizacija-ostalo", name: "Ostalo" },
 ];
 
 const PROSTI_CAS_SUBS: Subcategory[] = [
@@ -108,6 +112,7 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
       { slug: "kamping-oprema-ostalo", name: "Ostalo" },
     ],
   },
+  { slug: "prosti-cas-ostalo", name: "Ostalo" },
 ];
 
 // DIJELOVI I OPREMA — 2-nivoa struktura (avto.net "Rezervni deli in oprema").
@@ -292,6 +297,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
       { slug: "ulja-tekucine-ostalo", name: "Ostalo" },
     ],
   },
+  { slug: "dijelovi-ostalo", name: "Ostalo" },
 ];
 
 // Starter brand sets for non-auto categories. Industry-standard makes;
