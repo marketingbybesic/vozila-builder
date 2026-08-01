@@ -7,14 +7,22 @@ import { db } from "@/db";
 import { requireUser } from "@/lib/session";
 import {
   FUEL_TYPES,
-  TRANSMISSIONS,
-  BODY_TYPES,
+  ALL_TRANSMISSIONS,
+  ALL_BODY_TYPES,
   DRIVES,
   COLORS,
   CONDITIONS,
+  VEHICLE_CATEGORIES,
 } from "@/lib/types";
 
 const CreateListing = z.object({
+  // ⚠️ Kategorija/podkategorija/atributi MORAJU biti u shemi.
+  // Zod strip-a nepoznate ključeve — dok ih nije bilo, svaki oglas se spremao
+  // kao `category: "auto"` bez podkategorije i BEZ ijednog atributa iz koraka
+  // 3–4 (oprema, tapacirung, CO2, VIN…). Prodavač ih unese, a oglas ih izgubi.
+  category: z.enum(VEHICLE_CATEGORIES).default("auto"),
+  subcategory: z.string().optional(),
+  attributes: z.record(z.string(), z.unknown()).default({}),
   make: z.string().min(1),
   model: z.string().min(1),
   variant: z.string().optional(),
@@ -22,8 +30,8 @@ const CreateListing = z.object({
   priceEur: z.coerce.number().int().positive(),
   km: z.coerce.number().int().nonnegative(),
   fuel: z.enum(FUEL_TYPES),
-  transmission: z.enum(TRANSMISSIONS),
-  bodyType: z.enum(BODY_TYPES),
+  transmission: z.enum(ALL_TRANSMISSIONS),
+  bodyType: z.enum(ALL_BODY_TYPES),
   drive: z.enum(DRIVES),
   color: z.enum(COLORS),
   condition: z.enum(CONDITIONS),
@@ -51,11 +59,19 @@ export async function createListingAction(input: unknown): Promise<ListingAction
   const created = await db().createListing(user.id, {
     ...parsed.data,
     variant: parsed.data.variant,
-    category: "auto",
   });
+  if (!created?.slug) {
+    // Bez sluga bi "Pogledaj oglas" vodio na /oglasi/ → "page couldn't be found".
+    return { ok: false, error: "Oglas je spremljen, ali mu nije dodijeljena adresa. Javi nam se." };
+  }
   revalidatePath("/oglasi");
+  revalidatePath("/oglasi/najnoviji");
   revalidatePath("/moj-racun");
   revalidatePath("/moj-racun/oglasi");
+  // ⚠️ Detaljna stranica je SSG (`generateStaticParams`). Novi slug nije bio u
+  // buildu, pa je "Pogledaj oglas" znao vratiti prazan/zastario prerender.
+  // `dynamicParams` ga servira, ali tek nakon što se putanja poništi.
+  revalidatePath(`/oglasi/${created.slug}`);
   return { ok: true, slug: created.slug };
 }
 

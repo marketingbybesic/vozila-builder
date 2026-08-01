@@ -12,6 +12,14 @@ export type FuelType = (typeof FUEL_TYPES)[number];
 export const TRANSMISSIONS = ["Ručni", "Automatski"] as const;
 export type Transmission = (typeof TRANSMISSIONS)[number];
 
+/**
+ * ⚠️ BODY_TYPES / TRANSMISSIONS su liste za PRIKAZ (naslovnica, filter osobnih
+ * auta). Gospodarska i mehanizacija nude vlastite tipove iz `category-filters.ts`
+ * ("Furgon", "sasija-kabina", "hidrostatski"…). Za VALIDACIJU pri spremanju
+ * koristi `ALL_BODY_TYPES` / `ALL_TRANSMISSIONS` — inače zod odbije oglas koji
+ * je forma sama ponudila, oglas se ne stvori i prodavač dobije 404.
+ * Guard: `scripts/check-enum-drift.mts`.
+ */
 export const BODY_TYPES = [
   "Microcar",
   "Limuzina",
@@ -24,6 +32,24 @@ export const BODY_TYPES = [
   "Pickup",
 ] as const;
 export type BodyType = (typeof BODY_TYPES)[number];
+
+/** Oblici karoserije gospodarskih vozila — samo za validaciju, ne za prikaz na naslovnici. */
+export const COMMERCIAL_BODY_TYPES = [
+  "Furgon",
+  "Kombi",
+  "kamionet",
+  "sasija-kabina",
+  "sasija-nadgradnja",
+  "pickup",
+] as const;
+
+/** Sve vrijednosti koje spremanje smije prihvatiti (prikaz + gospodarska). */
+export const ALL_BODY_TYPES = [...BODY_TYPES, ...COMMERCIAL_BODY_TYPES] as const;
+export type AnyBodyType = (typeof ALL_BODY_TYPES)[number];
+
+/** Mjenjači izvan osobnih auta (mehanizacija). */
+export const ALL_TRANSMISSIONS = [...TRANSMISSIONS, "hidrostatski"] as const;
+export type AnyTransmission = (typeof ALL_TRANSMISSIONS)[number];
 
 export const DRIVES = ["Prednji", "Stražnji", "4x4"] as const;
 export type Drive = (typeof DRIVES)[number];
@@ -72,8 +98,10 @@ export const Listing = z.object({
   originalPriceEur: z.number().int().positive().optional(),
   km: z.number().int().nonnegative(),
   fuel: z.enum(FUEL_TYPES),
-  transmission: z.enum(TRANSMISSIONS),
-  bodyType: z.enum(BODY_TYPES),
+  // Šire liste: gospodarska i mehanizacija imaju vlastite oblike karoserije i
+  // mjenjač ("Furgon", "hidrostatski"…). Uske liste ostaju za PRIKAZ.
+  transmission: z.enum(ALL_TRANSMISSIONS),
+  bodyType: z.enum(ALL_BODY_TYPES),
   drive: z.enum(DRIVES),
   color: z.enum(COLORS),
   condition: z.enum(CONDITIONS),
@@ -137,8 +165,8 @@ export type ListingFilters = {
   engineMin?: number;
   engineMax?: number;
   fuel?: FuelType[];
-  transmission?: Transmission[];
-  bodyType?: BodyType[];
+  transmission?: AnyTransmission[];
+  bodyType?: AnyBodyType[];
   drive?: Drive[];
   doors?: string[];
   seats?: string[];
