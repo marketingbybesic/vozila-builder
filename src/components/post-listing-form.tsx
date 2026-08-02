@@ -371,6 +371,14 @@ export function PostListingForm() {
     }
 
     start(async () => {
+      /**
+       * ⚠️⚠️ Karlo 02.08.: "THIS PAGE COULDN'T LOAD — A server error occurred".
+       * Ako server action baci (npr. Vercel odbije preveliko tijelo zahtjeva),
+       * neuhvaćena iznimka sruši CIJELU stranicu u Nextovu crnu error-stranicu
+       * i korisnik izgubi svih 6 popunjenih koraka. Zato hvatamo grešku i
+       * ostajemo na pregledu s jasnom porukom — podaci se ne gube.
+       */
+      try {
       const res = await createListingAction({
         // — kategorija/podkategorija (akcija ih trenutno ne koristi za sve, ali
         //   ne škodi — zod strip-a nepoznate ključeve, a buduća verzija ih čita) —
@@ -407,6 +415,23 @@ export function PostListingForm() {
         router.refresh();
       } else {
         setSubmitErr(res.error);
+      }
+      } catch (e) {
+        /**
+         * ⚠️ Ne pretpostavljaj uzrok. Prva verzija ovog bloka uvijek je krivila
+         * fotografije, pa je maskirala pravu grešku. Veličinu spominjemo samo
+         * kad je slika stvarno teška; inače pokazujemo poruku servera.
+         */
+        const bytes = totalWeight(s.photos);
+        const mb = (bytes / 1024 / 1024).toFixed(1);
+        const raw = e instanceof Error ? e.message : String(e);
+        setSubmitErr(
+          bytes > 900_000
+            ? `Objava nije uspjela — fotografije su prevelike za slanje (${mb} MB). ` +
+              `Obriši jednu ili dvije fotografije pa pokušaj ponovno. Ostali podaci su sačuvani.`
+            : `Objava nije uspjela: ${raw || "nepoznata greška"}. Podaci su sačuvani — pokušaj ponovno.`
+        );
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     });
   };
@@ -984,8 +1009,61 @@ function SectionHead({ children }: { children: React.ReactNode }) {
  * po potrebi stišćemo dalje dok ne stane u ciljanu težinu. Time i stranica
  * oglasa postaje bitno lakša.
  */
-const MAX_EDGE = 1600;
-const TARGET_BYTES = 700 * 1024; // ~700 KB po slici nakon base64
+const MAX_EDGE = 1200;
+const TARGET_BYTES = 70 * 1024; // ~70 KB po slici → 8 slika stane u budžet od 600 KB
+
+/**
+ * ⚠️⚠️ UKUPNI PRORAČUN, ne samo po slici (Karlo 02.08., "THIS PAGE COULDN'T LOAD").
+ *
+ * Smanjivanje po slici NIJE bilo dovoljno: 10 × 700 KB = 7 MB, a **Vercel
+ * odbija tijelo zahtjeva veće od 4,5 MB** bez obzira na `bodySizeLimit` u
+ * `next.config.ts`. Rezultat je Nextova stranica "A server error occurred" —
+ * dakle 500, ne validacija. Zato slike moraju stati u ZAJEDNIČKI budžet:
+ * kad se zbroj približi granici, preostale se dodatno stišću.
+ */
+/**
+ * ⚠️⚠️ IZMJERENO NA PRODUKCIJI 02.08. — ne mijenjati "po osjećaju".
+ *   633 KB base64 → ✅ oglas objavljen (izvor: fotka 5 MB s mobitela)
+ *   1,1 MB       → ❌ pada
+ *   1,7 MB       → ❌ pada
+ *   2,9 MB       → ❌ pada
+ * Nominalni Vercel limit je 4,5 MB, ali stvarni prag je DRASTIČNO niži (server
+ * action serijalizira payload i nosi vlastiti overhead). Zato budžet držimo na
+ * 600 KB — ispod jedine dokazano uspješne vrijednosti.
+ * Podizati SAMO uz novi test na produkciji.
+ */
+const TOTAL_BUDGET = 600_000; // ~600 KB base64 za SVE slike zajedno
+
+/** Koliko base64 znakova zauzimaju sve slike zajedno. */
+function totalWeight(photos: string[]): number {
+  return photos.reduce((n, p) => n + p.length, 0);
+}
+
+/** Stisni jednu sliku do zadane gornje granice (kad ukupni budžet pritišće). */
+async function shrinkToFit(dataUrl: string, limit: number): Promise<string> {
+  if (dataUrl.length <= limit) return dataUrl;
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error("slika se ne može otvoriti"));
+    i.src = dataUrl;
+  });
+  let edge = MAX_EDGE;
+  let out = dataUrl;
+  // Postupno smanjuj i dimenziju i kvalitetu dok ne stane.
+  for (let i = 0; i < 6 && out.length > limit; i++) {
+    edge = Math.round(edge * 0.8);
+    const scale = Math.min(1, edge / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(img.width * scale));
+    c.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = c.getContext("2d");
+    if (!ctx) break;
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    out = c.toDataURL("image/jpeg", 0.7);
+  }
+  return out;
+}
 
 async function compressImage(file: File): Promise<string> {
   const dataUrl: string = await new Promise((res, rej) => {
@@ -1042,7 +1120,22 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
     const next = [...photos];
     for (const file of arr) {
       try {
-        next.push(await compressImage(file));
+        let img = await compressImage(file);
+
+        // Ukupni budžet: sve slike zajedno moraju stati ispod Vercelovih 4,5 MB.
+        const preostalo = TOTAL_BUDGET - totalWeight(next);
+        if (preostalo <= 60_000) {
+          odbijeno.push(`"${file.name}" nije stala — dosegnuta je ukupna veličina fotografija`);
+          continue;
+        }
+        if (img.length > preostalo) {
+          img = await shrinkToFit(img, preostalo);
+          if (img.length > preostalo) {
+            odbijeno.push(`"${file.name}" je prevelika i nakon smanjivanja`);
+            continue;
+          }
+        }
+        next.push(img);
       } catch {
         odbijeno.push(`"${file.name}" nije slika koju možemo obraditi`);
       }
@@ -1086,8 +1179,12 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
         </div>
         <div className="text-xs text-[var(--color-muted)] mt-1">
           {/* Prije je pisalo "max 10 MB svaka" — netočno: takva slika nikad ne
-              prođe (server action prima ~1 MB). Sad se slika smanjuje sama. */}
+              prođe. Sad se slike smanjuju same i vidi se koliko je prostora
+              ostalo, da korisnik ne naleti na granicu tek pri objavi. */}
           {photos.length}/10 · JPG, PNG, WebP · velike fotografije smanjujemo automatski
+          {photos.length > 0 && (
+            <> · iskorišteno {Math.round((totalWeight(photos) / TOTAL_BUDGET) * 100)}%</>
+          )}
         </div>
         {busy && <Badge variant="outline" className="mt-3 animate-pulse">Obrada fotografija...</Badge>}
       </label>
