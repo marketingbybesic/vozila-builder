@@ -47,14 +47,25 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
             // Karlo 28.07: tamnija podloga trake (bila white/[0.04]) diže
             // kontrast bijelog teksta iznad WCAG AA praga 4.5:1.
             ? "flex items-stretch gap-1.5 rounded-[var(--radius-lg)] border border-white/10 bg-black/25 p-1.5"
-            : "grid grid-cols-3 md:grid-cols-6 gap-2"
+            // `auto-rows-fr` — SVI reci jednake visine, ne samo kartice unutar
+            // jednog retka. Bez toga je 1. red 78px, a 2. red 85px (dvoredni
+            // nazivi), pa mreža izgleda neuredno.
+            : "grid grid-cols-3 md:grid-cols-6 gap-2 auto-rows-fr"
         )}
       >
         {CATEGORIES.map((cat) => {
           const Icon = ICONS[cat.icon];
           const isOpen = openSlug === cat.slug;
+          /**
+           * Karlo 02.08.: "mehanizacija još uvijek nije poravnata sa slobodno
+           * vrijeme". Izmjereno na 390 px: MEHANIZACIJA 78 px, a SLOBODNO
+           * VRIJEME i DIJELOVI I OPREMA 85 px — `min-h-[78px]` je MINIMALNA
+           * visina, pa naziv u dva reda naraste karticu dok susjedi ostanu niži.
+           * `<li>` se sad rasteže na visinu retka (`h-full`), a gumb ga
+           * popunjava → svi u retku imaju isti donji rub.
+           */
           return (
-            <li key={cat.slug} className={cn(isBar && "flex-1 min-w-0")}>
+            <li key={cat.slug} className={cn("h-full", isBar && "flex-1 min-w-0")}>
               <button
                 type="button"
                 onClick={() => selectCategory(cat.slug)}
@@ -71,7 +82,9 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                           : "text-white hover:bg-white/10"
                       )
                     : cn(
-                        "flex flex-col items-center justify-center gap-1.5 w-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border",
+                        // `h-full` uz `min-h` — kartica popunjava visinu retka
+                        // koju diktira najviši naziv (npr. "SLOBODNO VRIJEME").
+                        "flex flex-col items-center justify-center gap-1.5 w-full h-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border",
                         isOpen
                           ? "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-white"
                           : "border-white/15 bg-white/[0.06] text-white hover:bg-white/10 hover:border-white/30"
