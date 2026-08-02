@@ -256,26 +256,64 @@ export function PostListingForm() {
     return a !== undefined && a !== "" && a !== false;
   };
 
-  const stepValid = useMemo(() => {
+  /**
+   * Što još nedostaje na trenutnom koraku — JEDAN izvor istine.
+   *
+   * ⚠️ Dino 01.08.: "ne radi gumb za dalje". Gumb je RADIO ispravno (opis 16/30
+   * znakova), ali NIGDJE nije pisalo zašto je siv — forma izgleda popunjeno, a
+   * "Nastavi" ne reagira. Zato validacija sad vraća POPIS naziva polja koja fale,
+   * a `stepValid` je izveden iz njega. Ne raditi drugu granu za poruku — razišla
+   * bi se od validacije i lagala bi korisniku.
+   */
+  const missingFields = useMemo<string[]>(() => {
+    const m: string[] = [];
     // Karlo 30.07: podkategorija je OBAVEZNA kad postoji.
     // Sva specifikacijska polja su scope-ana po podkategoriji — bez nje objava
     // prikazuje prazan korak "Specifikacije" (gospodarska 40→0 polja, slobodno
     // vrijeme 48→1), pa oglas nema podatke po kojima ga pretraga filtrira.
-    if (step === 1)
-      return (
-        !!s.category &&
-        (subcatOptions.length === 0 || !!s.subcategory) &&
-        // Karlo 31.07: ako podkategorija ima 2. nivo, i on je obavezan — inače
-        // prodavač preskoči izbor, `attributes.vrsta` ostane prazan i oglas se
-        // NIKAD ne pojavi u toj podrubrici (isti razlog kao i za podkategoriju).
-        (childOptions.length === 0 || !!s.attributes.vrsta)
-      );
-    if (step === 2) return !!(s.make && s.model && s.year && s.condition);
-    if (step === 3) return requiredSpecKeys.every(specValueFilled);
-    if (step === 4) return s.photos.length >= 1;
-    if (step === 5) return !!(s.priceEur && s.description.length >= 30 && s.county && s.city && s.firstName && s.phone);
-    return true;
-  }, [step, s, requiredSpecKeys]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (step === 1) {
+      if (!s.category) m.push("Kategorija");
+      if (subcatOptions.length > 0 && !s.subcategory) m.push("Podkategorija");
+      // Karlo 31.07: ako podkategorija ima 2. nivo, i on je obavezan — inače
+      // prodavač preskoči izbor, `attributes.vrsta` ostane prazan i oglas se
+      // NIKAD ne pojavi u toj podrubrici (isti razlog kao i za podkategoriju).
+      if (childOptions.length > 0 && !s.attributes.vrsta) m.push("Vrsta artikla");
+      return m;
+    }
+    if (step === 2) {
+      if (!s.make) m.push("Marka");
+      if (!s.model) m.push("Model");
+      if (!s.year) m.push("Godina proizvodnje");
+      if (!s.condition) m.push("Stanje");
+      return m;
+    }
+    if (step === 3) {
+      // Oznake iz SHEME — hardkodirani popis bi se razišao s `category-filters.ts`.
+      for (const k of requiredSpecKeys) {
+        if (!specValueFilled(k)) m.push(labelOf(k, k));
+      }
+      return m;
+    }
+    if (step === 4) {
+      if (s.photos.length < 1) m.push("barem jedna fotografija");
+      return m;
+    }
+    if (step === 5) {
+      if (!s.priceEur) m.push("Cijena");
+      if (s.description.trim().length < 30) {
+        const left = 30 - s.description.trim().length;
+        m.push(`Opis (još ${left} ${left === 1 ? "znak" : left < 5 ? "znaka" : "znakova"})`);
+      }
+      if (!s.county) m.push("Županija");
+      if (!s.city) m.push("Grad");
+      if (!s.firstName) m.push("Ime");
+      if (!s.phone) m.push("Telefon");
+      return m;
+    }
+    return m;
+  }, [step, s, requiredSpecKeys, subcatOptions.length, childOptions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const stepValid = missingFields.length === 0;
 
   if (submitted) {
     return (
@@ -725,8 +763,12 @@ export function PostListingForm() {
                 placeholder="Stanje vozila, povijest servisiranja, što je novo zamijenjeno, da li je iz prvog vlasništva, garažirano, registracija..."
                 className="min-h-[160px]"
               />
-              {s.description.length < 30 && (
-                <div className="text-xs text-[var(--color-muted)] mt-1">Minimalno 30 znakova</div>
+              {/* Bilo sivo kao i svaki drugi savjet → nije se čitalo kao razlog
+                  zašto je "Nastavi" siv. Sad crveno + koliko točno fali. */}
+              {s.description.trim().length < 30 && (
+                <div className="text-xs text-[var(--color-danger)] mt-1">
+                  Opis mora imati barem 30 znakova — još {30 - s.description.trim().length}.
+                </div>
               )}
             </Field>
 
@@ -809,10 +851,22 @@ export function PostListingForm() {
           </Button>
 
           {step < STEPS.length ? (
-            <Button variant="primary" onClick={() => setStep((p) => p + 1)} disabled={!stepValid}>
-              Nastavi
-              <ChevronRight className="size-4" />
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              {/* Sivi gumb bez objašnjenja = korisnik misli da je forma pokvarena.
+                  Popis dolazi iz `missingFields` — iste logike koja gasi gumb. */}
+              {missingFields.length > 0 && (
+                <span className="text-xs text-[var(--color-ink-soft)] text-right max-w-xs">
+                  Za nastavak popuni:{" "}
+                  <span className="text-[var(--color-danger)] font-medium">
+                    {missingFields.join(", ")}
+                  </span>
+                </span>
+              )}
+              <Button variant="primary" onClick={() => setStep((p) => p + 1)} disabled={!stepValid}>
+                Nastavi
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
           ) : (
             <div className="flex flex-col items-end gap-2">
               {submitErr && (
