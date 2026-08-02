@@ -122,8 +122,13 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Mobile: categories first, then dealers */}
-          <div className="lg:hidden mt-5">
+          {/* Mobile: categories first, then dealers.
+              Karlo 02.08.: "neka poravna ovaj okvir da bude u liniji".
+              Kartice kategorija bile su gola mreža bez podloge, a ploha
+              "Premium trgovci" ispod ima `p-[13px]` + zlatni `ring` — pa se
+              njihov sadržaj nije poklapao po lijevom/desnom rubu.
+              Ista ploha i isti unutarnji razmak → oba bloka sad u liniji. */}
+          <div className="lg:hidden mt-5 bg-[var(--color-ink)]/85 backdrop-blur-sm rounded-[var(--radius-lg)] p-[13px] md:p-[21px] shadow-[0_24px_64px_rgb(2_8_20/55%)] ring-1 ring-white/10">
             <p className="text-sm text-white/75 mb-3 text-center">
               Pregled ostalih kategorija
             </p>
