@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    serverActions: {
+      /**
+       * Fotografije oglasa putuju kao base64 data-URL unutar server actiona.
+       * Next je zadano ograničen na 1 MB → oglas s više/većih slika je tiho
+       * padao ("mali oglasi prolaze, veliki ne", Dino 02.08.).
+       * Klijent slike smanjuje (~700 KB svaka), ovo je sigurnosna granica za
+       * do 10 slika. Ne dizati bez potrebe — štiti od zlouporabe.
+       */
+      bodySizeLimit: "8mb",
+    },
   },
 };
 

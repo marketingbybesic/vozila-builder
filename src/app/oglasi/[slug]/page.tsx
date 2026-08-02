@@ -10,7 +10,6 @@ import { SaveButton } from "@/components/save-button";
 import { ShareButton } from "@/components/share-button";
 import { CompareButton } from "@/components/compare-button";
 import { db } from "@/db";
-import { FEATURE_CATEGORIES } from "@/data/features";
 import {
   formatPrice,
   formatKm,
@@ -18,7 +17,7 @@ import {
   timeAgo,
   formatDate,
 } from "@/lib/utils";
-import { listingHasField, specGroupsFor, isVehicle, cardSummary } from "@/lib/listing-fields";
+import { listingHasField, specGroupsFor, isVehicle, cardSummary, featureGroupsFor } from "@/lib/listing-fields";
 import {
   Phone,
   MessageSquare,
@@ -81,10 +80,16 @@ export default async function ListingDetailPage({
   // Specifikacije iz sheme — samo popunjena polja relevantna za ovu kategoriju.
   const specGroups = specGroupsFor(listing);
 
-  const featuresByCategory = FEATURE_CATEGORIES.map((cat) => ({
-    name: cat.name,
-    items: cat.items.filter((f) => listing.features.includes(f)),
-  })).filter((c) => c.items.length > 0);
+  /**
+   * ⚠️ Prije se oprema filtrirala kroz ručni `FEATURE_CATEGORIES` (57 stavki) →
+   * 153 od 166 opcija koje objava nudi NIKAD se nisu prikazale kupcu.
+   * Sad ide iz sheme, uz "Ostala oprema" za sve što shema ne prepoznaje,
+   * da nijedna označena stavka ne nestane.
+   */
+  const featuresByCategory = featureGroupsFor(listing).map((g) => ({
+    name: g.name,
+    items: g.items.map((i) => i.label),
+  }));
 
   return (
     <>

@@ -167,3 +167,50 @@ export function cardSummary(listing: Listing): string[] {
 export function isVehicle(listing: Pick<Listing, "category">): boolean {
   return listing.category !== "dijelovi";
 }
+
+/**
+ * Oprema oglasa grupirana po rubrikama IZ SHEME.
+ *
+ * ⚠️⚠️ Dino 02.08.: "na prikazu oglasa moraju biti svi podaci s pregleda".
+ * Detaljna je opremu filtrirala kroz ručni `FEATURE_CATEGORIES` (57 stavki),
+ * a runda 19 je uvela 129 novih opcija iz sheme → **153 od 166 opcija
+ * prodavač označi, vidi ih na pregledu, a na oglasu NESTANU**.
+ * Shema je izvor istine za pretragu, objavu i prikaz — pa i za opremu.
+ * Guard: `scripts/check-features-visible.mts`.
+ */
+export function featureGroupsFor(listing: Listing): SpecGroup[] {
+  const selected = new Set(listing.features ?? []);
+  if (selected.size === 0) return [];
+
+  const out: SpecGroup[] = [];
+  const seen = new Set<string>();
+
+  for (const f of relevantFields(listing)) {
+    if (!f.options || f.type !== "multi") continue;
+    const hits: string[] = [];
+    for (const o of f.options) {
+      const label = typeof o === "string" ? o : o.label;
+      if (label && selected.has(label) && !seen.has(label)) {
+        hits.push(label);
+        seen.add(label);
+      }
+    }
+    if (!hits.length) continue;
+    /**
+     * ⚠️ Rubrika opreme je u `label`, NE u `group`. Svih 33 polja opreme dijele
+     * `group: "Dodatne opcije"`, a prava podjela (Sigurnost / Podvozje i ovjes /
+     * Unutrašnjost / Multimedija / Udobnost / Praktičnost) stoji u `label`.
+     * Po `group` bi svih 184 stavki palo u jednu hrpu.
+     */
+    const name = f.label || f.group || "Oprema";
+    const existing = out.find((g) => g.name === name);
+    if (existing) existing.items.push(...hits.map((v) => ({ label: v, value: "" })));
+    else out.push({ name, items: hits.map((v) => ({ label: v, value: "" })) });
+  }
+
+  // Sve što shema ne prepoznaje (stari oglasi, ručni unosi) — da ništa ne nestane.
+  const ostalo = [...selected].filter((f) => !seen.has(f));
+  if (ostalo.length) out.push({ name: "Ostala oprema", items: ostalo.map((v) => ({ label: v, value: "" })) });
+
+  return out;
+}

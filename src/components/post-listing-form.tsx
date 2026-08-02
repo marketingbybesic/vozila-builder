@@ -3,7 +3,7 @@
 import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star, AlertCircle } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -116,6 +116,12 @@ export function PostListingForm() {
   const [s, setS] = useState<State>(empty);
   const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
+  /**
+   * Sažetak "još X podataka" ne smije vikati na prazan korak koji korisnik tek
+   * otvara. Pali se na prvi pokušaj "Nastavi" ili čim nešto upiše, i resetira
+   * se pri prelasku na sljedeći korak.
+   */
+  const [showMissing, setShowMissing] = useState(false);
   const [pending, start] = useTransition();
 
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
@@ -590,6 +596,22 @@ export function PostListingForm() {
         />
       </div>
 
+      {/* Dino 02.08.: "nisam znao koliko i što treba biti."
+          Sažetak stoji na VRHU koraka — vidi se prije skrolanja, ne tek kod gumba.
+          Pojavljuje se tek nakon prvog pokušaja "Nastavi" ili prvog unosa, da ne
+          viče na korisnika prije nego je išta stigao upisati. */}
+      {missingFields.length > 0 && showMissing && (
+        <div className="mt-6 flex items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/8 px-4 py-3">
+          <AlertCircle className="size-4 text-[var(--color-danger)] shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <div className="font-medium text-[var(--color-danger)]">
+              Još {missingFields.length} {missingFields.length === 1 ? "podatak" : missingFields.length < 5 ? "podatka" : "podataka"} za nastavak
+            </div>
+            <div className="text-[var(--color-ink-soft)] mt-0.5">{missingFields.join(" · ")}</div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8 bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-6 md:p-8 animate-fade-in" key={step}>
         {step === 1 && (
           <div className="space-y-8">
@@ -862,10 +884,28 @@ export function PostListingForm() {
                   </span>
                 </span>
               )}
-              <Button variant="primary" onClick={() => setStep((p) => p + 1)} disabled={!stepValid}>
-                Nastavi
-                <ChevronRight className="size-4" />
-              </Button>
+              {/* Onemogućen gumb NE prima klik → korisnik klikne i ništa se ne
+                  dogodi. Omotač hvata klik i pokazuje sažetak na vrhu. */}
+              <span
+                onClick={() => {
+                  if (!stepValid) {
+                    setShowMissing(true);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+              >
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setShowMissing(false);
+                    setStep((p) => p + 1);
+                  }}
+                  disabled={!stepValid}
+                >
+                  Nastavi
+                  <ChevronRight className="size-4" />
+                </Button>
+              </span>
             </div>
           ) : (
             <div className="flex flex-col items-end gap-2">
@@ -930,36 +970,86 @@ function SectionHead({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * ⚠️⚠️ ZAŠTO SE SLIKA SMANJUJE U PREGLEDNIKU (Dino 02.08.: "mali oglasi prolaze,
+ * veliki ne").
+ *
+ * Fotografije se spremaju kao **base64 data-URL** u sam zapis oglasa. Server
+ * action u Nextu ima **zadani limit tijela od 1 MB**, a base64 još napuhne
+ * datoteku za ~33 %. Sučelje je pisalo "max 10 MB svaka" × 10 slika = do 100 MB
+ * kroz kanal od 1 MB → objava tiho padne. Karlov oglas `lst-1235` ima jednu
+ * sliku od 839 KB (zapis 860 KB) — prošao je za dlaku; sve veće nisu.
+ *
+ * Zato svaku sliku prije slanja skaliramo na max 1600 px i JPEG q=0.82, pa
+ * po potrebi stišćemo dalje dok ne stane u ciljanu težinu. Time i stranica
+ * oglasa postaje bitno lakša.
+ */
+const MAX_EDGE = 1600;
+const TARGET_BYTES = 700 * 1024; // ~700 KB po slici nakon base64
+
+async function compressImage(file: File): Promise<string> {
+  const dataUrl: string = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = () => rej(new Error("čitanje datoteke nije uspjelo"));
+    r.readAsDataURL(file);
+  });
+
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error("slika se ne može otvoriti"));
+    i.src = dataUrl;
+  });
+
+  const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl; // bez canvasa radije šaljemo original nego ništa
+  ctx.drawImage(img, 0, 0, w, h);
+
+  let q = 0.82;
+  let out = canvas.toDataURL("image/jpeg", q);
+  while (out.length > TARGET_BYTES && q > 0.4) {
+    q -= 0.12;
+    out = canvas.toDataURL("image/jpeg", q);
+  }
+  // Ako je original (npr. mali PNG) ipak lakši, zadrži njega.
+  return out.length < dataUrl.length ? out : dataUrl;
+}
+
 function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: string[]) => void }) {
   const [busy, setBusy] = useState(false);
+  const [photoErr, setPhotoErr] = useState<string | null>(null);
 
-  const handleFiles = (files: FileList | null) => {
+  const handleFiles = async (files: FileList | null) => {
     if (!files) return;
+    setPhotoErr(null);
     setBusy(true);
     const remaining = Math.max(0, 10 - photos.length);
-    const arr = Array.from(files).slice(0, remaining);
-    let done = 0;
+    const all = Array.from(files);
+    const arr = all.slice(0, remaining);
+    const odbijeno: string[] = [];
+    if (all.length > remaining) {
+      odbijeno.push(`primljeno prvih ${remaining} — najviše je 10 fotografija`);
+    }
+
     const next = [...photos];
-    arr.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") next.push(reader.result);
-        done++;
-        if (done === arr.length) {
-          onChange(next);
-          setBusy(false);
-        }
-      };
-      reader.onerror = () => {
-        done++;
-        if (done === arr.length) {
-          onChange(next);
-          setBusy(false);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    if (arr.length === 0) setBusy(false);
+    for (const file of arr) {
+      try {
+        next.push(await compressImage(file));
+      } catch {
+        odbijeno.push(`"${file.name}" nije slika koju možemo obraditi`);
+      }
+    }
+    onChange(next);
+    setPhotoErr(odbijeno.length ? odbijeno.join(" · ") : null);
+    setBusy(false);
   };
 
   const removeAt = (i: number) => onChange(photos.filter((_, idx) => idx !== i));
@@ -995,10 +1085,17 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
           {photos.length >= 10 ? "Maksimalno 10 fotografija" : "Klikni za upload ili povuci datoteke"}
         </div>
         <div className="text-xs text-[var(--color-muted)] mt-1">
-          {photos.length}/10 · JPG, PNG, WebP · max 10 MB svaka
+          {/* Prije je pisalo "max 10 MB svaka" — netočno: takva slika nikad ne
+              prođe (server action prima ~1 MB). Sad se slika smanjuje sama. */}
+          {photos.length}/10 · JPG, PNG, WebP · velike fotografije smanjujemo automatski
         </div>
-        {busy && <Badge variant="outline" className="mt-3 animate-pulse">Obrada...</Badge>}
+        {busy && <Badge variant="outline" className="mt-3 animate-pulse">Obrada fotografija...</Badge>}
       </label>
+      {photoErr && (
+        <div className="mt-2 text-xs text-[var(--color-danger)] bg-[var(--color-danger)]/10 px-3 py-2 rounded-md">
+          {photoErr}
+        </div>
+      )}
 
       {photos.length > 0 && (
         <>
@@ -1116,20 +1213,26 @@ function ReviewPreview({
           {s.color && <Spec k="Boja" v={s.color} />}
           {s.condition && <Spec k="Stanje" v={s.condition} />}
         </div>
+        {/* Pregled je rezao na 12 atributa i 8 opreme, pa je obećavao manje nego
+            što oglas stvarno ima. Pregled = ono što kupac vidi, bez skraćivanja. */}
         {attrRows.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs pt-3 border-t border-[var(--color-line)]">
-            {attrRows.slice(0, 12).map((r) => <Spec key={r.k} k={r.k} v={r.v} />)}
+            {attrRows.map((r) => <Spec key={r.k} k={r.k} v={r.v} />)}
           </div>
         )}
         {s.description && (
-          <p className="text-sm text-[var(--color-ink-soft)] pt-3 border-t border-[var(--color-line)] line-clamp-4">
+          <p className="text-sm text-[var(--color-ink-soft)] pt-3 border-t border-[var(--color-line)] whitespace-pre-line">
             {s.description}
           </p>
         )}
         {featureLabels.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-3 border-t border-[var(--color-line)]">
-            {featureLabels.slice(0, 8).map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
-            {featureLabels.length > 8 && <Badge variant="outline">+ {featureLabels.length - 8}</Badge>}
+          <div className="pt-3 border-t border-[var(--color-line)]">
+            <div className="text-[10px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
+              Oprema ({featureLabels.length})
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {featureLabels.map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
+            </div>
           </div>
         )}
       </div>
