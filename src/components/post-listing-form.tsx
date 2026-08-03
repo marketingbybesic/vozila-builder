@@ -1269,6 +1269,20 @@ function ReviewPreview({
   const attrRows: { k: string; v: string }[] = [];
   for (const f of filterDef.fields) {
     if (f.storage !== "attr" || f.key === "subcategory" || f.key === "adAge") continue;
+    /**
+     * ⚠️⚠️ Karlo 03.08. (2. put): "samo je listu preorganizirao — treba ju
+     * maknut da se ne vidi jer sve je već izlistano iznad."
+     *
+     * OPREMA (`type: "multi"` u grupi "Dodatne opcije") se NE prikazuje ovdje.
+     * Polja poput `safety`/`multimedia`/`comfort` su nizovi s desecima
+     * vrijednosti, pa su se nabrajala kao dugačak niz pojmova ispod urednih
+     * specifikacija. Ista oprema je već prikazana gore.
+     *
+     * ⚠️ Uvjet mora biti `type === "multi"`, NE cijela grupa — u istoj grupi
+     * žive i prave specifikacije koje MORAJU ostati: `airbagCount` (range),
+     * `wheelSize`/`radio` (slobodan unos uz listu, runda 19).
+     */
+    if (f.group === "Dodatne opcije" && f.type === "multi") continue;
     const raw = s.attributes[f.key];
     if (raw === undefined || raw === "" || raw === false) continue;
     if (Array.isArray(raw) && raw.length === 0) continue;
