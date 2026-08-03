@@ -189,10 +189,20 @@ export function featureGroupsFor(listing: Listing): SpecGroup[] {
     if (!f.options || f.type !== "multi") continue;
     const hits: string[] = [];
     for (const o of f.options) {
+      /**
+       * ⚠️⚠️ Uspoređujemo i VRIJEDNOST i OZNAKU (Dino 03.08.).
+       * Objava sprema `features` kao VRIJEDNOSTI (`"bi-ksenon"`), a prva verzija
+       * ove funkcije tražila je samo OZNAKE (`"Bi-ksenonska svjetla"`) → sva
+       * oprema padala je u "Ostala oprema" kao sirovi ključevi, umjesto u
+       * rubrike Sigurnost / Multimedija / Udobnost…
+       * Prihvaćamo oboje: novi oglasi šalju vrijednosti, stariji oznake.
+       */
+      const value = typeof o === "string" ? o : o.value;
       const label = typeof o === "string" ? o : o.label;
-      if (label && selected.has(label) && !seen.has(label)) {
-        hits.push(label);
-        seen.add(label);
+      const key = selected.has(value) ? value : selected.has(label) ? label : null;
+      if (key && !seen.has(key)) {
+        hits.push(label); // uvijek prikazujemo ČITLJIVU oznaku
+        seen.add(key);
       }
     }
     if (!hits.length) continue;

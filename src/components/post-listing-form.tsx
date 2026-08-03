@@ -1265,8 +1265,6 @@ function ReviewPreview({
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
   const km = s.km ? formatKm(Number(s.km)) : "—";
   const make = makeLabel || "—";
-  const featureLabels = collectFeatureLabels(s.attributes);
-
   // Lijepi prikaz popunjenih schema-atributa: label iz sheme + čitljiva vrijednost.
   const attrRows: { k: string; v: string }[] = [];
   for (const f of filterDef.fields) {
@@ -1322,16 +1320,13 @@ function ReviewPreview({
             {s.description}
           </p>
         )}
-        {featureLabels.length > 0 && (
-          <div className="pt-3 border-t border-[var(--color-line)]">
-            <div className="text-[10px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
-              Oprema ({featureLabels.length})
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {featureLabels.map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
-            </div>
-          </div>
-        )}
+        {/* ⚠️ Karlo 03.08.: "iz oglasa ovaj dio treba izbaciti jer sva ta navedena
+            oprema je već prikazana gore."
+            Ovdje je stajao popis SIROVIH ključeva (`bi-ksenon`, `alu-felge`,
+            `virtual-cockpit`…) iz `collectFeatureLabels`. To su iste vrijednosti
+            koje `attrRows` iznad već prikazuje uredno, s oznakama iz sheme
+            ("Sigurnost: Bi-ksenonska svjetla"). Dupliciranje + neuredan izgled.
+            `collectFeatureLabels` OSTAJE — koristi se pri slanju (`features`). */}
       </div>
     </div>
   );
