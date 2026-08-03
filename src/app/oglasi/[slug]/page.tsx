@@ -77,8 +77,26 @@ export default async function ListingDetailPage({
   if (!listing) notFound();
 
   const related = await db().getRelatedListings(listing, 4);
-  // Specifikacije iz sheme — samo popunjena polja relevantna za ovu kategoriju.
-  const specGroups = specGroupsFor(listing);
+  /**
+   * ⚠️⚠️ Karlo 03.08.: "makni ono što se duplo navodi."
+   *
+   * Sekcija "Osnovni podaci" ispod već prikazuje sve tipizirane stupce, pa je
+   * isti podatak stajao DVAPUT:
+   *   "Osnovni podaci: Kilometraža 90.000 km"  +  "Osnovno: Kilometri 90.000 km"
+   *   "Osnovni podaci: Gorivo Benzin"          +  "Motor: Gorivo Benzin"
+   *   (isto Mjenjač, Snaga, Karoserija, Boja, Vrata, Sjedala, Obujam)
+   *
+   * Filtriramo SAMO OVDJE, na prikazu gotovog oglasa. `specGroupsFor()` ostaje
+   * netaknut jer ga koriste i druga mjesta (kartica, usporedba, moji oglasi) —
+   * Dino 03.08.: "samo vizualno, da ne bi sjebao i gornji ili nešto za nazad".
+   */
+  const OSNOVNI_PODACI = new Set([
+    "Kilometri", "Kilometraža", "Gorivo", "Mjenjač", "Snaga", "Obujam motora", "Obujam",
+    "Oblik karoserije", "Karoserija", "Boja vozila", "Boja", "Pogon", "Vrata", "Sjedala",
+  ]);
+  const specGroups = specGroupsFor(listing)
+    .map((g) => ({ ...g, items: g.items.filter((it) => !OSNOVNI_PODACI.has(it.label)) }))
+    .filter((g) => g.items.length > 0);
 
   /**
    * ⚠️ Prije se oprema filtrirala kroz ručni `FEATURE_CATEGORIES` (57 stavki) →
