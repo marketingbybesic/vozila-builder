@@ -232,10 +232,23 @@ export default async function ListingDetailPage({
             {dokumentiGroups.map((g) => (
               <section key={g.name}>
                 <h2 className="font-display text-2xl mb-4">{g.name}</h2>
-                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
-                  {g.items.map((it) => (
-                    <SpecItem key={it.label} label={it.label} value={it.value} />
-                  ))}
+                {/* ⚠️ VIN je 17 znakova bez razmaka — u stupcu od ~147 px (mobilni)
+                    dodiruje susjedni stupac i duži broj bi ga probio. Dobiva
+                    VLASTITI puni red + `break-all`; datumi idu ispod, na mobilnom
+                    jedan ispod drugog, od `sm` jedan pored drugog. */}
+                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
+                  {g.items.map((it) => {
+                    const isVin = it.label.toLowerCase().includes("šasije") || it.label.toLowerCase().includes("vin");
+                    return (
+                      <SpecItem
+                        key={it.label}
+                        label={it.label}
+                        value={it.value}
+                        className={isVin ? "sm:col-span-3" : undefined}
+                        valueClassName={isVin ? "break-all" : undefined}
+                      />
+                    );
+                  })}
                 </dl>
               </section>
             ))}
@@ -456,18 +469,26 @@ function SpecItem({
   icon,
   label,
   value,
+  className,
+  valueClassName,
 }: {
   icon?: React.ReactNode;
   label: string;
   value: string;
+  /** Dodatne klase na omotač (npr. `sm:col-span-3` za polje preko punog reda). */
+  className?: string;
+  /** Dodatne klase na vrijednost (npr. `break-all` za VIN bez razmaka). */
+  valueClassName?: string;
 }) {
   return (
-    <div>
+    <div className={className}>
       <dt className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] flex items-center gap-1.5">
         {icon}
         {label}
       </dt>
-      <dd className="mt-1 font-medium text-[var(--color-ink)]">{value}</dd>
+      <dd className={"mt-1 font-medium text-[var(--color-ink)]" + (valueClassName ? ` ${valueClassName}` : "")}>
+        {value}
+      </dd>
     </div>
   );
 }
