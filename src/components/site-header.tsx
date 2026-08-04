@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
+import { Heart, MessageSquare, User, Plus, Menu, X, ChevronDown } from "lucide-react";
 import { HeaderSearch } from "@/components/header-search";
 import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
@@ -56,12 +56,11 @@ export function SiteHeader() {
             aria-label="Napredna pretraga"
             title="Napredna pretraga"
           >
-            {/* Dino 31.07: bila ikona klizača (filteri) — nema smisla jer link
-                vodi na PRETRAGU, ne na postavke.
-                ⚠️ Samo povećalo bi se ponavljalo s onim u tražilici lijevo (dvije
-                identične ikone u istom zaglavlju). Zato povećalo + riječ
-                "Napredno" — odmah se zna da je to detaljna pretraga. */}
-            <Search className="size-4" />
+            {/* ⚠️ Dino 04.08.2026: povećalo MAKNUTO — ponavljalo se s onim u
+                tražilici lijevo (dvije iste ikone u istom zaglavlju).
+                Ostaje sama riječ "Napredno"; link i `aria-label` nepromijenjeni.
+                Povijest: 31.07. je ovdje bila ikona klizača (filteri), pa je
+                zamijenjena povećalom jer link vodi na pretragu, ne na postavke. */}
             <span className="text-xs font-medium">Napredno</span>
           </Link>
           <Link
