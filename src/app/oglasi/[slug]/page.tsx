@@ -17,7 +17,7 @@ import {
   timeAgo,
   formatDate,
 } from "@/lib/utils";
-import { listingHasField, specGroupsFor, isVehicle, cardSummary, featureGroupsFor } from "@/lib/listing-fields";
+import { listingHasField, specGroupsFor, isVehicle, cardSummary } from "@/lib/listing-fields";
 import {
   Phone,
   MessageSquare,
@@ -79,17 +79,6 @@ export default async function ListingDetailPage({
   const related = await db().getRelatedListings(listing, 4);
   // Specifikacije iz sheme — samo popunjena polja relevantna za ovu kategoriju.
   const specGroups = specGroupsFor(listing);
-
-  /**
-   * ⚠️ Prije se oprema filtrirala kroz ručni `FEATURE_CATEGORIES` (57 stavki) →
-   * 153 od 166 opcija koje objava nudi NIKAD se nisu prikazale kupcu.
-   * Sad ide iz sheme, uz "Ostala oprema" za sve što shema ne prepoznaje,
-   * da nijedna označena stavka ne nestane.
-   */
-  const featuresByCategory = featureGroupsFor(listing).map((g) => ({
-    name: g.name,
-    items: g.items.map((i) => i.label),
-  }));
 
   return (
     <>
@@ -218,25 +207,11 @@ export default async function ListingDetailPage({
               </div>
             </section>
 
-            {featuresByCategory.length > 0 && (
-              <section>
-                <h2 className="font-display text-2xl mb-4">Oprema</h2>
-                <div className="space-y-5">
-                  {featuresByCategory.map((cat) => (
-                    <div key={cat.name}>
-                      <h3 className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">
-                        {cat.name}
-                      </h3>
-                      <div className="flex flex-wrap gap-1.5">
-                        {cat.items.map((f) => (
-                          <Badge key={f} variant="neutral">{f}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* ⚠️ Dino 04.08.2026: cijela sekcija "Oprema" MAKNUTA s pojedinačnog
+                oglasa — ~80 pilula u 7 rubrika, neuredno i nepregledno.
+                Ista oprema i dalje postoji u podacima; `featureGroupsFor()` je
+                NETAKNUT jer ga koriste kartica / usporedba / moji oglasi / admin.
+                Pravilo: na OVOM prikazu ne koristimo pill/badge stavke. */}
 
             <section className="bg-[var(--color-ink)] text-white rounded-[var(--radius-lg)] p-6">
               <div className="flex items-start gap-4">

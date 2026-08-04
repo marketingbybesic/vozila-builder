@@ -15,6 +15,25 @@
 - Kad bug prijavi, traži: **koji korak, koje polje, mobitel ili računalo**.
   Ne pokreći puni E2E prije toga — skupo je i lako promaši.
 
+## 0.1 ⚠️⚠️ MINIMALNI ZAHVAT — diraj SAMO ono što je traženo
+Dinova uputa (04.08.2026): *"ne diraj druge stvari iz oglasa ili bilo šta osim
+onog što ti kažem, da ne pregaziš nepotrebno stvari jer nastaju bugovi tako"*.
+
+- **Točno traženo, ništa više.** Uočim drugi problem → **prijavim ga, ne popravljam**.
+  Odluka je Dinova.
+- **Nema usputnog** refaktoriranja, preimenovanja, sortiranja, čišćenja mrtvog koda,
+  formatiranja ni "dok sam već tu" izmjena.
+- **Jedna datoteka ako je ikako moguće.** Vizualna promjena na jednom mjestu →
+  filtriraj na **PRIKAZU** (`src/app/oglasi/[slug]/page.tsx`), nikad u dijeljenoj
+  funkciji (`lib/listing-fields.ts`, `category-filters.ts`) koju troše kartica,
+  usporedba, moji oglasi i admin.
+- **Prije commita `git diff --stat`** — dirnuto više nego što zadatak traži → vrati višak.
+- Vrijedi i za BAZU: ne migriram i ne "sređujem" redove koji nisu dio zadatka.
+
+Zašto: runda 18 — build zelen + tsc čist, a polje **Tip boje NESTALO** zbog
+nepotrebnog prelaska na shemu. `c0bd50a` — prva verzija dirala zajedničku
+`specGroupsFor()`, vraćena `git checkout`-om.
+
 ## 1. PDCA + DEVIL'S ADVOCATE — obavezno, bez iznimke
 PLAN (5–10 redaka) → **DEVIL'S ADVOCATE (3–5 načina da plan padne)** → DO →
 **VIZUALNA PROVJERA** → **POŠTEN IZVJEŠTAJ O KVAROVIMA** → LEARN (memorija).
@@ -37,6 +56,19 @@ Nijedan korak se ne preskače, ni kad izgleda očito.
   (oni pišu 30 MB/s i ruše Mac — vidi memoriju `feedback_mac_crash_orphan_node_daemons`).
 - **Ne** pokretati build + Playwright + swarm istovremeno. Jedan po jedan.
 - Playwright: **jedan slučaj po procesu**. Petlja s više `goto` pouzdano zaglavi.
+
+### 3.1 ⚠️⚠️ PLAYWRIGHT = VIDLJIV PROZOR (Dino gleda uživo)
+Dinova uputa 04.08.2026: *"playwright uvijek tako otvaraš za sve što god radiš da
+ja mogu vidjeti prozor… eventualno ako je mobilni prikaz, ali bi htio da to imamo
+kroz developer tools"*.
+
+- **Uvijek headed, vidljiv prozor.** Dino testira sam u istom prozoru dok ja mjerim.
+- **NIKAD `browser_resize`** za desktop. Fiksira viewport → sadržaj zauzme lijevih
+  ~1500 px, desno i dolje **prazna bijela traka**, zaglavlje odrezano. Izgleda kao
+  bug stranice, a moj je resize. Trebaš širinu? **Pročitaj** `window.innerWidth`.
+- **Mobilni prikaz = DevTools device emulacija** (device toolbar), ne resize —
+  ostaje isti prozor i Dino sam prebacuje uređaje.
+- Screenshot **bez `filename`** — s imenom ga MCP tiho ne zapiše.
 
 ## 4. DIZAJN — fluidan UX, nikad "claude-generirano"
 - Estetika: **auto-moto**, ne generički AI izgled. Tipografija ZAKLJUČANA (uppercase Bebas).
