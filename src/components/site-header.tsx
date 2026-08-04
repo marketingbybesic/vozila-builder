@@ -25,9 +25,10 @@ export function SiteHeader() {
       <Container className="flex h-16 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="Vozila.hr početna">
           {/* ⚠️ Slogan (Dino 04.08.2026) stoji ISPOD logotipa → `flex-col`.
-              Vidljiv od `sm` nadalje: zaglavlje je visoko 64 px i na mobilnom
-              dijeli redak s tražilicom i hamburgerom, pa bi ondje stisnuo logo.
-              `leading-none` drži oba retka unutar postojeće visine. */}
+              Vidljiv i na mobilnom (Dino, 2. runda). Zaglavlje je visoko 64 px,
+              pa `leading-none` na oba retka drži cjelinu unutar te visine.
+              Na mobilnom je razmak između slova manji (`tracking-[0.14em]`) da
+              slogan ne bude širi od logotipa iznad njega. */}
           <div className="relative flex flex-col">
             <div className="leading-none">
               <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-ink)]">
@@ -37,7 +38,7 @@ export function SiteHeader() {
                 .hr
               </span>
             </div>
-            <span className="hidden sm:block mt-0.5 text-[9px] uppercase tracking-[0.2em] text-[var(--color-muted)] leading-none">
+            <span className="mt-0.5 text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[var(--color-muted)] leading-none whitespace-nowrap">
               Kupi, prodaj i vozi
             </span>
           </div>
