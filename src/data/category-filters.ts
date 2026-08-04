@@ -365,11 +365,12 @@ const AUTO_FIELDS: FilterField[] = [
   // sufiks, korisnik upisuje samo broj.
   { key: "co2", label: "Emisija CO2", type: "range", unit: "g/km", min: 0, max: 500, step: 5,
     storage: "attr", group: "Motor" },
-  // ⚠️ `step: 0.1` (Dino 04.08.2026) — potrošnja je decimalna ("5,5 l/100km").
-  // Objava iz stepa izvodi broj decimala; `storage: "attr"` = jsonb, nema
-  // cjelobrojnog stupca u bazi koji bi trebalo migrirati.
+  // ⚠️ `step: 0.01` (Dino 04.08.2026) — potrošnja je decimalna, DO DVIJE
+  // decimale ("5,5" i "12,75" moraju proći). Objava iz stepa izvodi broj
+  // decimala; `storage: "attr"` = jsonb, nema cjelobrojnog stupca u bazi koji
+  // bi trebalo migrirati.
   { key: "fuelConsumption", label: "Kombinirana potrošnja", type: "range", unit: "l/100km",
-    min: 0, max: 30, step: 0.1, storage: "attr", group: "Motor" },
+    min: 0, max: 30, step: 0.01, storage: "attr", group: "Motor" },
 
   // Karlo 31.07: Garancija POKRAJ kilometraže — kvačica "ima garanciju".
   // Bez `group` → pada u "Osnovno", isto gdje je i COMMON_KM.
