@@ -1,22 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 export function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
   const [active, setActive] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const many = images.length > 1;
 
-  const prev = () => setActive((a) => (a === 0 ? images.length - 1 : a - 1));
-  const next = () => setActive((a) => (a === images.length - 1 ? 0 : a + 1));
+  const prev = useCallback(
+    () => setActive((a) => (a === 0 ? images.length - 1 : a - 1)),
+    [images.length],
+  );
+  const next = useCallback(
+    () => setActive((a) => (a === images.length - 1 ? 0 : a + 1)),
+    [images.length],
+  );
+
+  /**
+   * Tipkovnica u lightboxu: ←/→ listaju, Esc zatvara.
+   * ⚠️ Prije NIJE postojala — jedini način navigacije bili su gumbi mišem.
+   */
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(false);
+      else if (e.key === "ArrowLeft" && many) prev();
+      else if (e.key === "ArrowRight" && many) next();
+    };
+    window.addEventListener("keydown", onKey);
+    // Pozadina se ne smije skrolati dok je lightbox otvoren.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox, many, prev, next]);
+
+  /**
+   * Swipe na dodir — native touch eventi, bez nove biblioteke.
+   * Prag 50 px vodoravno + zahtjev da je gesta pretežno vodoravna, inače bi
+   * okomiti scroll ili običan tap slučajno prebacili sliku.
+   */
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.changedTouches[0];
+    touch.current = { x: t.clientX, y: t.clientY };
+    swiped.current = false;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!touch.current || !many) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch.current.x;
+    const dy = t.clientY - touch.current.y;
+    touch.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) <= Math.abs(dy)) return;
+    swiped.current = true;
+    if (dx > 0) prev();
+    else next();
+  };
+  /**
+   * ⚠️ Glavna slika je `<button>` koji otvara lightbox — swipe po njoj bi ga
+   * inače otvorio na kraju geste. Otvaramo samo ako swipe NIJE prepoznat.
+   */
+  const openLightbox = () => {
+    if (swiped.current) { swiped.current = false; return; }
+    setLightbox(true);
+  };
 
   return (
     <>
       <div className="space-y-3">
         <button
           type="button"
-          onClick={() => setLightbox(true)}
+          onClick={openLightbox}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
           className="relative block w-full aspect-[16/10] bg-[var(--color-line)] rounded-[var(--radius-lg)] overflow-hidden group"
           aria-label="Otvori sliku u punoj veličini"
         >
@@ -67,30 +129,47 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
           >
             <X className="size-5" />
           </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); prev(); }}
-            aria-label="Prethodna"
-            className="absolute left-4 top-1/2 -translate-y-1/2 size-11 rounded-full bg-white/10 text-white hover:bg-white/20 grid place-items-center"
+          {/* ⚠️ Klik-zone su UNUTAR slike (Dino 04.08.), ne na rubu ekrana:
+              lijeva polovica = prethodna, desna = sljedeća. Strelica se pojavi
+              na hover (fade-in). `stopPropagation` je nužan — bez njega klik
+              propada na pozadinu koja zatvara lightbox. */}
+          <div
+            className="relative w-full h-full max-w-6xl max-h-[85vh] mx-4"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
           >
-            <ChevronLeft className="size-5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); next(); }}
-            aria-label="Sljedeća"
-            className="absolute right-4 top-1/2 -translate-y-1/2 size-11 rounded-full bg-white/10 text-white hover:bg-white/20 grid place-items-center"
-          >
-            <ChevronRight className="size-5" />
-          </button>
-          <div className="relative w-full h-full max-w-6xl max-h-[85vh] mx-4">
             <Image
               src={images[active]}
               alt={alt}
               fill
               sizes="100vw"
-              className="object-contain"
+              className="object-contain select-none"
+              draggable={false}
             />
+            {many && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); prev(); }}
+                  aria-label="Prethodna slika"
+                  className="group/nav absolute inset-y-0 left-0 w-1/3 flex items-center justify-start pl-3 sm:pl-5 focus:outline-none"
+                >
+                  <span className="size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center opacity-0 translate-x-1 transition-all duration-200 group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0">
+                    <ChevronLeft className="size-6" />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); next(); }}
+                  aria-label="Sljedeća slika"
+                  className="group/nav absolute inset-y-0 right-0 w-1/3 flex items-center justify-end pr-3 sm:pr-5 focus:outline-none"
+                >
+                  <span className="size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center opacity-0 -translate-x-1 transition-all duration-200 group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0">
+                    <ChevronRight className="size-6" />
+                  </span>
+                </button>
+              </>
+            )}
           </div>
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
             {active + 1} / {images.length}
