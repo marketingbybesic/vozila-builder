@@ -84,7 +84,14 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                     : cn(
                         // `h-full` uz `min-h` — kartica popunjava visinu retka
                         // koju diktira najviši naziv (npr. "SLOBODNO VRIJEME").
-                        "flex flex-col items-center justify-center gap-1.5 w-full h-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border",
+                        // ⚠️ Dino 04.08.: MEHANIZACIJA je "visjela" niže od
+                        // susjeda. `justify-center` centrira blok (ikona+naziv)
+                        // po visini kartice — naziv u JEDNOM retku daje niži
+                        // blok, pa se ikona spusti; naziv u DVA retka je gura
+                        // gore. Zato `justify-start`: ikona kreće s istog mjesta
+                        // u svim karticama, a naziv ispod nje dobiva fiksni
+                        // prostor za dva retka (vidi `min-h-[2.2em]` na spanu).
+                        "flex flex-col items-center justify-start gap-1.5 w-full h-full min-h-[78px] px-2 py-3 rounded-[var(--radius-md)] border",
                         isOpen
                           ? "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-white"
                           : "border-white/15 bg-white/[0.06] text-white hover:bg-white/10 hover:border-white/30"
@@ -100,7 +107,10 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                       // "GOSPODARS…"/"MEHANIZACI…". Tekst se smije prelomiti,
                       // a font se malo smanji dok ne bude mjesta za pun naziv.
                       ? "text-[11px] xl:text-xs text-center"
-                      : "text-[11px] font-medium text-center"
+                      // `min-h-[2.2em]` = prostor za DVA retka i kad naziv ima
+                      // samo jedan → naziv i ikona stoje na istoj visini u
+                      // svih 6 kartica (MEHANIZACIJA vs SLOBODNO VRIJEME).
+                      : "text-[11px] font-medium text-center min-h-[2.2em] flex items-center justify-center"
                   )}
                 >
                   {cat.name}
