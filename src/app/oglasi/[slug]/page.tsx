@@ -122,6 +122,15 @@ export default async function ListingDetailPage({
       otherGroups.push(g);
     }
   }
+  /**
+   * ⚠️ Dino 04.08.: "Tip boje" (metalik/mat) stoji ODMAH IZA "Boje".
+   * `extraBasics` se inače renderiraju na kraju rubrike, iza hardkodiranih
+   * polja, pa je Tip boje završavao daleko od Boje kojoj pripada.
+   * Vadi se van i renderira uz `Boja`; ostatak `extraBasics` ostaje na kraju.
+   */
+  const colorTypeItem = extraBasics.find((e) => e.label === "Tip boje");
+  const extraBasicsRest = extraBasics.filter((e) => e !== colorTypeItem);
+
   const povijestGroups = otherGroups.filter((g) => g.name === "Povijest");
   const dokumentiGroups = otherGroups.filter((g) => g.name === "Dokumenti");
   const opcijeGroups = otherGroups.filter(
@@ -207,6 +216,10 @@ export default async function ListingDetailPage({
                 {listingHasField(listing, "color") && listing.color && (
                   <SpecItem label="Boja" value={listing.color} />
                 )}
+                {/* Tip boje (metalik/mat) pripada uz Boju — Dino 04.08. */}
+                {colorTypeItem && (
+                  <SpecItem label={colorTypeItem.label} value={colorTypeItem.value} />
+                )}
                 {listingHasField(listing, "doors") && listing.doors > 0 && (
                   <SpecItem label="Vrata" value={String(listing.doors)} />
                 )}
@@ -221,7 +234,7 @@ export default async function ListingDetailPage({
                 )}
                 {/* Spojene rubrike Karoserija / Osnovno / Motor / Vrata i sjedala /
                     Boja / Stanje vozila — samo ono što gore još nije prikazano. */}
-                {extraBasics.map((it) => (
+                {extraBasicsRest.map((it) => (
                   <SpecItem key={it.label} label={it.label} value={it.value} />
                 ))}
               </dl>
