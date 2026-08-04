@@ -4,8 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, User, Plus, Menu, X, ChevronDown } from "lucide-react";
-import { HeaderSearch } from "@/components/header-search";
+import { Heart, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
 
@@ -45,9 +44,12 @@ export function SiteHeader() {
         </Link>
 
 
-        <div className="hidden md:block flex-1 max-w-md mx-auto">
-          <HeaderSearch />
-        </div>
+        {/* ⚠️ Karlo / Dino 04.08.2026: tražilica MAKNUTA iz zaglavlja.
+            Naslovnica ionako ima veliku "Brzu pretragu" odmah ispod, a na
+            stranici rezultata postoji bočni filter — traka u zaglavlju je
+            bila treći ulaz u istu radnju.
+            Komponenta `header-search.tsx` OSTAJE u projektu (nije obrisana)
+            za slučaj povratka. */}
 
         <div className="ml-auto flex items-center gap-2">
           <Link
@@ -56,11 +58,12 @@ export function SiteHeader() {
             aria-label="Napredna pretraga"
             title="Napredna pretraga"
           >
-            {/* ⚠️ Dino 04.08.2026: povećalo MAKNUTO — ponavljalo se s onim u
-                tražilici lijevo (dvije iste ikone u istom zaglavlju).
-                Ostaje sama riječ "Napredno"; link i `aria-label` nepromijenjeni.
-                Povijest: 31.07. je ovdje bila ikona klizača (filteri), pa je
-                zamijenjena povećalom jer link vodi na pretragu, ne na postavke. */}
+            {/* Povećalo VRAĆENO 04.08.2026: maknuto je bilo zato što se
+                ponavljalo s ikonom u traci tražilice — a ta je traka sad izbačena
+                iz zaglavlja, pa dupliranja više nema.
+                (31.07. je ovdje bila ikona klizača; zamijenjena je povećalom jer
+                link vodi na PRETRAGU, ne na postavke.) */}
+            <Search className="size-4" />
             <span className="text-xs font-medium">Napredno</span>
           </Link>
           <Link
