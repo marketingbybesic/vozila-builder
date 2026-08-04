@@ -52,8 +52,24 @@ function attrLabel(field: FilterField, raw: unknown): string | null {
   // parsiranja naslova (širina gume "225" završila je kao OEM). Ne prikazuj.
   if (field.key === "oem" && /^\d{1,3}$/.test(String(raw))) return null;
   if (Array.isArray(raw)) {
-    if (raw.length === 0) return null;
-    const names = raw.map((v) => field.options?.find((o) => o.value === v)?.label ?? String(v));
+    /**
+     * ⚠️ Vrijednosti koje shema više NE nudi ne smiju procuriti kao sirovi ključ.
+     * "prvi-vlasnik" je 04.08.2026. maknut iz `ownership` (zamijenio ga
+     * `numOwners` = 1), ali postojeći oglasi ga i dalje imaju u bazi — bez ovog
+     * filtra na oglasu je pisalo doslovno "prvi-vlasnik".
+     * Vrijednosti bez oznake u shemi preskačemo; poznate prikazujemo normalno.
+     */
+    const names = raw
+      .map((v) => {
+        const hit = field.options?.find((o) => o.value === v)?.label;
+        if (hit) return hit;
+        // Polje BEZ popisa opcija (slobodan unos) — vrijednost je jedini podatak
+        // koji imamo, pa je zadržavamo. Polje S popisom: nepoznata vrijednost je
+        // zaostatak ukinute opcije → preskoči (inače sirovi ključ na oglasu).
+        return field.options?.length ? null : String(v);
+      })
+      .filter((l): l is string => l !== null);
+    if (names.length === 0) return null;
     return names.join(", ");
   }
   if (raw === true) return "Da";
