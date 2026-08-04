@@ -93,8 +93,10 @@ export default async function ListingDetailPage({
    * `specGroupsFor()` je NETAKNUT — koriste ga kartica, usporedba, moji oglasi
    * i admin. Spajanje je isključivo na OVOM prikazu.
    */
+  // ⚠️ Dino 04.08. (2): "Stanje vozila" VIŠE NIJE u ovom skupu — traži se kao
+  // zasebna sekcija ispod "Dokumenata".
   const MERGE_INTO_BASIC = new Set([
-    "Karoserija", "Osnovno", "Motor", "Vrata i sjedala", "Boja", "Stanje vozila",
+    "Karoserija", "Osnovno", "Motor", "Vrata i sjedala", "Boja",
   ]);
   // Vrijednosti koje hardkodirana sekcija "Osnovni podaci" već prikazuje.
   const shownValues = new Set(
@@ -133,8 +135,9 @@ export default async function ListingDetailPage({
 
   const povijestGroups = otherGroups.filter((g) => g.name === "Povijest");
   const dokumentiGroups = otherGroups.filter((g) => g.name === "Dokumenti");
+  const stanjeGroups = otherGroups.filter((g) => g.name === "Stanje vozila");
   const opcijeGroups = otherGroups.filter(
-    (g) => g.name !== "Povijest" && g.name !== "Dokumenti",
+    (g) => g.name !== "Povijest" && g.name !== "Dokumenti" && g.name !== "Stanje vozila",
   );
 
   return (
@@ -262,6 +265,18 @@ export default async function ListingDetailPage({
                       />
                     );
                   })}
+                </dl>
+              </section>
+            ))}
+
+            {/* Stanje vozila — zasebna sekcija ISPOD Dokumenata (Dino 04.08.). */}
+            {stanjeGroups.map((g) => (
+              <section key={g.name}>
+                <h2 className="font-display text-2xl mb-4">{g.name}</h2>
+                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
+                  {g.items.map((it) => (
+                    <SpecItem key={it.label} label={it.label} value={it.value} />
+                  ))}
                 </dl>
               </section>
             ))}
