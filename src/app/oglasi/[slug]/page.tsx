@@ -411,7 +411,23 @@ export default async function ListingDetailPage({
  * Vrijednost koja NIJE popis (npr. "6 kom") prikazuje se kao običan redak.
  */
 function OptionBlock({ label, value }: { label: string; value: string }) {
-  const items = value.split(",").map((s) => s.trim()).filter(Boolean);
+  /**
+   * ⚠️ Dijeli SAMO zareze izvan zagrada — naziv opcije često sadrži vlastiti
+   * zarez: "USB priključak (iPod, HD, …)" se naivnim `split(",")` razbije u tri
+   * besmislena retka ("USB priključak (iPod" / "HD" / "…)").
+   */
+  const items: string[] = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of value) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "," && depth === 0) {
+      if (buf.trim()) items.push(buf.trim());
+      buf = "";
+    } else buf += ch;
+  }
+  if (buf.trim()) items.push(buf.trim());
   return (
     <div>
       <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
