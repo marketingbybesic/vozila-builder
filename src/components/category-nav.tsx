@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Car, Bike, Truck, Caravan, ChevronDown } from "lucide-react";
 import { Backhoe, Wheel } from "@/components/icons/tabler";
@@ -51,8 +51,31 @@ export function CategoryNav({
 
   const isBar = variant === "bar";
 
+  /**
+   * ⚠️ Karlo 04.08.2026: "par funkcionalnosti kad klikneš treba popravit".
+   * Izmjereno: panel se NIJE zatvarao ni klikom izvan njega ni tipkom Escape —
+   * ostajao je otvoren preko sadržaja dok se ne klikne isti gumb kategorije.
+   * Vrijedi za traku u zaglavlju; mreža na naslovnici nije plutajuća pa je
+   * ovo ne dira (ali ne smeta joj).
+   */
+  const navRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!openSlug) return;
+    const zatvori = () => { setOpenSlug(null); setOpenSubSlug(null); };
+    const onPointerDown = (e: PointerEvent) => {
+      if (!navRef.current?.contains(e.target as Node)) zatvori();
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") zatvori(); };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openSlug]);
+
   return (
-    <nav aria-label="Kategorije vozila">
+    <nav aria-label="Kategorije vozila" ref={navRef}>
       <ul
         className={cn(
           isBar
@@ -173,6 +196,19 @@ export function CategoryNav({
               ? "border border-white/15 bg-[var(--color-ink)] shadow-[0_20px_48px_rgb(2_8_20/45%)] relative z-50"
               : "border border-white/15 bg-white/[0.06]",
           )}
+          /**
+           * ⚠️ Klik na PODKATEGORIJU nije zatvarao panel — korisnik ode na
+           * rezultate, a izbornik ostane raširen preko njih. Hvata se ovdje, na
+           * roditelju, umjesto da se `onClick` lijepi na svaki od ~120 linkova.
+           * Gumbi 2. nivoa (`<button>`) namjerno NISU obuhvaćeni — oni granaju
+           * unutar panela i moraju ga ostaviti otvorenim.
+           */
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("a")) {
+              setOpenSlug(null);
+              setOpenSubSlug(null);
+            }
+          }}
         >
           {openSub && hasChildren(openSub) ? (
             // 2. nivo — children odabrane podkategorije (dijelovi)
