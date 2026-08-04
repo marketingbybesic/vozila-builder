@@ -70,7 +70,9 @@ export function HeroSearch() {
           className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-accent-dark)] hover:underline"
         >
           <SlidersHorizontal className="size-3.5" />
-          Napredno
+          {/* Karlo 04.08.: "Napredno auto" — ovaj link vodi na `?category=auto`,
+              dok gornji (zaglavlje) otvara naprednu pretragu za SVE kategorije. */}
+          Napredno auto
         </Link>
       </div>
 

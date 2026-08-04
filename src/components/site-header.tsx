@@ -64,7 +64,9 @@ export function SiteHeader() {
                 (31.07. je ovdje bila ikona klizača; zamijenjena je povećalom jer
                 link vodi na PRETRAGU, ne na postavke.) */}
             <Search className="size-4" />
-            <span className="text-xs font-medium">Napredno</span>
+            {/* Karlo 04.08.: gore "Napredna pretraga", dolje (u Brzoj pretrazi)
+                samo "Napredno auto" — gornji ulaz vodi na SVE kategorije. */}
+            <span className="text-xs font-medium whitespace-nowrap">Napredna pretraga</span>
           </Link>
           <Link
             href="/moj-racun/spremljeno"
