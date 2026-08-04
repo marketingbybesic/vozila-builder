@@ -451,9 +451,12 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "abc", label: "Aktivni ovjes (ABC – Active Body Control)" },
       { value: "zracni-ovjes", label: "Zračni ovjes" },
     ] },
-  // Uz ALU felge ide slobodan unos dimenzija (npr. 18" 5x112 ET45).
-  { key: "wheelSize", label: "Dimenzije ALU felgi", type: "text", storage: "attr",
-    group: "Dodatne opcije", placeholder: 'npr. 18" 5x112 ET45' },
+  // Slobodan unos dimenzija kotača — i guma i felga (Dino 04.08.2026).
+  // Prije "Dimenzije ALU felgi": naziv je isključivao gumu, a prodavači tu
+  // ionako upisuju oboje ("225/45 R17, 5x112 ET45").
+  // ⚠️ `key` ostaje `wheelSize` — postojeći oglasi u bazi zadržavaju vrijednost.
+  { key: "wheelSize", label: "Dimenzije gume i felge", type: "text", storage: "attr",
+    group: "Dodatne opcije", placeholder: 'npr. 225/45 R17, 5x112 ET45' },
 
   { key: "cabin", label: "Unutrašnjost", type: "multi", storage: "attr", group: "Dodatne opcije",
     options: [
