@@ -80,6 +80,54 @@ export default async function ListingDetailPage({
   // Specifikacije iz sheme — samo popunjena polja relevantna za ovu kategoriju.
   const specGroups = specGroupsFor(listing);
 
+  /**
+   * ⚠️ Dino 04.08.2026: rubrike Karoserija / Osnovno / Motor / Vrata i sjedala /
+   * Boja / Stanje vozila spajaju se u JEDNU rubriku "Osnovni podaci", bez
+   * ponavljanja. "Dodatne opcije" ostaju zasebno (svaka stavka u svoj red),
+   * "Povijest" i "Dokumenti" također.
+   *
+   * ⚠️ Duplikat se prepoznaje po VRIJEDNOSTI, ne po oznaci — hardkodirana
+   * sekcija kaže "Karoserija: Hatchback", a shema "Oblik karoserije: Hatchback".
+   * Isto Kilometraža/Kilometri, Obujam/Obujam motora, Boja/Boja vozila.
+   *
+   * `specGroupsFor()` je NETAKNUT — koriste ga kartica, usporedba, moji oglasi
+   * i admin. Spajanje je isključivo na OVOM prikazu.
+   */
+  const MERGE_INTO_BASIC = new Set([
+    "Karoserija", "Osnovno", "Motor", "Vrata i sjedala", "Boja", "Stanje vozila",
+  ]);
+  // Vrijednosti koje hardkodirana sekcija "Osnovni podaci" već prikazuje.
+  const shownValues = new Set(
+    [
+      listing.year > 0 ? `${listing.year}.` : "",
+      listing.km > 0 ? `${listing.km.toLocaleString("hr-HR")} km` : "",
+      listing.fuel, listing.transmission, listing.bodyType, listing.drive, listing.color,
+      listing.powerKw > 0 ? formatPower(listing.powerKw) : "",
+      listing.powerKw > 0 ? `${listing.powerKw} kW (${Math.round(listing.powerKw * 1.36)} KS)` : "",
+      listing.engineCc > 0 ? `${listing.engineCc} cm³` : "",
+      listing.doors > 0 ? String(listing.doors) : "",
+      listing.seats > 0 ? String(listing.seats) : "",
+    ].filter(Boolean),
+  );
+  const extraBasics: Array<{ label: string; value: string }> = [];
+  const otherGroups: typeof specGroups = [];
+  for (const g of specGroups) {
+    if (MERGE_INTO_BASIC.has(g.name)) {
+      for (const it of g.items) {
+        if (shownValues.has(it.value)) continue; // već gore
+        if (extraBasics.some((e) => e.value === it.value)) continue; // dvije grupe, ista vrijednost
+        extraBasics.push(it);
+      }
+    } else {
+      otherGroups.push(g);
+    }
+  }
+  const povijestGroups = otherGroups.filter((g) => g.name === "Povijest");
+  const dokumentiGroups = otherGroups.filter((g) => g.name === "Dokumenti");
+  const opcijeGroups = otherGroups.filter(
+    (g) => g.name !== "Povijest" && g.name !== "Dokumenti",
+  );
+
   return (
     <>
       <Container className="py-6 md:py-10">
@@ -171,12 +219,17 @@ export default async function ListingDetailPage({
                 {isVehicle(listing) && listing.registrationUntil && (
                   <SpecItem label="Registriran do" value={listing.registrationUntil} />
                 )}
+                {/* Spojene rubrike Karoserija / Osnovno / Motor / Vrata i sjedala /
+                    Boja / Stanje vozila — samo ono što gore još nije prikazano. */}
+                {extraBasics.map((it) => (
+                  <SpecItem key={it.label} label={it.label} value={it.value} />
+                ))}
               </dl>
             </section>
 
-            {/* Specifikacije iz sheme (atributi) — gume dobiju širinu/profil/sezonu,
-                viličari nosivost i visinu dizanja, kamperi broj ležišta. */}
-            {specGroups.map((g) => (
+            {/* Redoslijed (Dino 04.08.): OSNOVNI PODACI → DOKUMENTI → POVIJEST →
+                DODATNE OPCIJE → OPIS. */}
+            {dokumentiGroups.map((g) => (
               <section key={g.name}>
                 <h2 className="font-display text-2xl mb-4">{g.name}</h2>
                 <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
@@ -187,16 +240,36 @@ export default async function ListingDetailPage({
               </section>
             ))}
 
-            {/* VIN, servisna knjižica i nesreće nemaju smisla za dio ili gumu. */}
-            {isVehicle(listing) && (listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked) && (
+            {/* Povijest iz sheme + stupci (VIN, servisna, nesreće) u jednoj rubrici. */}
+            {(povijestGroups.length > 0 ||
+              (isVehicle(listing) &&
+                (listing.accidentHistory || listing.serviceHistory || listing.importedFrom || listing.vinMasked))) && (
               <section>
-                <h2 className="font-display text-2xl mb-4">Povijest vozila</h2>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5">
-                  {listing.accidentHistory && <SpecItem label="Nesreće" value={listing.accidentHistory} />}
-                  {listing.serviceHistory && <SpecItem label="Servisna knjižica" value={listing.serviceHistory} />}
-                  {listing.importedFrom && <SpecItem label="Uvezen iz" value={listing.importedFrom} />}
-                  {listing.vinMasked && <SpecItem label="VIN (skraćeno)" value={listing.vinMasked} />}
-                </dl>
+                <h2 className="font-display text-2xl mb-4">Povijest</h2>
+                <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 space-y-5">
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    {listing.accidentHistory && <SpecItem label="Nesreće" value={listing.accidentHistory} />}
+                    {listing.serviceHistory && <SpecItem label="Servisna knjižica" value={listing.serviceHistory} />}
+                    {listing.importedFrom && <SpecItem label="Uvezen iz" value={listing.importedFrom} />}
+                    {listing.vinMasked && <SpecItem label="VIN (skraćeno)" value={listing.vinMasked} />}
+                  </dl>
+                  {povijestGroups.flatMap((g) => g.items).map((it) => (
+                    <OptionBlock key={it.label} label={it.label} value={it.value} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ⚠️ Dino 04.08.: svaka dodatna opcija u SVOJ red s bullet pointom —
+                prije je bio zarezom odvojen blok teksta, nečitko. */}
+            {opcijeGroups.length > 0 && (
+              <section>
+                <h2 className="font-display text-2xl mb-4">Dodatne opcije</h2>
+                <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 space-y-5">
+                  {opcijeGroups.flatMap((g) => g.items).map((it) => (
+                    <OptionBlock key={it.label} label={it.label} value={it.value} />
+                  ))}
+                </div>
               </section>
             )}
 
@@ -325,6 +398,41 @@ export default async function ListingDetailPage({
         </section>
       )}
     </>
+  );
+}
+
+/**
+ * Rubrika opreme: naslov + svaka stavka u SVOM redu s bullet pointom.
+ *
+ * ⚠️ Dino 04.08.2026: prije je vrijednost bila jedan zarezom odvojen blok teksta
+ * ("ALU felge, Kočioni sustav (ABS), Pomoć pri kočenju…") koji se prelijevao
+ * preko pola ekrana i bio nečitak. Bulleti u stupcima daju oku uporište.
+ *
+ * Vrijednost koja NIJE popis (npr. "6 kom") prikazuje se kao običan redak.
+ */
+function OptionBlock({ label, value }: { label: string; value: string }) {
+  const items = value.split(",").map((s) => s.trim()).filter(Boolean);
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
+        {label}
+      </div>
+      {items.length > 1 ? (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-1.5">
+          {items.map((it) => (
+            <li
+              key={it}
+              className="text-sm text-[var(--color-ink)] leading-snug flex gap-2"
+            >
+              <span aria-hidden className="text-[var(--color-accent)] shrink-0">•</span>
+              <span>{it}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="font-medium text-[var(--color-ink)]">{value}</div>
+      )}
+    </div>
   );
 }
 
