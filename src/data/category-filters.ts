@@ -266,6 +266,30 @@ const COMMON_AGE: FilterField = {
   key: "condition", label: "Stanje", type: "multi", storage: "column", shared: true,
   options: [v("Novo"), v("Rabljeno"), v("Oldtimer")],
 };
+/**
+ * "Broj vlasnika" (Dino 04.08.2026) — jedno polje za SVE kategorije s vlasnikom
+ * (auto / moto / gospodarska / mehanizacija / slobodno vrijeme). Dijelovi ga
+ * nemaju: guma nema "3. vlasnika".
+ *
+ * ⚠️ Zamjenjuje kvačicu "Prvi vlasnik" iz polja `ownership` — prodavač je mogao
+ * označiti "Prvi vlasnik" i istovremeno upisati 2 vlasnika (proturječje vidljivo
+ * na oglasu). Sad tu informaciju nosi SAMO ovo polje: 1 = prvi vlasnik.
+ *
+ * ⚠️ Vrijednost `5plus` je STRING, a ne broj — polje je `storage: "attr"` (jsonb),
+ * pa ne postoji brojčani stupac koji bi puknuo. Prikaz prevodi u
+ * "Više od 4 vlasnika" (`src/lib/listing-fields.ts`).
+ */
+const NUM_OWNERS_FIELD: FilterField = {
+  key: "numOwners", label: "Broj vlasnika", type: "select", storage: "attr",
+  group: "Povijest", shared: true,
+  options: [
+    { value: "1", label: "1" },
+    { value: "2", label: "2" },
+    { value: "3", label: "3" },
+    { value: "4", label: "4" },
+    { value: "5plus", label: "Više od 4" },
+  ],
+};
 
 // ── AUTO — full 39-field taxonomy from avto.net ────────────────────────
 const AUTO_FIELDS: FilterField[] = [
@@ -546,7 +570,6 @@ const AUTO_FIELDS: FilterField[] = [
   // Ownership / history (attr.multi)
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     options: [
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
@@ -572,8 +595,7 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "djelomicna", label: "Djelomična servisna" },
       { value: "nema", label: "Bez servisne" },
     ] },
-  { key: "numOwners", label: "Broj vlasnika", type: "select", storage: "attr", group: "Povijest",
-    options: [1,2,3,4].map((n) => ({ value: String(n), label: n === 4 ? "4+" : `${n}` })) },
+  NUM_OWNERS_FIELD,
 
   // Karlo 31.07: "Motor pali" (padajući, samo ostecen-u-kvaru) IZBAČEN — sada
   // isti podatak nosi kvačica "U voznom stanju" / "U kvaru" u rubrici
@@ -722,11 +744,11 @@ const MOTO_FIELDS: FilterField[] = [
   // ujednačeno s ostalim kategorijama na "Vlasništvo".
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     options: [
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
     ] },
+  NUM_OWNERS_FIELD,
   // Karlo 30.07: "Registriran do" izbačen iz Povijesti.
   // Karlo 29.07 (2. runda): grupa "Ostalo" ukinuta u MOTO —
   // "Garancija" je bila duplikat gornjeg osnovnog panela (TogglePill), a
@@ -983,11 +1005,13 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     scope: ["autobusi", "utv", "najam"],
     options: [
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
     ] },
+  // ⚠️ Isti scope kao `ownership` gore — bez njega bi "Broj vlasnika" iskočio
+  // i na podkategorijama koje rubriku Vlasništvo uopće nemaju.
+  { ...NUM_OWNERS_FIELD, shared: false, scope: ["autobusi", "utv", "najam"] },
   // Karlo 30.07: "Stanje" (6 stupnjeva štete) zamijenjeno rubrikom "Stanje vozila"
   // s Prikaži/Ne prikaži logikom — vrijedi za dostavnu, kamione, autobuse, utv, najam.
   { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr", searchOnly: true,
@@ -1171,10 +1195,10 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
     options: [
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ] },
+  { ...NUM_OWNERS_FIELD, shared: false, scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
   { key: "registeredForRoad", label: "Registriran za cestu", type: "toggle", storage: "attr", group: "Povijest",
     scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
 
@@ -1346,10 +1370,12 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     options: [v("prodaja"), v("najam")] },
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
     options: [
-      { value: "prvi-vlasnik", label: "Prvi vlasnik" },
       { value: "servisna", label: "Servisna evidencija" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ] },
+  // ⚠️ Grupa "Ostalo" (ne "Povijest") — PROSTI_CAS nema rubriku Povijest, pa bi
+  // je ovo polje samo za sebe stvorilo.
+  { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo" },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "plovila", "kamping-oprema"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
   { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,

@@ -58,6 +58,24 @@ function attrLabel(field: FilterField, raw: unknown): string | null {
   }
   if (raw === true) return "Da";
   const s = String(raw);
+  /**
+   * "Broj vlasnika" (Dino 04.08.2026) → "1. vlasnik" / "2. vlasnik" /
+   * "Više od 4 vlasnika". Prije je pisala gola brojka ("2").
+   *
+   * ⚠️ STARE VRIJEDNOSTI IZ BAZE: prije 04.08. opcija je bila `"4"` s oznakom
+   * "4+", a oglasi su mogli spremiti i goli broj. Podnosimo sve oblike:
+   *   "5plus" | "4+" | "5"+ → "Više od 4 vlasnika"
+   *   "1".."4"             → "N. vlasnik"
+   *   bilo što drugo       → vraća se neizmijenjeno (nikad prazan prikaz)
+   */
+  if (field.key === "numOwners") {
+    if (s === "5plus" || s === "4+" || s === "5+") return "Više od 4 vlasnika";
+    const n = Number(s);
+    if (Number.isFinite(n) && n > 0) {
+      return n > 4 ? "Više od 4 vlasnika" : `${n}. vlasnik`;
+    }
+    return s;
+  }
   // "YYYY-MM" (prva registracija, tehnički vrijedi do) → "7/2019".
   // Bez ovoga bi prikaz oglasa pokazivao sirovi "2019-07".
   if (field.type === "monthyear") {

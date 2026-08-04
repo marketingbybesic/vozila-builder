@@ -90,12 +90,22 @@ type State = {
  */
 const STATE_DEFAULTS: Attrs = { soldWhole: true, roadworthy: true, undamaged: true };
 
+/**
+ * "Broj vlasnika" — zadano **2** za RABLJENO (Dino 04.08.2026).
+ *
+ * Razlog: ako prodavač polje preskoči, "1" je za rabljeno vozilo najčešće
+ * netočno (tvrdi da je prvi vlasnik, a nije). Prodavač i dalje može ručno
+ * odabrati "1" ako je stvarno prvi vlasnik.
+ * Novo vozilo dobiva "1" — novo po definiciji nema prethodnog vlasnika.
+ */
+const numOwnersDefaultFor = (condition: string) => (condition === "Novo" ? "1" : "2");
+
 const empty: State = {
   category: "auto", subcategory: "",
   make: "", model: "", variant: "", year: "", condition: "Rabljeno",
   fuel: "", transmission: "", bodyType: "", drive: "", color: "",
   km: "", engineCc: "", powerKw: "", doors: "5", seats: "5",
-  attributes: { ...STATE_DEFAULTS },
+  attributes: { ...STATE_DEFAULTS, numOwners: "2" }, // condition je "Rabljeno"
   photos: [],
   priceEur: "", description: "",
   county: "", city: "",
@@ -220,6 +230,21 @@ export function PostListingForm() {
   );
   const specGroups = useMemo(() => groupFields(specFields), [specFields]);
 
+  /**
+   * Promjena stanja (Novo / Rabljeno / Oldtimer) pomiče i zadani broj vlasnika.
+   *
+   * ⚠️ Samo ako je vrijednost još ZADANA — ručni odabir prodavača se NE gazi.
+   * Bez te provjere bi prodavač koji je stavio "1" (pa se predomislio oko
+   * stanja) tiho izgubio svoj unos.
+   */
+  const setCondition = (c: string) =>
+    setS((p) => {
+      const cur = p.attributes.numOwners;
+      const wasDefault = cur === undefined || cur === "" || cur === numOwnersDefaultFor(p.condition);
+      if (!wasDefault) return { ...p, condition: c };
+      return { ...p, condition: c, attributes: { ...p.attributes, numOwners: numOwnersDefaultFor(c) } };
+    });
+
   // Promjena kategorije → reset kategorija-ovisnih polja.
   const changeCategory = (slug: string) => {
     setS((p) => ({
@@ -228,7 +253,8 @@ export function PostListingForm() {
       make: "", model: "",
       fuel: "", transmission: "", bodyType: "", drive: "", color: "",
       km: "", engineCc: "", powerKw: "",
-      attributes: { ...STATE_DEFAULTS },
+      // Broj vlasnika prati stanje koje je prodavač već odabrao (Novo → 1).
+      attributes: { ...STATE_DEFAULTS, numOwners: numOwnersDefaultFor(p.condition) },
     }));
   };
 
@@ -756,7 +782,7 @@ export function PostListingForm() {
                   <button
                     type="button"
                     key={c}
-                    onClick={() => set("condition", c)}
+                    onClick={() => setCondition(c)}
                     className={"h-11 rounded-xl border text-sm transition-all " + (s.condition === c ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
                   >
                     {c}
