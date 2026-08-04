@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { HR_LOCATIONS, COUNTIES } from "@/data/locations";
 import { createListingAction, saveDraftListingAction } from "@/actions/listings";
 import { useUnsavedGuard } from "@/components/use-unsaved-guard";
+import { ListingDetailView } from "@/components/listing-detail-view";
+import { ImageGallery } from "@/components/image-gallery";
+import type { Listing } from "@/lib/types";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
@@ -1440,83 +1443,86 @@ function PhotoUploader({ photos, onChange }: { photos: string[]; onChange: (p: s
   );
 }
 
+/**
+ * Pregled oglasa (korak 6) — ISTI UI kao objavljeni oglas.
+ *
+ * ⚠️ Dino 04.08.2026: prije je ovo bio zaseban, jednostavniji prikaz koji se pri
+ * svakoj izmjeni detaljne stranice sve više razilazio od stvarnog oglasa.
+ * Sad se stanje forme mapira u `Listing` oblik i hrani <ListingDetailView />,
+ * istu komponentu koju renderira `/oglasi/[slug]`.
+ *
+ * ⚠️ Forma NE koristi react-hook-form (projekt ga nema) — stanje je obični
+ * `useState` objekt, pa se mapiranje radi ovdje, jednom.
+ */
 function ReviewPreview({
-  state: s, makeLabel, categoryLabel, subcategoryLabel, filterDef,
+  state: s, makeLabel, categoryLabel, subcategoryLabel,
 }: {
   state: State; makeLabel: string;
   categoryLabel: string; subcategoryLabel: string; filterDef: CategoryFilters;
 }) {
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
-  const km = s.km ? formatKm(Number(s.km)) : "—";
-  const make = makeLabel || "—";
-  const featureLabels = collectFeatureLabels(s.attributes);
 
-  // Lijepi prikaz popunjenih schema-atributa: label iz sheme + čitljiva vrijednost.
-  const attrRows: { k: string; v: string }[] = [];
-  for (const f of filterDef.fields) {
-    if (f.storage !== "attr" || f.key === "subcategory" || f.key === "adAge") continue;
-    const raw = s.attributes[f.key];
-    if (raw === undefined || raw === "" || raw === false) continue;
-    if (Array.isArray(raw) && raw.length === 0) continue;
-    const labelFor = (val: string) => f.options?.find((o) => o.value === val)?.label ?? val;
-    let v: string;
-    if (raw === true) v = "Da";
-    else if (Array.isArray(raw)) v = raw.map(labelFor).join(", ");
-    else v = labelFor(String(raw));
-    attrRows.push({ k: f.label, v });
-  }
+  // Nacrt u obliku koji očekuje prikaz. Polja koja pravi oglas dobiva tek pri
+  // spremanju (id, slug, views, datum) popunjena su neutralno — ne prikazuju se.
+  const preview = {
+    id: "preview",
+    slug: "preview",
+    title: `${makeLabel} ${s.model}`.trim(),
+    category: s.category,
+    subcategory: s.subcategory || undefined,
+    make: makeLabel,
+    model: s.model,
+    variant: s.variant || undefined,
+    year: Number(s.year) || 0,
+    priceEur: Number(s.priceEur) || 0,
+    km: Number(s.km) || 0,
+    fuel: s.fuel,
+    transmission: s.transmission,
+    bodyType: s.bodyType,
+    drive: s.drive,
+    color: s.color,
+    condition: s.condition,
+    engineCc: Number(s.engineCc) || 0,
+    powerKw: Number(s.powerKw) || 0,
+    doors: Number(s.doors) || 0,
+    seats: Number(s.seats) || 0,
+    city: s.city,
+    county: s.county,
+    description: s.description,
+    features: collectFeatureLabels(s.attributes),
+    images: s.photos,
+    attributes: s.attributes,
+    views: 0,
+    featured: false,
+    createdAt: new Date().toISOString(),
+    sellerName: `${s.firstName} ${s.lastName}`.trim(),
+    sellerType: "Privatni",
+    sellerPhone: s.phone,
+  } as unknown as Listing;
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] overflow-hidden">
-      {s.photos[0] && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={s.photos[0]} alt="" className="w-full aspect-[16/9] object-cover" />
-      )}
-      <div className="p-5 space-y-3">
-        <div className="flex flex-wrap items-center gap-1.5">
+    <div className="space-y-6">
+      {/* Zaglavlje kao na oglasu: oznake, naslov, lokacija, cijena. */}
+      <div>
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
           <Badge variant="accent">{categoryLabel}</Badge>
           {subcategoryLabel && <Badge variant="neutral">{subcategoryLabel}</Badge>}
+          {s.condition && <Badge variant="outline">{s.condition}</Badge>}
         </div>
-        <div>
-          <h3 className="font-display text-2xl">
-            {make} {s.model} {s.variant && <span className="italic text-[var(--color-ink-soft)] font-normal">{s.variant}</span>}
-          </h3>
-          <p className="text-sm text-[var(--color-muted)]">{s.year && `${s.year}. · `}{s.city || "—"}, {s.county || "—"}</p>
-        </div>
-        <div className="font-display text-3xl">{price}</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs pt-3 border-t border-[var(--color-line)]">
-          {s.km && <Spec k="Kilometraža" v={km} />}
-          {s.fuel && <Spec k="Gorivo" v={s.fuel} />}
-          {s.transmission && <Spec k="Mjenjač" v={s.transmission} />}
-          {s.bodyType && <Spec k="Karoserija" v={s.bodyType} />}
-          {s.drive && <Spec k="Pogon" v={s.drive} />}
-          {s.powerKw && <Spec k="Snaga" v={`${s.powerKw} kW`} />}
-          {s.color && <Spec k="Boja" v={s.color} />}
-          {s.condition && <Spec k="Stanje" v={s.condition} />}
-        </div>
-        {/* Pregled je rezao na 12 atributa i 8 opreme, pa je obećavao manje nego
-            što oglas stvarno ima. Pregled = ono što kupac vidi, bez skraćivanja. */}
-        {attrRows.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs pt-3 border-t border-[var(--color-line)]">
-            {attrRows.map((r) => <Spec key={r.k} k={r.k} v={r.v} />)}
-          </div>
-        )}
-        {s.description && (
-          <p className="text-sm text-[var(--color-ink-soft)] pt-3 border-t border-[var(--color-line)] whitespace-pre-line">
-            {s.description}
-          </p>
-        )}
-        {featureLabels.length > 0 && (
-          <div className="pt-3 border-t border-[var(--color-line)]">
-            <div className="text-[10px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
-              Oprema ({featureLabels.length})
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {featureLabels.map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
-            </div>
-          </div>
-        )}
+        <h3 className="font-display text-3xl tracking-tight leading-tight">
+          {makeLabel || "—"} {s.model}
+          {s.variant && <span className="italic text-[var(--color-ink-soft)] font-normal"> {s.variant}</span>}
+        </h3>
+        <p className="mt-2 text-sm text-[var(--color-muted)]">
+          {s.city || "—"}, {s.county || "—"}
+        </p>
+        <div className="mt-3 font-display text-3xl">{price}</div>
       </div>
+
+      {s.photos.length > 0 && <ImageGallery images={s.photos} alt={preview.title} />}
+
+      {/* Isto tijelo koje vidi kupac na objavljenom oglasu. */}
+      <ListingDetailView listing={preview} />
     </div>
   );
 }
