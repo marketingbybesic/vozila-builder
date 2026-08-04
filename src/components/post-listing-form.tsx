@@ -546,6 +546,10 @@ export function PostListingForm() {
     }
     if (f.type === "range") {
       // attr range (radni sati, težina, nosivost, dimenzije...) → RUČNI brojčani unos.
+      // ⚠️ Decimale se izvode iz `step` u shemi: step < 1 → decimalno polje
+      // (potrošnja 0.1 → 1 decimala). Ostala polja (radni sati, nosivost…)
+      // imaju cjelobrojni step pa ostaju kakva su bila.
+      const dec = f.step && f.step < 1 ? String(f.step).split(".")[1]?.length ?? 1 : 0;
       return (
         <NumberField
           key={f.key}
@@ -554,7 +558,8 @@ export function PostListingForm() {
           required={req}
           value={(s.attributes[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
-          placeholder="Upiši broj"
+          placeholder={dec > 0 ? "npr. 5,5" : "Upiši broj"}
+          decimals={dec}
         />
       );
     }

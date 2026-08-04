@@ -109,6 +109,21 @@ function attrLabel(field: FilterField, raw: unknown): string | null {
   }
   const opt = field.options?.find((o) => o.value === s);
   if (opt) return opt.label;
+  /**
+   * Decimalni broj → hrvatski zapis sa ZAREZOM (Dino 04.08.2026).
+   * Sprema se s točkom ("5.5"), prikazuje "5,5 l/100km".
+   *
+   * ⚠️ STARE VRIJEDNOSTI: cijeli brojevi u bazi ("6") ostaju "6 l/100km" —
+   * `maximumFractionDigits: 2` ne dodaje suvišne nule, a `minimumFractionDigits`
+   * namjerno NIJE postavljen da "6" ne postane "6,00".
+   */
+  if (field.step && field.step < 1) {
+    const n = Number(s.replace(",", "."));
+    if (Number.isFinite(n)) {
+      const txt = n.toLocaleString("hr-HR", { maximumFractionDigits: 2 });
+      return field.unit ? `${txt} ${field.unit}` : txt;
+    }
+  }
   return field.unit ? `${s} ${field.unit}` : s;
 }
 

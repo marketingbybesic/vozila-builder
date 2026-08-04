@@ -606,20 +606,46 @@ export function MonthYearField({
  */
 export function NumberField({
   label, required, optional, value, onChange, unit, placeholder = "npr. 95000",
+  decimals = 0,
 }: {
   label?: string; required?: boolean; optional?: boolean;
   value: string; onChange: (v: string) => void;
   unit?: string; placeholder?: string;
+  /**
+   * Broj dopuštenih decimala (Dino 04.08.2026). Zadano 0 = samo cijeli brojevi,
+   * kao dosad (km, kW, cm³).
+   *
+   * ⚠️ Potrošnja se izražava decimalno ("5,5 l/100km"), a ovo je polje brisalo
+   * SVE osim znamenki (`replace(/[^\d]/g, "")`) → korisnik utipka "5,5" i
+   * ostane mu "55". Zato ovaj prekidač, a ne `step` na inputu: polje je
+   * `type="text"` s vlastitim parserom, pa `step` na njemu ne bi ništa značio.
+   */
+  decimals?: number;
 }) {
-  const grouped = value ? Number(value).toLocaleString("hr-HR") : "";
+  // Vrijednost se sprema s TOČKOM (5.5) jer je tako čita `Number()` i baza;
+  // korisniku se prikazuje hrvatski, sa ZAREZOM.
+  const grouped = value
+    ? decimals > 0
+      ? value.replace(".", ",")
+      : Number(value).toLocaleString("hr-HR")
+    : "";
   return (
     <label className="block">
       {label && <Label required={required} optional={optional}>{label}</Label>}
       <div className="relative">
         <input
-          inputMode="numeric"
+          inputMode={decimals > 0 ? "decimal" : "numeric"}
           value={grouped}
           onChange={(e) => {
+            if (decimals > 0) {
+              // Zarez i točka su ravnopravni pri unosu; sprema se s točkom.
+              let v = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
+              const [cijeli, ...ost] = v.split(".");
+              // Više točaka → prva vrijedi, ostale se odbacuju.
+              v = ost.length ? `${cijeli}.${ost.join("").slice(0, decimals)}` : cijeli;
+              onChange(v);
+              return;
+            }
             const digits = e.target.value.replace(/[^\d]/g, "");
             onChange(digits);
           }}
