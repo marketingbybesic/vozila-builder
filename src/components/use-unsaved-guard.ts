@@ -23,6 +23,8 @@ export function useUnsavedGuard(active: boolean, onAttempt: (proceed: () => void
   cb.current = onAttempt;
   // Kad korisnik potvrdi izlazak, guard se mora ugasiti da ne uhvati sam sebe.
   const [bypass, setBypass] = useState(false);
+  /** Je li naš lažni unos ("sentinel") već u povijesti. Točno jedan po formi. */
+  const sentinel = useRef(false);
 
   useEffect(() => {
     if (!active || bypass) return;
@@ -53,15 +55,32 @@ export function useUnsavedGuard(active: boolean, onAttempt: (proceed: () => void
 
     const onPopState = () => {
       // Vrati korisnika na formu i pitaj ga modalom.
+      // ⚠️ `sentinel` ostaje true — upravo smo ga potrošili pa ga vraćamo.
       window.history.pushState(null, "", window.location.href);
       cb.current(() => {
         setBypass(true);
+        // JEDAN korak: `popstate` je već potrošio sentinel, `pushState` gore ga
+        // je vratio — pa je iznad prave prethodne stranice točno jedan unos.
         setTimeout(() => window.history.back(), 0);
       });
     };
 
-    // Bez ovog unosa prvi "Nazad" nema što poništiti.
-    window.history.pushState(null, "", window.location.href);
+    /**
+     * ⚠️⚠️ SENTINEL SE DODAJE SAMO JEDNOM PO ŽIVOTU FORME.
+     *
+     * Bug (Dino 04.08.2026): "poruka 'oglas je objavljen' se ponekad odmah makne
+     * i vrati na početnu". Uzrok: efekt ovisi o `active`/`bypass`, a `active` je
+     * `dirty && !submitted` — svaka promjena tih vrijednosti ponovno je pokretala
+     * efekt i gurala JOŠ JEDAN unos u povijest za istu adresu. Nakon objave
+     * (`dirty=false`) ti unosi su ostajali, pa je prva navigacija unatrag
+     * (Nextov `router.refresh()` / prefetch) preskakala stranicu potvrde.
+     *
+     * Sad: unos se dodaje jednom, i UKLANJA se kad guard prestane biti potreban.
+     */
+    if (!sentinel.current) {
+      window.history.pushState(null, "", window.location.href);
+      sentinel.current = true;
+    }
 
     window.addEventListener("beforeunload", onBeforeUnload);
     document.addEventListener("click", onClick, true); // capture
@@ -72,4 +91,16 @@ export function useUnsavedGuard(active: boolean, onAttempt: (proceed: () => void
       window.removeEventListener("popstate", onPopState);
     };
   }, [active, bypass]);
+
+  /**
+   * Guard više nije potreban (oglas objavljen ili forma očišćena) → makni
+   * sentinel iz povijesti da "Nazad" vodi tamo gdje korisnik očekuje.
+   * Odvojen efekt jer se mora izvršiti i kad `active` padne na false.
+   */
+  useEffect(() => {
+    if (active || !sentinel.current) return;
+    sentinel.current = false;
+    // `replaceState` briše naš unos bez navigacije (za razliku od `back()`).
+    window.history.replaceState(null, "", window.location.href);
+  }, [active]);
 }

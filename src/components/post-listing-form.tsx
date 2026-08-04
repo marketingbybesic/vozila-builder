@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useTransition, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star, AlertCircle } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -132,7 +131,6 @@ const firstDrive = DRIVES[0];
 const firstColor = COLORS[0];
 
 export function PostListingForm() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [s, setS] = useState<State>(empty);
   const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
@@ -506,7 +504,17 @@ export function PostListingForm() {
         try { localStorage.removeItem(DRAFT_KEY); } catch {}
         setDirty(false);
         setSubmitted({ slug: res.slug });
-        router.refresh();
+        /**
+         * ⚠️ `router.refresh()` je MAKNUT (Dino 04.08.2026: "obavijest 'oglas je
+         * objavljen' se ponekad odmah makne i vrati na početnu").
+         *
+         * Refresh ponovno dohvaća server komponente i re-renderira stablo baš u
+         * trenutku kad se guard gasi (`dirty=false`) i miče svoj unos iz
+         * povijesti — ta dva se preklope i korisnik završi izvan stranice
+         * potvrde. Osvježavanje ovdje ionako nije potrebno: `createListingAction`
+         * već zove `revalidatePath` za /oglasi, /moj-racun i novi slug, pa su
+         * te stranice svježe kad korisnik na njih ode.
+         */
       } else {
         setSubmitErr(res.error);
       }
