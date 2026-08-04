@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
+import { CategoryNav } from "@/components/category-nav";
 import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
 
@@ -108,6 +109,17 @@ export function SiteHeader() {
           </button>
         </div>
       </Container>
+
+      {/* ⚠️ Karlo 04.08.2026 (stavka 14): traka kategorija PRESELJENA iz heroja
+          u sticky zaglavlje — "puno je lakše surfat s tom opcijom nego se stalno
+          vraćat na home" (uzor: avto.net).
+          Sad je dostupna sa SVAKE stranice i prati scroll.
+          Uža je nego u heroju (`py-1.5`, manji font) da ne jede ekran. */}
+      <div className="hidden lg:block border-t border-[var(--color-line)]/70">
+        <Container className="py-1.5">
+          <CategoryNav variant="bar" compact />
+        </Container>
+      </div>
 
       {/* Mobile menu */}
       {open && (

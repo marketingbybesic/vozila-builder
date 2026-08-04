@@ -25,7 +25,19 @@ const ICONS = {
  *   aktivna kategorija dobiva punu accent podlogu umjesto 15% tinte koja se
  *   na tamnoj pozadini jedva razaznavala.
  */
-export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) {
+export function CategoryNav({
+  variant = "grid",
+  compact = false,
+}: {
+  variant?: "grid" | "bar";
+  /**
+   * ⚠️ `compact` = traka u SVIJETLOM sticky zaglavlju (Karlo 04.08.2026).
+   * Obična `bar` varijanta je stilizirana za TAMNU podlogu heroja (bijeli tekst,
+   * `bg-black/25`) — bez ovog prekidača tekst bi u zaglavlju bio bijelo na
+   * bijelom. Uz to je niža i sitnija da ne jede ekran pri scrollanju.
+   */
+  compact?: boolean;
+}) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [openSubSlug, setOpenSubSlug] = useState<string | null>(null);
 
@@ -44,9 +56,12 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
       <ul
         className={cn(
           isBar
-            // Karlo 28.07: tamnija podloga trake (bila white/[0.04]) diže
-            // kontrast bijelog teksta iznad WCAG AA praga 4.5:1.
-            ? "flex items-stretch gap-1.5 rounded-[var(--radius-lg)] border border-white/10 bg-black/25 p-1.5"
+            ? compact
+              // Zaglavlje: bez okvira i podloge — traka se stapa s njim.
+              ? "flex items-stretch gap-1"
+              // Karlo 28.07: tamnija podloga trake (bila white/[0.04]) diže
+              // kontrast bijelog teksta iznad WCAG AA praga 4.5:1.
+              : "flex items-stretch gap-1.5 rounded-[var(--radius-lg)] border border-white/10 bg-black/25 p-1.5"
             // `auto-rows-fr` — SVI reci jednake visine, ne samo kartice unutar
             // jednog retka. Bez toga je 1. red 78px, a 2. red 85px (dvoredni
             // nazivi), pa mreža izgleda neuredno.
@@ -74,12 +89,19 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                   "group relative transition-all",
                   isBar
                     ? cn(
-                        "flex items-center justify-center gap-2 w-full min-h-12 px-2.5 xl:px-3 py-2 rounded-[var(--radius-md)] cursor-pointer",
+                        "flex items-center justify-center gap-2 w-full rounded-[var(--radius-md)] cursor-pointer",
+                        // Kompaktna traka je niža i sitnija — ne smije jesti ekran.
+                        compact
+                          ? "min-h-9 px-2 py-1.5"
+                          : "min-h-12 px-2.5 xl:px-3 py-2",
                         isOpen
                           ? "bg-[var(--color-accent)] text-[var(--color-ink)] shadow-sm"
-                          // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1
-                          // iz piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
-                          : "text-white hover:bg-white/10"
+                          : compact
+                            // Zaglavlje je SVIJETLO → tamni tekst (bijeli bi nestao).
+                            ? "text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/50 hover:text-[var(--color-ink)]"
+                            // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1
+                            // iz piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
+                            : "text-white hover:bg-white/10"
                       )
                     : cn(
                         // `h-full` uz `min-h` — kartica popunjava visinu retka
@@ -98,7 +120,7 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                       )
                 )}
               >
-                <Icon className={cn("shrink-0", isBar ? "size-[18px]" : "size-5")} />
+                <Icon className={cn("shrink-0", isBar ? (compact ? "size-4" : "size-[18px]") : "size-5")} />
                 <span
                   className={cn(
                     "leading-tight uppercase tracking-wide font-semibold text-balance",
@@ -106,7 +128,9 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                       // Karlo 28.07: NE truncate — na 1024px je rezao
                       // "GOSPODARS…"/"MEHANIZACI…". Tekst se smije prelomiti,
                       // a font se malo smanji dok ne bude mjesta za pun naziv.
-                      ? "text-[11px] xl:text-xs text-center"
+                      ? compact
+                        ? "text-[10px] xl:text-[11px] text-center"
+                        : "text-[11px] xl:text-xs text-center"
                       // `min-h-[2.2em]` = prostor za DVA retka i kad naziv ima
                       // samo jedan → naziv i ikona stoje na istoj visini u
                       // svih 6 kartica (MEHANIZACIJA vs SLOBODNO VRIJEME).
@@ -122,7 +146,10 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
                       ? cn(
                           // ispod xl nema mjesta — naziv kategorije je važniji
                           "size-3.5 shrink-0 hidden xl:block",
-                          isOpen ? "rotate-180 text-[var(--color-ink)]/60" : "text-white/40"
+                          isOpen
+                            ? "rotate-180 text-[var(--color-ink)]/60"
+                            // Svijetlo zaglavlje → tamna strelica; tamni hero → bijela.
+                            : compact ? "text-[var(--color-muted)]" : "text-white/40"
                         )
                       : cn(
                           "absolute top-1.5 right-1.5 size-3 text-white/40",
@@ -140,7 +167,18 @@ export function CategoryNav({ variant = "grid" }: { variant?: "grid" | "bar" }) 
           Napredna pretraga je SAMO za auto → samo auto ima napredna-link header,
           ostale kategorije vode podkategorije na obične rezultate (/oglasi). */}
       {openCategory && (
-        <div className="mt-2 rounded-[var(--radius-md)] border border-white/15 bg-white/[0.06] p-3 animate-fade-in">
+        <div
+          className={cn(
+            "mt-2 rounded-[var(--radius-md)] p-3 animate-fade-in",
+            compact
+              // ⚠️ Sadržaj panela je pisan BIJELIM tonovima (za tamni hero).
+              // U svijetlom zaglavlju zato panelu dajemo TAMNU podlogu — tako
+              // sav postojeći tekst ostaje čitljiv, bez diranja 40-ak klasa
+              // unutar njega. Sjena + `z-50` jer pluta preko sadržaja stranice.
+              ? "border border-[var(--color-line)] bg-[var(--color-ink)] shadow-[0_20px_48px_rgb(2_8_20/35%)] relative z-50"
+              : "border border-white/15 bg-white/[0.06]",
+          )}
+        >
           {openSub && hasChildren(openSub) ? (
             // 2. nivo — children odabrane podkategorije (dijelovi)
             <>

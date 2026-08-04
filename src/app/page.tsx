@@ -101,11 +101,10 @@ export default async function HomePage() {
             </p>
           </div>
 
-          {/* Desktop: kategorije IZNAD tražilice — to je glavna navigacija,
-              pa dobiva prvo mjesto i punu širinu (Karlo 28.07). */}
-          <div className="hidden lg:block mb-3">
-            <CategoryNav variant="bar" />
-          </div>
+          {/* ⚠️ Karlo 04.08.2026 (stavka 14): traka kategorija PRESELJENA u
+              sticky zaglavlje (`site-header.tsx`) — prati scroll i dostupna je
+              sa svake stranice, ne samo s naslovnice.
+              Mobilna mreža (`<CategoryNav />` niže) ostaje netaknuta. */}
 
           {/* Karlo 29.07: bijeli panel širi, narančasti uži — hero mora stati
               u jedan ekran na desktopu.
