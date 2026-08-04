@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star, AlertCircle } from "lucide-react";
@@ -8,7 +8,12 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { HR_LOCATIONS, COUNTIES } from "@/data/locations";
-import { createListingAction } from "@/actions/listings";
+import { createListingAction, saveDraftListingAction } from "@/actions/listings";
+import { useUnsavedGuard } from "@/components/use-unsaved-guard";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import {
   FUEL_TYPES,
   TRANSMISSIONS,
@@ -88,6 +93,9 @@ type State = {
  * Karlo 31.07: "po defaultu je da" — vozilo se prodaje u cijelosti, u voznom
  * je stanju i neoštećeno. Prodavač mijenja samo ako NIJE tako.
  */
+/** Ključ nacrta u pregledniku — mijenjati SAMO uz svjestan reset svih nacrta. */
+const DRAFT_KEY = "vozila:objavi:nacrt";
+
 const STATE_DEFAULTS: Attrs = { soldWhole: true, roadworthy: true, undamaged: true };
 
 /**
@@ -126,6 +134,55 @@ export function PostListingForm() {
   const [s, setS] = useState<State>(empty);
   const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
+
+  /**
+   * ZAŠTITA OD SLUČAJNOG IZLASKA + SKICA (Dino 04.08.2026).
+   *
+   * Dvije razine, namjerno:
+   *  - `localStorage` nacrt — pada automatski na svaku izmjenu, pa reload ili
+   *    pad preglednika ne gubi 5 koraka. Vrijedi i prije prijave.
+   *  - "Spremi kao skicu" — pravi zapis u bazi (`status: "draft"`), preživi
+   *    promjenu uređaja i vidljiv je u "Moji oglasi".
+   */
+  const [exitOpen, setExitOpen] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftErr, setDraftErr] = useState<string | null>(null);
+  const proceedRef = useRef<(() => void) | null>(null);
+  const [dirty, setDirty] = useState(false);
+
+  // Vraćanje nacrta iz preglednika (samo jednom, pri otvaranju forme).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { state: State; step: number };
+      if (saved?.state) {
+        setS(saved.state);
+        setStep(saved.step ?? 1);
+        setDirty(true);
+      }
+    } catch {
+      // Neispravan/oštećen zapis ne smije srušiti formu — samo ga ignoriraj.
+    }
+  }, []);
+
+  // Spremanje nacrta na svaku izmjenu (nakon što je korisnik stvarno nešto dirao).
+  useEffect(() => {
+    if (!dirty || submitted) return;
+    try {
+      // ⚠️ Fotografije NE idu u localStorage — base64 slike probijaju kvotu
+      // (~5 MB) i tiho ruše spremanje cijelog nacrta.
+      const { photos: _photos, ...bezSlika } = s;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ state: { ...bezSlika, photos: [] }, step }));
+    } catch {
+      // Kvota puna → nacrt se preskače, forma i dalje radi.
+    }
+  }, [s, step, dirty, submitted]);
+
+  useUnsavedGuard(dirty && !submitted, (proceed) => {
+    proceedRef.current = proceed;
+    setExitOpen(true);
+  });
   /**
    * Sažetak "još X podataka" ne smije vikati na prazan korak koji korisnik tek
    * otvara. Pali se na prvi pokušaj "Nastavi" ili čim nešto upiše, i resetira
@@ -134,9 +191,13 @@ export function PostListingForm() {
   const [showMissing, setShowMissing] = useState(false);
   const [pending, start] = useTransition();
 
-  const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
-  const setAttr = (key: string, v: State["attributes"][string]) =>
+  // Svaka izmjena pali `dirty` → tek tada guard i nacrt počinju raditi
+  // (inače bi puko otvaranje forme već tražilo potvrdu izlaska).
+  const set = <K extends keyof State>(k: K, v: State[K]) => { setDirty(true); setS((p) => ({ ...p, [k]: v })); };
+  const setAttr = (key: string, v: State["attributes"][string]) => {
+    setDirty(true);
     setS((p) => ({ ...p, attributes: { ...p.attributes, [key]: v } }));
+  };
 
   /**
    * Karlo 31.07: kvačice u "Stanju vozila" idu u PAROVIMA koji se isključuju.
@@ -437,6 +498,10 @@ export function PostListingForm() {
         images: s.photos,
       });
       if (res.ok) {
+        // Oglas je objavljen → nacrt više nije potreban (inače bi ga sljedeći
+        // ulazak u /objavi vratio i prodavač bi mislio da je duplikat).
+        try { localStorage.removeItem(DRAFT_KEY); } catch {}
+        setDirty(false);
         setSubmitted({ slug: res.slug });
         router.refresh();
       } else {
@@ -978,6 +1043,89 @@ export function PostListingForm() {
           )}
         </div>
       </div>
+
+      {/* Potvrda izlaska iz forme (Dino 04.08.2026) — tri izlaza, nijedan
+          ne gubi unos tiho. */}
+      <AlertDialog open={exitOpen} onOpenChange={setExitOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Želite li izaći iz kreiranja oglasa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ako ne spremite, uneseni podaci bit će izgubljeni. Skica ostaje u
+              &bdquo;Moji oglasi&ldquo; i možete je dovršiti kasnije.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {draftErr && (
+            <p className="text-sm text-[var(--color-danger)] mb-3">{draftErr}</p>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={savingDraft}>Odustani</AlertDialogCancel>
+            <button
+              type="button"
+              disabled={savingDraft}
+              onClick={() => {
+                // Odbacivanje briše i nacrt u pregledniku — korisnik je svjesno
+                // odabrao da ne želi ove podatke.
+                try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                setExitOpen(false);
+                proceedRef.current?.();
+              }}
+              className="h-11 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--color-line)] text-[var(--color-danger)] hover:border-[var(--color-danger)] transition-all disabled:opacity-60"
+            >
+              Izađi i odbaci
+            </button>
+            <AlertDialogAction
+              disabled={savingDraft}
+              onClick={async (e) => {
+                e.preventDefault(); // modal se ne smije zatvoriti prije spremanja
+                setSavingDraft(true);
+                setDraftErr(null);
+                try {
+                  const res = await saveDraftListingAction({
+                    category: s.category,
+                    subcategory: s.subcategory || undefined,
+                    attributes: s.attributes,
+                    make: makeOptions.find((m) => m.value === s.make)?.label ?? s.make,
+                    model: s.model,
+                    variant: s.variant || undefined,
+                    year: s.year || undefined,
+                    priceEur: s.priceEur || undefined,
+                    km: s.km || undefined,
+                    fuel: s.fuel || undefined,
+                    transmission: s.transmission || undefined,
+                    bodyType: s.bodyType || undefined,
+                    drive: s.drive || undefined,
+                    color: s.color || undefined,
+                    condition: s.condition || undefined,
+                    engineCc: s.engineCc || undefined,
+                    powerKw: s.powerKw || undefined,
+                    doors: s.doors || undefined,
+                    seats: s.seats || undefined,
+                    city: s.city || undefined,
+                    county: s.county || undefined,
+                    description: s.description || undefined,
+                    features: collectFeatureLabels(s.attributes),
+                    images: s.photos,
+                  });
+                  if (!res.ok) {
+                    setDraftErr(res.error);
+                    setSavingDraft(false);
+                    return;
+                  }
+                  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                  setExitOpen(false);
+                  proceedRef.current?.();
+                } catch {
+                  setDraftErr("Skicu nije moguće spremiti. Pokušajte ponovno.");
+                  setSavingDraft(false);
+                }
+              }}
+            >
+              {savingDraft ? "Spremam..." : "Spremi kao skicu"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

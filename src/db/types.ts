@@ -119,7 +119,9 @@ export interface DbAdapter {
   getFeaturedListings(limit: number): Promise<Listing[]>;
   getRelatedListings(listing: Listing, limit: number): Promise<Listing[]>;
   getAllActiveSlugs(): Promise<{ slug: string; createdAt: string }[]>;
-  createListing(userId: string, input: Omit<Listing, "id" | "slug" | "title" | "views" | "createdAt" | "featured" | "sellerName" | "sellerType" | "sellerPhone">): Promise<Listing>;
+  // `status` je opcionalan i NIJE dio tipa `Listing` — služi samo za spremanje
+  // skice (`draft`). Bez njega adapter uvijek upisuje "active".
+  createListing(userId: string, input: Omit<Listing, "id" | "slug" | "title" | "views" | "createdAt" | "featured" | "sellerName" | "sellerType" | "sellerPhone"> & { status?: string }): Promise<Listing>;
   updateListing(id: string, userId: string, patch: Partial<Listing>): Promise<Listing>;
   setListingStatus(id: string, userId: string, status: "active" | "paused" | "sold" | "deleted"): Promise<void>;
   incrementViews(id: string): Promise<void>;

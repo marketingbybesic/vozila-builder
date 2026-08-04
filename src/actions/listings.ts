@@ -75,6 +75,79 @@ export async function createListingAction(input: unknown): Promise<ListingAction
   return { ok: true, slug: created.slug };
 }
 
+/**
+ * SKICA (`draft`) — Dino 04.08.2026.
+ *
+ * Namjerno BLAŽA validacija od objave: prodavač sprema nedovršen oglas da mu se
+ * ne izgubi unos kad napusti stranicu. Obavezna je samo kategorija.
+ *
+ * ⚠️ Nedostajuća polja se popunjavaju SIGURNIM zadanim vrijednostima jer ih
+ * `listings` tablica traži kao NOT NULL. Nisu podatak o vozilu nego popuna —
+ * prodavač ih ispravlja kad nastavi uređivati.
+ * ⚠️ Skica se NE prikazuje kupcima: sve javne rute traže `status = "active"`,
+ * a "Moji oglasi" uzima sve osim `deleted` — pa je vlasnik vidi.
+ */
+const DraftListing = z.object({
+  category: z.enum(VEHICLE_CATEGORIES).default("auto"),
+  subcategory: z.string().optional(),
+  attributes: z.record(z.string(), z.unknown()).default({}),
+  make: z.string().default(""),
+  model: z.string().default(""),
+  variant: z.string().optional(),
+  year: z.coerce.number().int().optional(),
+  priceEur: z.coerce.number().int().nonnegative().optional(),
+  km: z.coerce.number().int().nonnegative().optional(),
+  fuel: z.string().optional(),
+  transmission: z.string().optional(),
+  bodyType: z.string().optional(),
+  drive: z.string().optional(),
+  color: z.string().optional(),
+  condition: z.string().optional(),
+  engineCc: z.coerce.number().int().nonnegative().optional(),
+  powerKw: z.coerce.number().int().nonnegative().optional(),
+  doors: z.coerce.number().int().optional(),
+  seats: z.coerce.number().int().optional(),
+  city: z.string().optional(),
+  county: z.string().optional(),
+  description: z.string().optional(),
+  features: z.array(z.string()).default([]),
+  images: z.array(z.string()).default([]),
+});
+
+export async function saveDraftListingAction(input: unknown): Promise<ListingActionResult> {
+  const user = await requireUser();
+  const parsed = DraftListing.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Skicu nije moguće spremiti" };
+  }
+  const d = parsed.data;
+  const created = await db().createListing(user.id, {
+    ...d,
+    status: "draft",
+    make: d.make || "Nedovršeno",
+    model: d.model || "—",
+    year: d.year ?? new Date().getFullYear(),
+    priceEur: d.priceEur ?? 0,
+    km: d.km ?? 0,
+    fuel: (d.fuel || FUEL_TYPES[0]) as (typeof FUEL_TYPES)[number],
+    transmission: (d.transmission || ALL_TRANSMISSIONS[0]) as (typeof ALL_TRANSMISSIONS)[number],
+    bodyType: (d.bodyType || ALL_BODY_TYPES[0]) as (typeof ALL_BODY_TYPES)[number],
+    drive: (d.drive || DRIVES[0]) as (typeof DRIVES)[number],
+    color: (d.color || COLORS[0]) as (typeof COLORS)[number],
+    condition: (d.condition || CONDITIONS[0]) as (typeof CONDITIONS)[number],
+    engineCc: d.engineCc ?? 0,
+    powerKw: d.powerKw ?? 0,
+    doors: d.doors ?? 5,
+    seats: d.seats ?? 5,
+    city: d.city || "—",
+    county: d.county || "—",
+    description: d.description || "",
+  });
+  revalidatePath("/moj-racun");
+  revalidatePath("/moj-racun/oglasi");
+  return { ok: true, slug: created?.slug ?? "" };
+}
+
 const StatusInput = z.object({
   id: z.string().uuid(),
   status: z.enum(["active", "paused", "sold", "deleted"]),

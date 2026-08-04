@@ -391,7 +391,10 @@ export const supabaseAdapter: DbAdapter = {
         description: input.description,
         features: input.features ?? [],
         images: input.images ?? [],
-        status: "active",
+        // ⚠️ Bilo hardkodirano "active" — skica (`draft`) se nije mogla spremiti.
+        // Javne rute traže `status = "active"`, pa se draft NE prikazuje kupcima;
+        // "Moji oglasi" uzima sve osim `deleted`, pa ga vlasnik vidi.
+        status: input.status ?? "active",
       })
       .returning();
     if (!rows[0]) throw new Error("Oglas nije kreiran");
