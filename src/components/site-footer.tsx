@@ -52,6 +52,10 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold text-white">vozila</span>
               <span className="font-display text-xl font-semibold text-[var(--color-accent)]">.hr</span>
             </Link>
+            {/* Slogan (Dino 04.08.2026) — stoji ispod logotipa. */}
+            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--color-accent)]">
+              Kupi, prodaj i vozi
+            </p>
             <p className="mt-2 text-xs text-white/50 leading-relaxed">
               Hrvatsko tržište vozila. Sve na jednom mjestu.
             </p>

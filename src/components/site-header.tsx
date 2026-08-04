@@ -24,12 +24,21 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-line)] bg-[var(--color-bg)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-bg)]/65">
       <Container className="flex h-16 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="Vozila.hr početna">
-          <div className="relative">
-            <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-ink)]">
-              vozila
-            </span>
-            <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-accent-dark)]">
-              .hr
+          {/* ⚠️ Slogan (Dino 04.08.2026) stoji ISPOD logotipa → `flex-col`.
+              Vidljiv od `sm` nadalje: zaglavlje je visoko 64 px i na mobilnom
+              dijeli redak s tražilicom i hamburgerom, pa bi ondje stisnuo logo.
+              `leading-none` drži oba retka unutar postojeće visine. */}
+          <div className="relative flex flex-col">
+            <div className="leading-none">
+              <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-ink)]">
+                vozila
+              </span>
+              <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-accent-dark)]">
+                .hr
+              </span>
+            </div>
+            <span className="hidden sm:block mt-0.5 text-[9px] uppercase tracking-[0.2em] text-[var(--color-muted)] leading-none">
+              Kupi, prodaj i vozi
             </span>
           </div>
         </Link>
