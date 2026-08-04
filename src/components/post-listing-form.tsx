@@ -1265,24 +1265,12 @@ function ReviewPreview({
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
   const km = s.km ? formatKm(Number(s.km)) : "—";
   const make = makeLabel || "—";
+  const featureLabels = collectFeatureLabels(s.attributes);
+
   // Lijepi prikaz popunjenih schema-atributa: label iz sheme + čitljiva vrijednost.
   const attrRows: { k: string; v: string }[] = [];
   for (const f of filterDef.fields) {
     if (f.storage !== "attr" || f.key === "subcategory" || f.key === "adAge") continue;
-    /**
-     * ⚠️⚠️ Karlo 03.08. (2. put): "samo je listu preorganizirao — treba ju
-     * maknut da se ne vidi jer sve je već izlistano iznad."
-     *
-     * OPREMA (`type: "multi"` u grupi "Dodatne opcije") se NE prikazuje ovdje.
-     * Polja poput `safety`/`multimedia`/`comfort` su nizovi s desecima
-     * vrijednosti, pa su se nabrajala kao dugačak niz pojmova ispod urednih
-     * specifikacija. Ista oprema je već prikazana gore.
-     *
-     * ⚠️ Uvjet mora biti `type === "multi"`, NE cijela grupa — u istoj grupi
-     * žive i prave specifikacije koje MORAJU ostati: `airbagCount` (range),
-     * `wheelSize`/`radio` (slobodan unos uz listu, runda 19).
-     */
-    if (f.group === "Dodatne opcije" && f.type === "multi") continue;
     const raw = s.attributes[f.key];
     if (raw === undefined || raw === "" || raw === false) continue;
     if (Array.isArray(raw) && raw.length === 0) continue;
@@ -1334,13 +1322,16 @@ function ReviewPreview({
             {s.description}
           </p>
         )}
-        {/* ⚠️ Karlo 03.08.: "iz oglasa ovaj dio treba izbaciti jer sva ta navedena
-            oprema je već prikazana gore."
-            Ovdje je stajao popis SIROVIH ključeva (`bi-ksenon`, `alu-felge`,
-            `virtual-cockpit`…) iz `collectFeatureLabels`. To su iste vrijednosti
-            koje `attrRows` iznad već prikazuje uredno, s oznakama iz sheme
-            ("Sigurnost: Bi-ksenonska svjetla"). Dupliciranje + neuredan izgled.
-            `collectFeatureLabels` OSTAJE — koristi se pri slanju (`features`). */}
+        {featureLabels.length > 0 && (
+          <div className="pt-3 border-t border-[var(--color-line)]">
+            <div className="text-[10px] uppercase tracking-wider text-[var(--color-muted)] mb-2">
+              Oprema ({featureLabels.length})
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {featureLabels.map((f) => <Badge key={f} variant="neutral">{f}</Badge>)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
