@@ -4,7 +4,7 @@ import { PostListingForm } from "@/components/post-listing-form";
 
 export const metadata: Metadata = {
   title: "Objavi oglas",
-  description: "Objavi oglas za svoj automobil u 5 minuta. Prvi oglas je besplatan.",
+  description: "Objavi oglas za svoj automobil u 5 minuta. Besplatno za privatne korisnike.",
 };
 
 export default function ObjaviPage() {
@@ -13,7 +13,7 @@ export default function ObjaviPage() {
       <div className="max-w-3xl mx-auto">
         <h1 className="font-display text-3xl md:text-4xl tracking-tight">Objavi svoj oglas</h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
-          6 koraka · cca 5 minuta · prvi oglas je besplatan
+          6 koraka · cca 5 minuta · besplatno za privatne korisnike
         </p>
 
         <PostListingForm />
