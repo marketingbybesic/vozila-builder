@@ -1067,6 +1067,7 @@ export function PostListingForm() {
                 // Odbacivanje briše i nacrt u pregledniku — korisnik je svjesno
                 // odabrao da ne želi ove podatke.
                 try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                setDirty(false); // ugasi guard prije navigacije
                 setExitOpen(false);
                 proceedRef.current?.();
               }}
@@ -1113,6 +1114,10 @@ export function PostListingForm() {
                     return;
                   }
                   try { localStorage.removeItem(DRAFT_KEY); } catch {}
+                  // ⚠️ `dirty` se mora ugasiti PRIJE navigacije — inače
+                  // `beforeunload` iskoči i nakon uspješno spremljene skice
+                  // (vidjeno u testu na produkciji).
+                  setDirty(false);
                   setExitOpen(false);
                   proceedRef.current?.();
                 } catch {

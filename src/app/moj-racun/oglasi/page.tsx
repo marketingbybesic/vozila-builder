@@ -107,6 +107,9 @@ function StatusBadge({ status }: { status: string }) {
     active: { variant: "success", label: "Aktivan" },
     paused: { variant: "outline", label: "Pauziran" },
     sold: { variant: "neutral", label: "Prodano" },
+    // ⚠️ Bez ovog unosa skica je padala na `active` i prikazivala se kao
+    // "Aktivan" — vlasnik ju nije mogao razlikovati od objavljenih oglasa.
+    draft: { variant: "outline", label: "Skica" },
   };
   const m = map[status] ?? map.active;
   return <Badge variant={m.variant}>{m.label}</Badge>;
