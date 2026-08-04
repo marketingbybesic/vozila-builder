@@ -96,12 +96,11 @@ export function CategoryNav({
                           : "min-h-12 px-2.5 xl:px-3 py-2",
                         isOpen
                           ? "bg-[var(--color-accent)] text-[var(--color-ink)] shadow-sm"
-                          : compact
-                            // Zaglavlje je SVIJETLO → tamni tekst (bijeli bi nestao).
-                            ? "text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/50 hover:text-[var(--color-ink)]"
-                            // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1
-                            // iz piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
-                            : "text-white hover:bg-white/10"
+                          // ⚠️ Karlo 04.08. (2. runda): traka je sad TAMNOPLAVA i u
+                          // zaglavlju → bijeli tekst vrijedi za obje varijante.
+                          // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1 iz
+                          // piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
+                          : "text-white hover:bg-white/10"
                       )
                     : cn(
                         // `h-full` uz `min-h` — kartica popunjava visinu retka
@@ -146,10 +145,7 @@ export function CategoryNav({
                       ? cn(
                           // ispod xl nema mjesta — naziv kategorije je važniji
                           "size-3.5 shrink-0 hidden xl:block",
-                          isOpen
-                            ? "rotate-180 text-[var(--color-ink)]/60"
-                            // Svijetlo zaglavlje → tamna strelica; tamni hero → bijela.
-                            : compact ? "text-[var(--color-muted)]" : "text-white/40"
+                          isOpen ? "rotate-180 text-[var(--color-ink)]/60" : "text-white/40"
                         )
                       : cn(
                           "absolute top-1.5 right-1.5 size-3 text-white/40",
@@ -171,11 +167,10 @@ export function CategoryNav({
           className={cn(
             "mt-2 rounded-[var(--radius-md)] p-3 animate-fade-in",
             compact
-              // ⚠️ Sadržaj panela je pisan BIJELIM tonovima (za tamni hero).
-              // U svijetlom zaglavlju zato panelu dajemo TAMNU podlogu — tako
-              // sav postojeći tekst ostaje čitljiv, bez diranja 40-ak klasa
-              // unutar njega. Sjena + `z-50` jer pluta preko sadržaja stranice.
-              ? "border border-[var(--color-line)] bg-[var(--color-ink)] shadow-[0_20px_48px_rgb(2_8_20/35%)] relative z-50"
+              // Panel u zaglavlju pluta PREKO sadržaja stranice → treba vlastitu
+              // tamnu podlogu (sadržaj mu je pisan bijelim tonovima), sjenu i
+              // `z-50`. Bez podloge bi se stranica ispod prosijavala kroz njega.
+              ? "border border-white/15 bg-[var(--color-ink)] shadow-[0_20px_48px_rgb(2_8_20/45%)] relative z-50"
               : "border border-white/15 bg-white/[0.06]",
           )}
         >

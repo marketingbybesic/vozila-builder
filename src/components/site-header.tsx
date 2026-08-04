@@ -115,7 +115,10 @@ export function SiteHeader() {
           vraćat na home" (uzor: avto.net).
           Sad je dostupna sa SVAKE stranice i prati scroll.
           Uža je nego u heroju (`py-1.5`, manji font) da ne jede ekran. */}
-      <div className="hidden lg:block border-t border-[var(--color-line)]/70">
+      {/* ⚠️ Karlo 04.08.2026 (2. runda): traka je TAMNOPLAVA s bijelim rubom —
+          ista boja kao hero/podnožje, pa se navigacija jasno odvaja od bijelog
+          zaglavlja iznad. */}
+      <div className="hidden lg:block bg-[var(--color-ink)] border-y border-white/15">
         <Container className="py-1.5">
           <CategoryNav variant="bar" compact />
         </Container>
