@@ -193,6 +193,22 @@ export function SiteHeader() {
               );
             })}
 
+            {/* ⚠️ Karlo 04.08.2026: "na mobilnoj opciji nema napredne pretrage".
+                U zaglavlju je skrivena ispod `sm` (nema mjesta uz logo i gumb),
+                pa jedini mobilni ulaz ide ovdje — odmah ispod kategorija, prije
+                crte koja odvaja blok računa. Naglašena je accent bojom jer je
+                radnja, ne postavka računa. */}
+            <hr className="border-[var(--color-line)] my-2" />
+
+            <Link
+              href="/oglasi/napredno"
+              onClick={closeMenu}
+              className="px-3 py-2.5 rounded-md text-sm font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40 inline-flex items-center gap-2"
+            >
+              <Search className="size-4" />
+              Napredna pretraga
+            </Link>
+
             <hr className="border-[var(--color-line)] my-2" />
 
             {/* Account block — unchanged */}
