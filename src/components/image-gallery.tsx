@@ -22,6 +22,24 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
    * Tipkovnica u lightboxu: ←/→ listaju, Esc zatvara.
    * ⚠️ Prije NIJE postojala — jedini način navigacije bili su gumbi mišem.
    */
+  /**
+   * Strelice se kratko pokažu pri otvaranju lightboxa, pa nestanu (Dino 04.08.).
+   * Bez toga korisnik ne zna da su bočne polovice slike klikabilne.
+   *
+   * ⚠️ SAMO DESKTOP (`hover: hover` + `pointer: fine`) — na dodir hovera nema,
+   * pa bi strelice ostale zauvijek preko slike. Detekcija ide po vrsti
+   * pokazivača, ne po širini ekrana (tablet s mišem nije "mobitel").
+   */
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    if (!lightbox || !many) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (!fine) return;
+    setHint(true);
+    const t = setTimeout(() => setHint(false), 2500);
+    return () => { clearTimeout(t); setHint(false); };
+  }, [lightbox, many]);
+
   useEffect(() => {
     if (!lightbox) return;
     const onKey = (e: KeyboardEvent) => {
@@ -154,7 +172,14 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
                   aria-label="Prethodna slika"
                   className="group/nav absolute inset-y-0 left-0 w-1/3 flex items-center justify-start pl-3 sm:pl-5 focus:outline-none"
                 >
-                  <span className="size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center opacity-0 translate-x-1 transition-all duration-200 group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0">
+                  <span
+                    className={
+                      "size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center transition-all ease-out group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:duration-200 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0 " +
+                      // Pojavljivanje 500 ms, gašenje 1000 ms (sporije = nježnije).
+                      // Hover uvijek pregazi s brzih 200 ms.
+                      (hint ? "opacity-100 translate-x-0 duration-500" : "opacity-0 translate-x-1 duration-1000")
+                    }
+                  >
                     <ChevronLeft className="size-6" />
                   </span>
                 </button>
@@ -164,7 +189,12 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
                   aria-label="Sljedeća slika"
                   className="group/nav absolute inset-y-0 right-0 w-1/3 flex items-center justify-end pr-3 sm:pr-5 focus:outline-none"
                 >
-                  <span className="size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center opacity-0 -translate-x-1 transition-all duration-200 group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0">
+                  <span
+                    className={
+                      "size-11 rounded-full bg-black/40 backdrop-blur-sm text-white grid place-items-center transition-all ease-out group-hover/nav:opacity-100 group-hover/nav:translate-x-0 group-hover/nav:duration-200 group-focus-visible/nav:opacity-100 group-focus-visible/nav:translate-x-0 " +
+                      (hint ? "opacity-100 translate-x-0 duration-500" : "opacity-0 -translate-x-1 duration-1000")
+                    }
+                  >
                     <ChevronRight className="size-6" />
                   </span>
                 </button>
