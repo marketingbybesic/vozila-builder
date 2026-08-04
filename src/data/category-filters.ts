@@ -589,13 +589,15 @@ const AUTO_FIELDS: FilterField[] = [
 
   // Karlo 30.07: iz Povijesti izbačeni "Prva registracija", "Registriran do"
   // i "Uvezeno iz" — datumska polja slobodnog unosa nisu se koristila za pretragu.
+  // Dino 04.08.: "Broj vlasnika" stoji IZNAD "Servisne evidencije" — redoslijed
+  // polja u shemi diktira redoslijed prikaza unutar rubrike.
+  NUM_OWNERS_FIELD,
   { key: "serviceHistory", label: "Servisna evidencija", type: "select", storage: "attr", group: "Povijest",
     options: [
       { value: "potpuna", label: "Potpuna servisna" },
       { value: "djelomicna", label: "Djelomična servisna" },
       { value: "nema", label: "Bez servisne" },
     ] },
-  NUM_OWNERS_FIELD,
 
   // Karlo 31.07: "Motor pali" (padajući, samo ostecen-u-kvaru) IZBAČEN — sada
   // isti podatak nosi kvačica "U voznom stanju" / "U kvaru" u rubrici
