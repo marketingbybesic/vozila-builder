@@ -83,7 +83,11 @@ kroz developer tools"*.
 - **Nakon svakog prompta**: checkpoint u `~/.checkpoints/vozila-<datum>-<tema>.md`
   (NE u root projekta, NE na `/Volumes` — labela zna otpasti).
 - **Nakon svakog prompta**: deploy na Vercel.
-- **Nakon svakih 5**: `git push origin main` → `marketingbybesic/vozila-builder`.
+- **Nakon SVAKOG gotovog posla**: `git push origin main` →
+  `marketingbybesic/vozila-builder` (javan repo). **Ne čekati 5 commita** —
+  Dino ubacuje repo u Gemini ("add code") na pregled, pa `main` na GitHubu mora
+  odgovarati onome što je deployano, inače Gemini gleda stari kod.
+  Uz link mu reci koji je zadnji commit.
 
 ```bash
 DB_DRIVER=supabase npm run build      # mora biti zelen PRIJE deploya
