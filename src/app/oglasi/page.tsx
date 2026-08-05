@@ -1,6 +1,5 @@
 import { Container } from "@/components/ui/container";
 import { ListingCard } from "@/components/listing-card";
-import { OglasiSidebar } from "@/components/oglasi-sidebar";
 import { SortDropdown } from "@/components/sort-dropdown";
 import { Pagination } from "@/components/pagination";
 import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
@@ -53,11 +52,11 @@ export default async function OglasiPage({
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-[280px_1fr] gap-8">
-        <div className="hidden lg:block">
-          <OglasiSidebar />
-        </div>
-
+      {/* ⚠️ Karlo 05.08.2026: bočni stupac s filterima MAKNUT s desktopa —
+          "ikona ne mora skrivati filtere; nek se prikazuju u punoj duljini".
+          Filtri se sad otvaraju u preklopu preko cijele širine (isti kao na
+          mobitelu), a rezultati zauzimaju cijelu stranicu. */}
+      <div>
         <div>
           {/* ⚠️ Karlo 05.08.2026: `flex-wrap` je na uskom ekranu lomio redak —
               "Filtri" je ostajao sam gore, a prekidač prikaza i sortiranje

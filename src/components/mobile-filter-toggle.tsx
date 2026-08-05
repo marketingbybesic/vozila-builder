@@ -21,7 +21,7 @@ export function MobileFilterToggle({ count }: { count: number }) {
         onClick={() => setOpen(true)}
         aria-label={count > 0 ? `Filtri (${count} aktivnih)` : "Filtri"}
         title="Filtri"
-        className="lg:hidden relative size-12 shrink-0 grid place-items-center rounded-[var(--radius-md)] border border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition-colors"
+        className="relative size-12 shrink-0 grid place-items-center rounded-[var(--radius-md)] border border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition-colors"
       >
         <Filter className="size-4" />
         {count > 0 && (
@@ -31,11 +31,9 @@ export function MobileFilterToggle({ count }: { count: number }) {
         )}
       </button>
 
-      {open && (
-        <div className="lg:hidden">
-          <FilterSidebar mobile onClose={() => setOpen(false)} />
-        </div>
-      )}
+      {/* ⚠️ Karlo 05.08.2026: preklop je sad i na DESKTOPU (bilo `lg:hidden`).
+          Ljevak otvara filtere preko pune širine umjesto da skriva bočni panel. */}
+      {open && <FilterSidebar mobile onClose={() => setOpen(false)} />}
     </>
   );
 }
