@@ -1080,7 +1080,17 @@ export function PostListingForm() {
                 try { localStorage.removeItem(DRAFT_KEY); } catch {}
                 setDirty(false); // ugasi guard prije navigacije
                 setExitOpen(false);
-                proceedRef.current?.();
+                /**
+                 * ⚠️ Karlo 05.08.2026 (stavka 8): "izađi i odbaci" UVIJEK vodi na
+                 * naslovnicu. Prije se izvodila IZVORNA navigacija (`proceedRef`) —
+                 * kod gumba "Nazad" to je bio `history.back()`, pa je korisnik
+                 * završio na nasumičnoj prethodnoj stranici, ponekad opet na
+                 * `/objavi`. Odbacivanje je svjestan izlazak, pa mu treba jasno
+                 * odredište.
+                 * `window.location` (ne `router`) jer guard sluša `beforeunload` —
+                 * puni reload zajamčeno napušta formu.
+                 */
+                setTimeout(() => { window.location.href = "/"; }, 0);
               }}
               className="h-11 px-4 rounded-[var(--radius-md)] text-sm font-medium border border-[var(--color-line)] text-[var(--color-danger)] hover:border-[var(--color-danger)] transition-all disabled:opacity-60"
             >
