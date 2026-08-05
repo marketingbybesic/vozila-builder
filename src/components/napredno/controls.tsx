@@ -328,7 +328,10 @@ export function MultiSelect({
                       "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
                       (active
                         ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
-                        : "bg-[var(--color-accent)]/10 border-[var(--color-accent)]/45")
+                        // ⚠️ Tailwind v4: `border-[var(--x)]/45` je DVOSMISLEN
+                        // (širina ili boja?) pa se klasa TIHO ispusti — treba
+                        // `color:` hint. Bez njega rub ostane globalni border-line.
+                        : "bg-[var(--color-accent)]/15 border-[color:var(--color-accent)]/45")
                     }
                   >
                     {active && <Check className="size-3 text-white" strokeWidth={3} />}
