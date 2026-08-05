@@ -1,4 +1,5 @@
 import { getFilterDefs, groupFields, type FilterField } from "@/data/category-filters";
+import { formatPower } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
 
 /**
@@ -198,18 +199,25 @@ export function cardSummary(listing: Listing): string[] {
   if (listing.year > 0) out.push(`${listing.year}.`);
   if (has("km") && listing.km > 0) out.push(`${listing.km.toLocaleString("hr-HR")} km`);
   if (has("fuel") && listing.fuel) out.push(listing.fuel);
+  /**
+   * ⚠️ Karlo 05.08.2026: "svaki oglas mora biti još kW (KS) — to je koliko
+   * konja ima." Snaga je jedan od prvih podataka koje kupac gleda, a na kartici
+   * je nije bilo. `formatPower` daje "110 kW (150 KS)".
+   */
+  if (has("powerKw") && listing.powerKw > 0) out.push(formatPower(listing.powerKw));
 
   // Nevozila: popuni smislenim podatkom umjesto praznine.
-  if (out.length < 3) {
+  if (out.length < 4) {
     const partState = attrs.condition2 ?? attrs.partCondition;
     if (typeof partState === "string" && partState) out.push(partState === "novo" ? "Novo" : "Rabljeno");
     else if (listing.condition) out.push(listing.condition);
   }
-  if (out.length < 3 && has("operatingHours")) {
+  if (out.length < 4 && has("operatingHours")) {
     const h = attrs.operatingHours;
     if (h) out.push(`${String(h).replace("..", "–")} h`);
   }
-  return out.slice(0, 3);
+  // Limit 4 (bio 3) — snaga je četvrti podatak uz godinu, km i gorivo.
+  return out.slice(0, 4);
 }
 
 /** Je li oglas vozilo? (kredit-kalkulator, VIN provjera i sl. nemaju smisla za dijelove.) */
