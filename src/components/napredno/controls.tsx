@@ -489,7 +489,17 @@ export function TogglePill({
       }
     >
       <span>{label}</span>
-      <span className={"size-2.5 rounded-full shrink-0 " + (on ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]")} />
+      {/* Karlo st. 16 (05.08.2026): ugašeni kružić je bio bg-line — na bijeloj
+          plohi nevidljiv, "ne vidi se gdje birati". Sad svijetlo narančast s
+          tankim rubom; upaljeno stanje NEDIRANO (puni accent). */}
+      <span
+        className={
+          "size-2.5 rounded-full shrink-0 " +
+          (on
+            ? "bg-[var(--color-accent)]"
+            : "bg-[var(--color-accent)]/30 ring-1 ring-inset ring-[var(--color-accent)]/50")
+        }
+      />
     </button>
   );
 }
