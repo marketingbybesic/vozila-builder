@@ -105,7 +105,14 @@ export function EditListingForm({ listing }: { listing: Listing }) {
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <TextField label="Izvedba" optional value={s.variant} onChange={(v) => set("variant", v)} />
-          <NumberField label="Godina" value={s.year} onChange={(v) => set("year", v)} placeholder="npr. 2019" />
+          {/* ⚠️ Godina ide kroz `TextField`, NE `NumberField` — potonji grupira
+              tisućice pa je 2010 prikazivao kao "2.010". */}
+          <TextField
+            label="Godina"
+            value={s.year}
+            onChange={(v) => set("year", v.replace(/[^\d]/g, "").slice(0, 4))}
+            placeholder="npr. 2019"
+          />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <NumberField label="Cijena" unit="€" value={s.priceEur} onChange={(v) => set("priceEur", v)} placeholder="npr. 12500" />
@@ -126,7 +133,13 @@ export function EditListingForm({ listing }: { listing: Listing }) {
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <NumberField label="Snaga" unit="kW" value={s.powerKw} onChange={(v) => set("powerKw", v)} placeholder="npr. 110" />
-          <NumberField label="Obujam" unit="cm³" value={s.engineCc} onChange={(v) => set("engineCc", v)} placeholder="npr. 1968" />
+          {/* Obujam isto bez grupiranja — 1968 cm³, ne "1.968". */}
+          <TextField
+            label="Obujam (cm³)"
+            value={s.engineCc}
+            onChange={(v) => set("engineCc", v.replace(/[^\d]/g, "").slice(0, 5))}
+            placeholder="npr. 1968"
+          />
         </div>
         <SelectField label="Boja" value={s.color} onChange={(v) => set("color", v as Listing["color"])} options={opts(COLORS)} />
       </section>
