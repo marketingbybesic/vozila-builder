@@ -450,7 +450,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const renderDynGroup = (g: { name: string; fields: FilterField[] }) => {
     const GIcon = GROUP_ICON[g.name] ?? ListFilter;
     return (
-      <div key={g.name} className="space-y-3">
+      // Karlo st. 15: crta između rubrika unutar istog panela ("Više filtera"
+      // slaže OPREMU/POVIJEST/SPECIFIKACIJE bez ikakve podjele). `first:` je
+      // gasi kad je rubrika prvi element panela; s panelovim space-y-4 linija
+      // stoji simetrično (16px razmaka iznad i ispod).
+      <div key={g.name} className="space-y-3 border-t border-[var(--color-line)] pt-4 first:border-t-0 first:pt-0">
         <SectionHead icon={GIcon} title={g.name} />
         <div className="grid sm:grid-cols-2 gap-3">
           {g.fields.map(renderField)}
