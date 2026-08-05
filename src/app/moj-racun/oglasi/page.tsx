@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingRowActions } from "@/components/listing-row-actions";
 import { RestoreListingButton } from "@/components/restore-listing-button";
+import { Pagination } from "@/components/pagination";
+import { PAGE_SIZE } from "@/lib/filter";
 import { requireUser } from "@/lib/session";
 import { db } from "@/db";
 import { cardSummary } from "@/lib/listing-fields";
@@ -33,19 +35,29 @@ const STATUS_TABS = [
 export default async function MyListingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, page: pageParam } = await searchParams;
   const user = await requireUser();
   // Obrisane dohvaćamo uvijek — treba nam broj za karticu "Obrisani".
   const all = await db().getListingsByUser(user.id, true);
 
   const aktivan = STATUS_TABS.some((t) => t.key === status) ? status! : "sve";
-  const items =
+  const filtrirani =
     aktivan === "sve"
       // "Sve" namjerno NE uključuje obrisane — oni su zaseban, namjeran odabir.
       ? all.filter((i) => i.status !== "deleted")
       : all.filter((i) => i.status === aktivan);
+
+  /**
+   * ⚠️ Dino 05.08.2026: "Moji oglasi dugo se učitavaju i čine se neresponzivnima."
+   * Izmjereno: stranica je renderirala SVIH 1240 oglasa odjednom — 1240 kartica
+   * i isto toliko `next/image` zahtjeva. Skeleton pokriva čekanje, ali uzrok je
+   * bio nedostatak paginacije.
+   */
+  const totalPages = Math.max(1, Math.ceil(filtrirani.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);
+  const items = filtrirani.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const count = (k: string) =>
     k === "sve" ? all.filter((i) => i.status !== "deleted").length : all.filter((i) => i.status === k).length;
@@ -173,6 +185,13 @@ export default async function MyListingsPage({
               </div>
             </article>
           ))}
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            basePath="/moj-racun/oglasi"
+            searchParams={aktivan === "sve" ? {} : { status: aktivan }}
+          />
         </div>
       )}
     </div>
