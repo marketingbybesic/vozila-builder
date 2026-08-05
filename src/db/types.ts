@@ -1,5 +1,22 @@
 import type { Listing, ListingFilters } from "@/lib/types";
 
+/**
+ * Podaci firme (Karlo st. 13, 06.08.2026). Namjena polja:
+ *  - oib/address/city/zip — INTERNO (računovodstvo, Stripe R1 račun),
+ *    NIKAD se ne prikazuju javno.
+ *  - name/website — smiju se javno prikazati uz oglase firme.
+ * ⏭️ MENTAL NOTE (Dino): promjena vrste računa će se kasnije naplaćivati /
+ * ograničiti da trgovci ne objavljuju kao "privatni" — za sada bez naplate.
+ */
+export type CompanyInfo = {
+  name: string;
+  oib: string;
+  address: string;
+  city: string;
+  zip: string;
+  website?: string;
+};
+
 export type DbUser = {
   id: string;
   email: string;
@@ -10,6 +27,7 @@ export type DbUser = {
   city: string | null;
   avatarUrl: string | null;
   sellerType: "Privatni" | "Trgovac";
+  company: CompanyInfo | null;
   role: "user" | "admin" | "moderator";
   tier: "free" | "pro" | "premium-dealer";
   bannedAt: string | null;
@@ -104,8 +122,9 @@ export interface DbAdapter {
     county?: string;
     city?: string;
     sellerType?: "Privatni" | "Trgovac";
+    company?: CompanyInfo | null;
   }): Promise<DbUser>;
-  updateUser(id: string, patch: Partial<Pick<DbUser, "firstName" | "lastName" | "phone" | "county" | "city" | "avatarUrl">>): Promise<DbUser>;
+  updateUser(id: string, patch: Partial<Pick<DbUser, "firstName" | "lastName" | "phone" | "county" | "city" | "avatarUrl" | "sellerType" | "company">>): Promise<DbUser>;
 
   // Sessions
   createSession(userId: string, ttlSeconds: number): Promise<{ token: string; expiresAt: string }>;

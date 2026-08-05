@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { clearSessionCookie, createSessionCookie, requireUser } from "@/lib/session";
+import { companyFromForm } from "@/lib/company";
 
 const SignUpInput = z.object({
   email: z.string().email("Neispravna e-mail adresa"),
@@ -13,6 +14,9 @@ const SignUpInput = z.object({
   firstName: z.string().min(1, "Ime je obavezno"),
   lastName: z.string().min(1, "Prezime je obavezno"),
   phone: z.string().optional(),
+  // Karlo st. 13: privatnik ili firma. Firma daje i računovodstvene podatke
+  // (OIB, adresa — INTERNO, za Stripe R1) + web koji smije biti javan.
+  accountType: z.enum(["privatni", "firma"]).default("privatni"),
 });
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
@@ -41,8 +45,17 @@ export async function signUpAction(_prev: AuthResult | undefined, formData: Form
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
     phone: formData.get("phone") || undefined,
+    accountType: formData.get("accountType") || "privatni",
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Neispravni podaci" };
+
+  // Firma: obavezni podaci za R1 (interno) + opcionalni web (javno).
+  let company: import("@/db/types").CompanyInfo | null = null;
+  if (parsed.data.accountType === "firma") {
+    const c = companyFromForm(formData);
+    if (!c.ok) return { ok: false, error: c.error };
+    company = c.company;
+  }
 
   const existing = await db().getUserByEmail(parsed.data.email);
   if (existing) return { ok: false, error: "Korisnik s ovom e-mail adresom već postoji" };
@@ -54,6 +67,8 @@ export async function signUpAction(_prev: AuthResult | undefined, formData: Form
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
     phone: parsed.data.phone,
+    sellerType: parsed.data.accountType === "firma" ? "Trgovac" : "Privatni",
+    company,
   });
   await createSessionCookie(user.id);
   redirect(safeNext(formData.get("next")));

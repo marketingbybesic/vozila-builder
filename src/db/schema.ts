@@ -21,6 +21,8 @@ export const users = pgTable("users", {
   city: text("city"),
   avatarUrl: text("avatar_url"),
   sellerType: text("seller_type").notNull().default("Privatni"),
+  // Karlo st. 13: podaci firme (oib/adresa = INTERNO za R1; name/website javno).
+  company: jsonb("company").$type<import("./types").CompanyInfo>(),
   role: text("role").notNull().default("user"), // 'user' | 'admin' | 'moderator'
   tier: text("tier").notNull().default("free"), // 'free' | 'pro' | 'premium-dealer'
   bannedAt: timestamp("banned_at", { withTimezone: true }),

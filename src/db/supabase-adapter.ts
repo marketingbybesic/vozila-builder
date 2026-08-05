@@ -75,6 +75,7 @@ function rowToUser(r: typeof users.$inferSelect): DbUser {
     city: r.city,
     avatarUrl: r.avatarUrl,
     sellerType: r.sellerType as "Privatni" | "Trgovac",
+    company: r.company ?? null,
     role: r.role as DbUser["role"],
     tier: r.tier as DbUser["tier"],
     bannedAt: r.bannedAt ? r.bannedAt.toISOString() : null,
@@ -188,6 +189,7 @@ export const supabaseAdapter: DbAdapter = {
         county: input.county ?? null,
         city: input.city ?? null,
         sellerType: input.sellerType ?? "Privatni",
+        company: input.company ?? null,
         role: isAdmin ? "admin" : "user",
       })
       .returning();
@@ -205,6 +207,8 @@ export const supabaseAdapter: DbAdapter = {
         county: patch.county,
         city: patch.city,
         avatarUrl: patch.avatarUrl,
+        sellerType: patch.sellerType,
+        company: patch.company,
       })
       .where(eq(users.id, id))
       .returning();

@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CountySelect } from "@/components/county-select";
+import { AccountTypeForm } from "@/components/account-type-form";
+import { requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Postavke" };
 
-export default function PostavkePage() {
+export default async function PostavkePage() {
+  const user = await requireUser();
   return (
     <div>
       <header className="mb-8">
@@ -17,19 +20,28 @@ export default function PostavkePage() {
 
       <div className="space-y-6">
         <Card title="Profil" desc="Tvoji javni podaci - prikazani na oglasima.">
+          {/* ⚠️ Kartica još NE SPREMA (poznata otvorena stavka) — ali bar
+              pokazuje STVARNE podatke umjesto hardkodiranog "Ivan". */}
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Ime"><Input defaultValue="Ivan" /></Field>
-            <Field label="Prezime"><Input defaultValue="Horvat" /></Field>
-            <Field label="E-mail"><Input type="email" defaultValue="ivan@auti.hr" /></Field>
-            <Field label="Telefon"><Input defaultValue="+385 91 234 5678" /></Field>
+            <Field label="Ime"><Input defaultValue={user.firstName} /></Field>
+            <Field label="Prezime"><Input defaultValue={user.lastName} /></Field>
+            <Field label="E-mail"><Input type="email" defaultValue={user.email} /></Field>
+            <Field label="Telefon"><Input defaultValue={user.phone ?? ""} /></Field>
             <Field label="Županija">
-              <CountySelect defaultValue="Grad Zagreb" />
+              <CountySelect defaultValue={user.county ?? ""} />
             </Field>
-            <Field label="Grad"><Input defaultValue="Zagreb" /></Field>
+            <Field label="Grad"><Input defaultValue={user.city ?? ""} /></Field>
           </div>
           <div className="flex justify-end mt-5">
             <Button variant="primary">Spremi promjene</Button>
           </div>
+        </Card>
+
+        <Card
+          title="Vrsta računa"
+          desc="Privatna osoba ili firma. Podaci firme za R1 račun (OIB, adresa) su interni i ne prikazuju se javno."
+        >
+          <AccountTypeForm sellerType={user.sellerType} company={user.company} />
         </Card>
 
         <Card title="Obavijesti" desc="Što želiš da ti dolazi u sandučić.">
