@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
+import { CircleParking, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
 import { CategoryNav } from "@/components/category-nav";
 import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
@@ -72,9 +72,9 @@ export function SiteHeader() {
           <Link
             href="/moj-racun/spremljeno"
             className="hidden sm:flex h-10 w-10 items-center justify-center rounded-md text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40"
-            aria-label="Spremljeni oglasi"
+            aria-label="Moj parking"
           >
-            <Heart className="size-4" />
+            <CircleParking className="size-4" />
           </Link>
           <Link
             href="/moj-racun/poruke"
@@ -239,7 +239,7 @@ export function SiteHeader() {
               onClick={closeMenu}
               className="px-3 py-2.5 rounded-md text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:bg-[var(--color-line)]/40"
             >
-              Spremljeni oglasi
+              Moj parking
             </Link>
             <Link
               href="/moj-racun/poruke"

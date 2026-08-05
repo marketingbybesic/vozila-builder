@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Car, Heart, MessageSquare, Eye, TrendingUp, Plus } from "lucide-react";
+import { Car, CircleParking, MessageSquare, Eye, TrendingUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listing-card";
 import { requireUser } from "@/lib/session";
@@ -20,7 +20,7 @@ export default async function MojRacunPage() {
   const stats = [
     { label: "Aktivni oglasi", value: String(active.length), icon: Car, change: active.length > 0 ? "Aktivno" : "—" },
     { label: "Ukupno pregleda", value: new Intl.NumberFormat("hr-HR").format(totalViews), icon: Eye, change: totalViews > 0 ? "+0 danas" : "—" },
-    { label: "Spremili kupci", value: String(saved.length), icon: Heart, change: "—" },
+    { label: "Parkirali kupci", value: String(saved.length), icon: CircleParking, change: "—" },
     { label: "Nove poruke", value: String(unread), icon: MessageSquare, change: unread > 0 ? "Pročitaj" : "—" },
   ];
 

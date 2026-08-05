@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
+import { CircleParking } from "lucide-react";
 import { toggleSavedAction } from "@/actions/saved";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +51,7 @@ export function SaveButton({ listingId, variant = "card", className }: Props) {
       onClick={onToggle}
       disabled={pending}
       aria-pressed={saved}
-      aria-label={saved ? "Ukloni iz spremljenih" : "Spremi oglas"}
+      aria-label={saved ? "Ukloni iz parkinga" : "Parkiraj oglas"}
       className={cn(
         variant === "card"
           ? "absolute top-3 right-3 size-9 rounded-full bg-white/90 backdrop-blur grid place-items-center transition-colors shadow-sm "
@@ -61,8 +61,10 @@ export function SaveButton({ listingId, variant = "card", className }: Props) {
         className
       )}
     >
-      <Heart className={cn("size-4", saved && "fill-current")} />
-      {variant === "detail" && (saved ? "Spremljeno" : "Spremi")}
+      {/* Bez `fill-current` — ispunjen CircleParking postane pun krug bez
+          čitljivog "P"; stanje ionako nosi boja (danger). */}
+      <CircleParking className="size-4" />
+      {variant === "detail" && (saved ? "Moj parking" : "Parkiraj")}
     </button>
   );
 }
