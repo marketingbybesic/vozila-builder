@@ -180,7 +180,7 @@ export default async function MyListingsPage({
                 {l.status === "deleted" ? (
                   <RestoreListingButton id={l.id} />
                 ) : (
-                  <ListingRowActions id={l.id} status={l.status as "active" | "paused" | "sold"} />
+                  <ListingRowActions id={l.id} status={l.status as "active" | "paused" | "sold" | "draft"} />
                 )}
               </div>
             </article>

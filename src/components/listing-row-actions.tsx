@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Pencil, Pause, Play, Trash2 } from "lucide-react";
 import { setListingStatusAction, deleteListingAction } from "@/actions/listings";
 
-export function ListingRowActions({ id, status }: { id: string; status: "active" | "paused" | "sold" }) {
+export function ListingRowActions({ id, status }: { id: string; status: "active" | "paused" | "sold" | "draft" }) {
   const [pending, start] = useTransition();
   const [err, setErr] = useState<string | null>(null);
 
@@ -36,12 +36,16 @@ export function ListingRowActions({ id, status }: { id: string; status: "active"
         <Pencil className="size-3.5" />
         Uredi
       </Link>
-      <ActionButton
-        icon={status === "paused" ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
-        label={status === "paused" ? "Aktiviraj" : "Pauziraj"}
-        onClick={togglePause}
-        disabled={pending}
-      />
+      {/* Karlo 05.08.: skica nije objavljena pa "Pauziraj" nema smisla —
+          na skici ostaju samo Uredi i Obriši. */}
+      {status !== "draft" && (
+        <ActionButton
+          icon={status === "paused" ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
+          label={status === "paused" ? "Aktiviraj" : "Pauziraj"}
+          onClick={togglePause}
+          disabled={pending}
+        />
+      )}
       <ActionButton
         icon={<Trash2 className="size-3.5" />}
         label="Obriši"

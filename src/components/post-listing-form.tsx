@@ -201,6 +201,15 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     setResume(null);
   };
 
+  // Karlo st. 22 (05.08.2026): prijelaz na drugi korak vraća pogled na VRH
+  // stranice — prije je scroll ostajao na visini prošlog koraka pa se moralo
+  // ručno gore. Ref čuva od skoka pri prvom renderu.
+  const prevStepRef = useRef(step);
+  useEffect(() => {
+    if (prevStepRef.current !== step) window.scrollTo({ top: 0, behavior: "smooth" });
+    prevStepRef.current = step;
+  }, [step]);
+
   // Spremanje nacrta na svaku izmjenu (nakon što je korisnik stvarno nešto dirao).
   useEffect(() => {
     if (!dirty || submitted) return;
