@@ -101,17 +101,21 @@ h1, h2, h3, h4, .display {
 }
 
 .skeleton {
+  /* Dino 05.08.2026: "ublaži malo i uspori prijelaz gradijenta da izgleda
+     elegantno" — vrhunac odsjaja stišan (60/40 umjesto 20/80 prema bijeloj),
+     pojas širi (30–70% umjesto 42–58%) pa nema tvrde pruge, prolaz 3s
+     linearno umjesto 1.8s s ubrzanjem. */
   background-image: linear-gradient(
     100deg,
-    var(--color-line) 20%,
-    color-mix(in oklab, var(--color-line) 45%, white) 42%,
-    color-mix(in oklab, var(--color-line) 20%, white) 50%,
-    color-mix(in oklab, var(--color-line) 45%, white) 58%,
-    var(--color-line) 80%
+    var(--color-line) 10%,
+    color-mix(in oklab, var(--color-line) 72%, white) 30%,
+    color-mix(in oklab, var(--color-line) 60%, white) 50%,
+    color-mix(in oklab, var(--color-line) 72%, white) 70%,
+    var(--color-line) 90%
   );
   background-size: 200% 100%;
   background-repeat: no-repeat;
-  animation: shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: shimmer 3s linear infinite;
   animation-delay: var(--shimmer-delay, 0s);
 }
 
