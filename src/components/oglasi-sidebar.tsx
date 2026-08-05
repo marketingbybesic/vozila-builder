@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * Desktop wrapper oko FilterSidebar s "Sakrij filtere" / "Prikaži filtere".
+ * Desktop wrapper oko FilterSidebar — bočni stupac s brzim filterima.
  * Kad je skriveno, rezultati zauzmu cijelu širinu (page koristi ovo stanje
  * preko CSS-a: aside se sakrije, grid postane jedan stupac).
  */
 
-import { Filter } from "lucide-react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 
 /**
@@ -23,14 +22,14 @@ import { FilterSidebar } from "@/components/filter-sidebar";
  *
  * Prekidač za skrivanje je UKLONJEN — Karlo: "ikona ne mora skrivati filtere".
  * Na mobitelu filteri idu kroz pop-up (`MobileFilterToggle`).
+ *
+ * ⚠️ Karlo 05.08.2026 (2): "podigni gore da kreće od ruba oglasa" — naslov
+ * "Filtri" iznad panela spuštao ga je ~44 px ispod prve kartice. Maknut je;
+ * ljevak u traci iznad ionako označava filtere, pa naslov nije nosio značenje.
  */
 export function OglasiSidebar() {
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col">
-      <div className="shrink-0 flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--color-ink)]">
-        <Filter className="size-4 text-[var(--color-accent-dark)]" />
-        Filtri
-      </div>
       {/* `min-h-0` je nužan — bez njega flex dijete ne dopušta scroll djetetu.
           Scroll ostaje kao zaštita: na niskim ekranima (npr. 768 px) i osnovni
           set može premašiti visinu. */}

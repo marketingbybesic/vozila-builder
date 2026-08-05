@@ -61,7 +61,12 @@ export default async function OglasiPage({
             retka (izmjereno 1626 px), pa se `sticky` dijete unutar nje slobodno
             kreće do dna i ne "zalijepi" se. Sa `self-start` aside je visok
             koliko i sadržaj, a `sticky` radi kako treba. */}
-        <aside className="hidden lg:block self-start sticky top-28">
+        {/* ⚠️ `mt-[72px]` poravnava vrh panela s prvom KARTICOM oglasa desno —
+            traka sa sortiranjem iznad rezultata visoka je 48 px + 24 px razmaka.
+            Bez toga je panel kretao 72 px previsoko, u liniji s trakom.
+            Odmak vrijedi samo na vrhu stranice; kad se `sticky` uhvati, panel
+            ide na `top-28` kao i prije. */}
+        <aside className="hidden lg:block self-start sticky top-28 mt-[72px]">
           <OglasiSidebar />
         </aside>
 

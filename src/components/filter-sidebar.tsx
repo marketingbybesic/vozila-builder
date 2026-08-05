@@ -172,6 +172,13 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
       )}
 
+      {/* ⚠️ Karlo 05.08.2026: lokacija pripada u BRZE filtere — kupci najčešće
+          traže vozilo u svojoj županiji. U punom prikazu stoji niže (uz
+          Prodavača), pa se ovdje renderira samo u `compact` načinu. */}
+      {compact && (
+        <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+      )}
+
       {/**
        * ⚠️ Karlo 05.08.2026: "ne stanu svi filteri, napravi osnovni set koji
        * stane punom visinom, a napredni u pop-upu."
