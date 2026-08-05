@@ -7,20 +7,31 @@
  */
 
 import { useState } from "react";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Filter, X } from "lucide-react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 
+/**
+ * ⚠️ Karlo 05.08.2026: "nedostaje ista ikona na desktopu".
+ * Mobilni prekidač koristi ikonu LJEVKA (`Filter`), a desktop je imao ikone
+ * panela (`PanelLeftClose/Open`) uz tekst — dvije različite ikone za istu radnju.
+ * Sad je i ovdje ljevak, u kvadratnom gumbu istog izgleda kao na mobitelu.
+ */
 export function OglasiSidebar() {
   const [hidden, setHidden] = useState(false);
+
+  const gumb =
+    "relative size-10 shrink-0 grid place-items-center rounded-[var(--radius-md)] border transition-colors";
 
   if (hidden) {
     return (
       <button
         type="button"
         onClick={() => setHidden(false)}
-        className="sticky top-20 inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
+        aria-label="Prikaži filtere"
+        title="Prikaži filtere"
+        className={`${gumb} sticky top-20 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)]`}
       >
-        <PanelLeftOpen className="size-4" /> Prikaži filtere
+        <Filter className="size-4" />
       </button>
     );
   }
@@ -30,9 +41,13 @@ export function OglasiSidebar() {
       <button
         type="button"
         onClick={() => setHidden(true)}
-        className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-accent-dark)] hover:underline"
+        aria-label="Sakrij filtere"
+        title="Sakrij filtere"
+        className={`${gumb} mb-3 border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent-dark)] hover:bg-[var(--color-accent)]/20`}
       >
-        <PanelLeftClose className="size-4" /> Sakrij filtere
+        <Filter className="size-4" />
+        {/* Križić u kutu — jasno da klik ZATVARA otvoreni panel. */}
+        <X className="size-2.5 absolute top-1 right-1 opacity-70" />
       </button>
       <FilterSidebar />
     </div>
