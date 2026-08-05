@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star, AlertCircle } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Upload, X, Sparkles, GripVertical, Star, AlertCircle, History } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -155,34 +155,51 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const proceedRef = useRef<(() => void) | null>(null);
   const [dirty, setDirty] = useState(false);
 
-  // Vraćanje nacrta iz preglednika (samo jednom, pri otvaranju forme).
+  /**
+   * Karlo st. 20 (05.08.2026): "Objavi oglas" UVIJEK kreće od 1. koraka.
+   * Prije se nacrt iz preglednika vraćao TIHO — klik na gumb te bez pitanja
+   * bacio usred starog oglasa. Sad se nacrt samo pročita, a korisnik iznad
+   * forme dobije izbor: "Nastavi gdje sam stao" ili "Odbaci".
+   * Nacrt ovdje postoji SAMO nakon reloada/pada/zatvaranja preglednika —
+   * objava, "Izađi i odbaci" i "Spremi kao skicu" ga sve brišu.
+   */
+  const [resume, setResume] = useState<{ state: State; step: number } | null>(null);
   useEffect(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const saved = JSON.parse(raw) as { state: State; step: number };
-      if (saved?.state) {
-        // Nacrt ima prednost (korisnikove izmjene), ali PRAZNA kontakt polja
-        // starog nacrta popuni iz profila — inače bi nacrt od prije ove
-        // funkcije poništio predpopunu.
-        setS(
-          profile
-            ? {
-                ...saved.state,
-                firstName: saved.state.firstName || profile.firstName,
-                lastName: saved.state.lastName || profile.lastName,
-                phone: saved.state.phone || profile.phone,
-                email: saved.state.email || profile.email,
-              }
-            : saved.state
-        );
-        setStep(saved.step ?? 1);
-        setDirty(true);
-      }
+      if (saved?.state) setResume(saved);
     } catch {
       // Neispravan/oštećen zapis ne smije srušiti formu — samo ga ignoriraj.
     }
   }, []);
+
+  const resumeDraft = () => {
+    if (!resume) return;
+    // Nacrt ima prednost (korisnikove izmjene), ali PRAZNA kontakt polja
+    // starog nacrta popuni iz profila — inače bi nacrt od prije predpopune
+    // (st. 12) poništio predpopunu.
+    setS(
+      profile
+        ? {
+            ...resume.state,
+            firstName: resume.state.firstName || profile.firstName,
+            lastName: resume.state.lastName || profile.lastName,
+            phone: resume.state.phone || profile.phone,
+            email: resume.state.email || profile.email,
+          }
+        : resume.state
+    );
+    setStep(resume.step ?? 1);
+    setDirty(true);
+    setResume(null);
+  };
+
+  const discardDraft = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setResume(null);
+  };
 
   // Spremanje nacrta na svaku izmjenu (nakon što je korisnik stvarno nešto dirao).
   useEffect(() => {
@@ -710,6 +727,33 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
 
   return (
     <>
+      {/* Ponuda povratka na nedovršeni oglas — nestaje čim korisnik krene
+          ispočetka (dirty), jer novi unos ionako prepiše stari nacrt. */}
+      {resume && !dirty && !submitted && (
+        <div className="mt-8 flex flex-wrap items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/8 px-4 py-3 animate-fade-in">
+          <History className="size-4 text-[var(--color-accent-dark)] shrink-0" />
+          <div className="flex-1 min-w-[14rem] text-sm">
+            <span className="font-medium">Imaš nedovršeni oglas od prošlog puta.</span>{" "}
+            <span className="text-[var(--color-ink-soft)]">Nastavi ili počni ispočetka.</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={resumeDraft}
+              className="h-9 px-3.5 rounded-md bg-[var(--color-ink)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Nastavi gdje sam stao
+            </button>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="h-9 px-3.5 rounded-md border border-[var(--color-line)] text-sm text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 transition-colors"
+            >
+              Odbaci
+            </button>
+          </div>
+        </div>
+      )}
       <ol className="mt-8 grid grid-cols-6 gap-2">
         {STEPS.map((st) => {
           const done = st.id < step;
