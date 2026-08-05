@@ -5,6 +5,7 @@ import { Plus, Eye, MessageSquare, Pencil, Pause, Play, Trash2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingRowActions } from "@/components/listing-row-actions";
+import { RestoreListingButton } from "@/components/restore-listing-button";
 import { requireUser } from "@/lib/session";
 import { db } from "@/db";
 import { cardSummary } from "@/lib/listing-fields";
@@ -12,18 +13,51 @@ import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Moji oglasi" };
 
-export default async function MyListingsPage() {
+/**
+ * ⚠️ Karlo 05.08.2026 (stavka 10): pauzirani I obrisani oglasi moraju se moći
+ * pregledati. Pauzirani su i prije bili u popisu, ali ih se nije dalo izdvojiti;
+ * obrisani se uopće nisu dohvaćali (`status <> 'deleted'` u adapteru).
+ *
+ * Filtar ide preko URL parametra (`?status=`) — stranica ostaje server
+ * komponenta, stanje preživi osvježavanje i može se podijeliti linkom.
+ */
+const STATUS_TABS = [
+  { key: "sve", label: "Sve" },
+  { key: "active", label: "Aktivni" },
+  { key: "paused", label: "Pauzirani" },
+  { key: "draft", label: "Skice" },
+  { key: "sold", label: "Prodani" },
+  { key: "deleted", label: "Obrisani" },
+] as const;
+
+export default async function MyListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
   const user = await requireUser();
-  const items = await db().getListingsByUser(user.id);
-  const activeCount = items.filter((i) => i.status === "active").length;
+  // Obrisane dohvaćamo uvijek — treba nam broj za karticu "Obrisani".
+  const all = await db().getListingsByUser(user.id, true);
+
+  const aktivan = STATUS_TABS.some((t) => t.key === status) ? status! : "sve";
+  const items =
+    aktivan === "sve"
+      // "Sve" namjerno NE uključuje obrisane — oni su zaseban, namjeran odabir.
+      ? all.filter((i) => i.status !== "deleted")
+      : all.filter((i) => i.status === aktivan);
+
+  const count = (k: string) =>
+    k === "sve" ? all.filter((i) => i.status !== "deleted").length : all.filter((i) => i.status === k).length;
+  const activeCount = count("active");
 
   return (
     <div>
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-3xl md:text-4xl tracking-tight">Moji oglasi</h1>
           <p className="text-sm text-[var(--color-muted)] mt-1">
-            {items.length} ukupno · {activeCount} aktivnih
+            {count("sve")} ukupno · {activeCount} aktivnih
           </p>
         </div>
         <Button asChild variant="accent">
@@ -34,15 +68,52 @@ export default async function MyListingsPage() {
         </Button>
       </header>
 
+      {/* Kartice po statusu — prikazuju se samo one koje imaju oglasa,
+          uz "Sve" i trenutno odabranu (da se odabir ne izgubi kad ostane prazan). */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {STATUS_TABS.filter((t) => t.key === "sve" || count(t.key) > 0 || t.key === aktivan).map((t) => {
+          const odabran = t.key === aktivan;
+          return (
+            <Link
+              key={t.key}
+              href={t.key === "sve" ? "/moj-racun/oglasi" : `/moj-racun/oglasi?status=${t.key}`}
+              className={
+                "inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-sm font-medium border transition-colors " +
+                (odabran
+                  ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+                  : "border-[var(--color-line)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)]")
+              }
+            >
+              {t.label}
+              <span className={odabran ? "text-white/60" : "text-[var(--color-muted)]"}>{count(t.key)}</span>
+            </Link>
+          );
+        })}
+      </div>
+
       {items.length === 0 ? (
         <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] border border-[var(--color-line)] p-12 text-center">
-          <h2 className="font-display text-xl">Još nemaš oglasa</h2>
-          <p className="mt-2 text-sm text-[var(--color-ink-soft)] max-w-md mx-auto">
-            Tvoji oglasi će se prikazati ovdje. Prvi oglas je besplatan.
-          </p>
-          <Button asChild variant="primary" className="mt-6">
-            <Link href="/objavi">Objavi prvi oglas</Link>
-          </Button>
+          {/* Prazan FILTAR nije isto što i prazan račun — poruka mora odgovarati. */}
+          {aktivan !== "sve" ? (
+            <>
+              <h2 className="font-display text-xl">
+                Nema oglasa u kategoriji „{STATUS_TABS.find((t) => t.key === aktivan)?.label}"
+              </h2>
+              <Button asChild variant="outline" className="mt-6">
+                <Link href="/moj-racun/oglasi">Prikaži sve oglase</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <h2 className="font-display text-xl">Još nemaš oglasa</h2>
+              <p className="mt-2 text-sm text-[var(--color-ink-soft)] max-w-md mx-auto">
+                Tvoji oglasi će se prikazati ovdje. Besplatno za privatne korisnike.
+              </p>
+              <Button asChild variant="primary" className="mt-6">
+                <Link href="/objavi">Objavi prvi oglas</Link>
+              </Button>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -92,7 +163,13 @@ export default async function MyListingsPage() {
                 </div>
               </div>
               <div className="border-t border-[var(--color-line)] px-4 py-2.5 flex flex-wrap gap-1 bg-[var(--color-bg)]/50">
-                <ListingRowActions id={l.id} status={l.status as "active" | "paused" | "sold"} />
+                {/* Na obrisanom oglasu "Uredi/Pauziraj/Obriši" nemaju smisla —
+                    brisanje je MEKO, pa nudimo povrat. */}
+                {l.status === "deleted" ? (
+                  <RestoreListingButton id={l.id} />
+                ) : (
+                  <ListingRowActions id={l.id} status={l.status as "active" | "paused" | "sold"} />
+                )}
               </div>
             </article>
           ))}
@@ -110,6 +187,8 @@ function StatusBadge({ status }: { status: string }) {
     // ⚠️ Bez ovog unosa skica je padala na `active` i prikazivala se kao
     // "Aktivan" — vlasnik ju nije mogao razlikovati od objavljenih oglasa.
     draft: { variant: "outline", label: "Skica" },
+    // Isti razlog: bez ovog unosa obrisani oglas piše "Aktivan".
+    deleted: { variant: "neutral", label: "Obrisan" },
   };
   const m = map[status] ?? map.active;
   return <Badge variant={m.variant}>{m.label}</Badge>;

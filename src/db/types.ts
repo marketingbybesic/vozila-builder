@@ -115,7 +115,8 @@ export interface DbAdapter {
   // Listings
   listListings(filters: ListingFilters): Promise<{ items: Listing[]; total: number }>;
   getListingBySlug(slug: string): Promise<Listing | null>;
-  getListingsByUser(userId: string): Promise<(Listing & { status: string })[]>;
+  /** `includeDeleted` — vraća i meko obrisane oglase (Karlo 05.08.2026, stavka 10). */
+  getListingsByUser(userId: string, includeDeleted?: boolean): Promise<(Listing & { status: string })[]>;
   getFeaturedListings(limit: number): Promise<Listing[]>;
   getRelatedListings(listing: Listing, limit: number): Promise<Listing[]>;
   getAllActiveSlugs(): Promise<{ slug: string; createdAt: string }[]>;

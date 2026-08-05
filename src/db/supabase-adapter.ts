@@ -335,12 +335,21 @@ export const supabaseAdapter: DbAdapter = {
     return rows.map((r) => ({ slug: r.slug, createdAt: r.createdAt.toISOString() }));
   },
 
-  async getListingsByUser(userId) {
+  /**
+   * ⚠️ Karlo 05.08.2026 (stavka 10): obrisani oglasi se moraju dati pregledati.
+   * Brisanje je "meko" (`status = 'deleted'`, redak ostaje), pa je dovoljno
+   * ukloniti filtar kad se izričito traže. Zadano su i dalje skriveni.
+   */
+  async getListingsByUser(userId, includeDeleted) {
     const rows = await dbq
       .select({ l: listings, u: users })
       .from(listings)
       .leftJoin(users, eq(users.id, listings.userId))
-      .where(and(eq(listings.userId, userId), sql`${listings.status} <> 'deleted'`))
+      .where(
+        includeDeleted
+          ? eq(listings.userId, userId)
+          : and(eq(listings.userId, userId), sql`${listings.status} <> 'deleted'`),
+      )
       .orderBy(desc(listings.createdAt));
     return rows.map((r) => ({
       ...rowToListing(

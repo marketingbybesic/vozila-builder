@@ -248,11 +248,11 @@ export const memoryAdapter: DbAdapter = {
       .map((l) => ({ slug: l.slug, createdAt: l.createdAt }));
   },
 
-  async getListingsByUser(userId) {
+  async getListingsByUser(userId, includeDeleted) {
     const s = store();
     const u = s.users.get(userId);
     return [...s.listings.values()]
-      .filter((l) => l.ownerId === userId && l.status !== "deleted")
+      .filter((l) => l.ownerId === userId && (includeDeleted || l.status !== "deleted"))
       .map((l) => ({ ...stripOwner(l), status: l.status, sellerName: u ? `${u.firstName} ${u.lastName}` : l.sellerName }));
   },
 
