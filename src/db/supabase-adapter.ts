@@ -144,6 +144,8 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     sellerName,
     sellerType: sellerType as Listing["sellerType"],
     sellerPhone,
+    // Omogućuje link s oglasa na SVE oglase istog prodavača (`/trgovci/<id>`).
+    sellerId: r.userId,
     views: r.views,
     phoneReveals: r.phoneReveals,
     featured: r.featured,

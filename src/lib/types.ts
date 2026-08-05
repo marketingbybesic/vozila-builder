@@ -124,6 +124,12 @@ export const Listing = z.object({
   sellerName: z.string(),
   sellerType: z.enum(SELLER_TYPES),
   sellerPhone: z.string(),
+  /**
+   * ID prodavača — potreban da se s oglasa može otvoriti popis SVIH njegovih
+   * oglasa (`/trgovci/<id>`). Dino 05.08.2026: "klik na ime prodavača ne radi".
+   * Opcionalan jer ga statični demo-dealeri i pregled objave nemaju.
+   */
+  sellerId: z.string().optional(),
   sellerEmail: z.string().email().optional(),
   views: z.number().int().nonnegative(),
   phoneReveals: z.number().int().nonnegative().optional(),

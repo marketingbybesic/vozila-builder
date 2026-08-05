@@ -208,10 +208,31 @@ export default async function ListingDetailPage({
                 <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-2">
                   Prodavač
                 </div>
-                <div className="font-medium">{listing.sellerName}</div>
+                {/* ⚠️ Dino 05.08.2026: ime prodavača je bilo običan `<div>` —
+                    klik nije radio ništa. Sad vodi na sve njegove oglase.
+                    Fallback na `<div>` kad `sellerId` nema (statični demo-dealeri),
+                    da se ne stvori mrtav link na `/trgovci/undefined`. */}
+                {listing.sellerId ? (
+                  <Link
+                    href={`/trgovci/${listing.sellerId}`}
+                    className="font-medium hover:text-[var(--color-accent-dark)] hover:underline transition-colors"
+                  >
+                    {listing.sellerName}
+                  </Link>
+                ) : (
+                  <div className="font-medium">{listing.sellerName}</div>
+                )}
                 <div className="text-xs text-[var(--color-muted)] mt-0.5">
                   {listing.sellerType} · {listing.city}
                 </div>
+                {listing.sellerId && (
+                  <Link
+                    href={`/trgovci/${listing.sellerId}`}
+                    className="mt-1.5 inline-block text-xs font-medium text-[var(--color-accent-dark)] hover:underline"
+                  >
+                    Svi oglasi ovog prodavača →
+                  </Link>
+                )}
               </div>
 
               <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
