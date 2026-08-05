@@ -57,7 +57,11 @@ export default async function OglasiPage({
           visini ekrana i bez scrollanja stranice (panel ima vlastiti scroll).
           Na mobitelu je pop-up (ljevak gore lijevo). */}
       <div className="grid lg:grid-cols-[280px_1fr] gap-8">
-        <aside className="hidden lg:block">
+        {/* ⚠️ `self-start` je NUŽAN: grid stavka se po zadanom rasteže na visinu
+            retka (izmjereno 1626 px), pa se `sticky` dijete unutar nje slobodno
+            kreće do dna i ne "zalijepi" se. Sa `self-start` aside je visok
+            koliko i sadržaj, a `sticky` radi kako treba. */}
+        <aside className="hidden lg:block self-start sticky top-28">
           <OglasiSidebar />
         </aside>
 
