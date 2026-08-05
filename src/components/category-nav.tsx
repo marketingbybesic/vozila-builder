@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Car, Bike, Truck, Caravan, ChevronDown } from "lucide-react";
 import { Backhoe, Wheel } from "@/components/icons/tabler";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,28 @@ const ICONS = {
   camper: Caravan,
   brakedisc: Wheel,
 } as const;
+
+/**
+ * Karlo st. 14: kategorija u kojoj korisnik TRENUTNO jest (?category= na
+ * rezultatima) mora biti označena u traci i kad izbornik nije otvoren.
+ *
+ * ⚠️ `useSearchParams` u klijentskoj komponenti traži Suspense granicu — bez
+ * nje build ruši SVE statične stranice (traka je u zaglavlju na svima). Zato
+ * ovo živi u zasebnom djetetu iza <Suspense fallback={null}>: statični HTML
+ * nema highlight, hidracija ga doda.
+ */
+function ActiveCategoryTracker({ onChange }: { onChange: (slug: string | null) => void }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const active =
+    pathname === "/oglasi" || pathname === "/oglasi/napredno"
+      ? searchParams.get("category")
+      : null;
+  useEffect(() => {
+    onChange(active);
+  }, [active, onChange]);
+  return null;
+}
 
 /**
  * variant "grid" — 3×2 kvadrati (mobilni, zadano; nepromijenjeno ponašanje)
@@ -40,6 +63,7 @@ export function CategoryNav({
 }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [openSubSlug, setOpenSubSlug] = useState<string | null>(null);
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
 
   const openCategory = CATEGORIES.find((c) => c.slug === openSlug);
   const openSub = openCategory?.subcategories.find((s) => s.slug === openSubSlug);
@@ -76,6 +100,9 @@ export function CategoryNav({
 
   return (
     <nav aria-label="Kategorije vozila" ref={navRef}>
+      <Suspense fallback={null}>
+        <ActiveCategoryTracker onChange={setActiveSlug} />
+      </Suspense>
       <ul
         className={cn(
           isBar
@@ -94,6 +121,7 @@ export function CategoryNav({
         {CATEGORIES.map((cat) => {
           const Icon = ICONS[cat.icon];
           const isOpen = openSlug === cat.slug;
+          const isActive = activeSlug === cat.slug;
           /**
            * Karlo 02.08.: "mehanizacija još uvijek nije poravnata sa slobodno
            * vrijeme". Izmjereno na 390 px: MEHANIZACIJA 78 px, a SLOBODNO
@@ -108,6 +136,7 @@ export function CategoryNav({
                 type="button"
                 onClick={() => selectCategory(cat.slug)}
                 aria-expanded={isOpen}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "group relative transition-all",
                   isBar
@@ -119,11 +148,18 @@ export function CategoryNav({
                           : "min-h-12 px-2.5 xl:px-3 py-2",
                         isOpen
                           ? "bg-[var(--color-accent)] text-[var(--color-ink)] shadow-sm"
-                          // ⚠️ Karlo 04.08. (2. runda): traka je sad TAMNOPLAVA i u
-                          // zaglavlju → bijeli tekst vrijedi za obje varijante.
-                          // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1 iz
-                          // piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
-                          : "text-white hover:bg-white/10"
+                          // Karlo st. 14: aktivna kategorija (korisnik je u njoj)
+                          // označena i kad izbornik NIJE otvoren — svjetlija
+                          // podloga + accent linija uz donji rub, slabije od
+                          // pune accent podloge otvorene da se stanja razlikuju.
+                          // Tekst OSTAJE pun bijeli (WCAG mjerenje dolje).
+                          : isActive
+                            ? "bg-white/15 text-white shadow-[inset_0_-2px_0_var(--color-accent)] hover:bg-white/20"
+                            // ⚠️ Karlo 04.08. (2. runda): traka je sad TAMNOPLAVA i u
+                            // zaglavlju → bijeli tekst vrijedi za obje varijante.
+                            // Karlo 28.07: bilo text-white/90 → izmjereno 3.72:1 iz
+                            // piksela, ispod WCAG AA (4.5:1). Puna bijela = 13.2:1.
+                            : "text-white hover:bg-white/10"
                       )
                     : cn(
                         // `h-full` uz `min-h` — kartica popunjava visinu retka
