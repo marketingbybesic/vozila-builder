@@ -320,12 +320,15 @@ export function MultiSelect({
                   onClick={() => toggle(o.value)}
                   className={optionCls(active)}
                 >
+                  {/* Karlo st. 16 (05.08.2026): neodabrani kvadratić je imao samo
+                      border-line rub — na bijelom popoveru nevidljiv, "ne vidi se
+                      gdje birati". Sad svijetlo narančast; odabrano NEDIRANO. */}
                   <span
                     className={
                       "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
                       (active
                         ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
-                        : "border-[var(--color-line)]")
+                        : "bg-[var(--color-accent)]/10 border-[var(--color-accent)]/45")
                     }
                   >
                     {active && <Check className="size-3 text-white" strokeWidth={3} />}
