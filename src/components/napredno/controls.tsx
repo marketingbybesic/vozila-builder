@@ -322,17 +322,20 @@ export function MultiSelect({
                 >
                   {/* Karlo st. 16 (05.08.2026): neodabrani kvadratić je imao samo
                       border-line rub — na bijelom popoveru nevidljiv, "ne vidi se
-                      gdje birati". Sad svijetlo narančast; odabrano NEDIRANO. */}
+                      gdje birati". Sad svijetlo narančast; odabrano NEDIRANO.
+                      ⚠️ Boja ruba kroz `style`: Tailwind v4 je i `border-[var]/45`
+                      i `border-[color:var]/45` TIHO ispustio (klasa na elementu,
+                      pravilo bez učinka) — inline style je jedino što pouzdano
+                      prolazi. bg-...
+                      /15 kroz klasu RADI (izmjereno na produkciji). */}
                   <span
                     className={
                       "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
                       (active
                         ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
-                        // ⚠️ Tailwind v4: `border-[var(--x)]/45` je DVOSMISLEN
-                        // (širina ili boja?) pa se klasa TIHO ispusti — treba
-                        // `color:` hint. Bez njega rub ostane globalni border-line.
-                        : "bg-[var(--color-accent)]/15 border-[color:var(--color-accent)]/45")
+                        : "bg-[var(--color-accent)]/15")
                     }
+                    style={active ? undefined : { borderColor: "color-mix(in oklab, var(--color-accent) 45%, transparent)" }}
                   >
                     {active && <Check className="size-3 text-white" strokeWidth={3} />}
                   </span>
