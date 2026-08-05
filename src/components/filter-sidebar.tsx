@@ -28,9 +28,19 @@ const YEARS = Array.from({ length: YEAR_NOW - 1990 + 1 }, (_, i) => YEAR_NOW - i
 
 const toOpts = (arr: readonly string[]): Opt[] => arr.map((v) => ({ value: v, label: v }));
 
-type Props = { mobile?: boolean; onClose?: () => void };
+type Props = {
+  mobile?: boolean;
+  onClose?: () => void;
+  /**
+   * `compact` = uži set filtera za BOČNI STUPAC na desktopu (Karlo 05.08.2026).
+   * Prikazuje samo osnovna polja koja stanu u visinu ekrana bez scrollanja;
+   * ostatak se otvara gumbom "Svi filteri". Pop-up (mobilni) i napredni panel
+   * uvijek prikazuju SVE.
+   */
+  compact?: boolean;
+};
 
-export function FilterSidebar({ mobile, onClose }: Props) {
+export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -161,21 +171,37 @@ export function FilterSidebar({ mobile, onClose }: Props) {
       {hasField("fuel") && (
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
       )}
-      {hasField("transmission") && (
-        <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
-      )}
-      {/* Karlo 29.07: Karoserija se prikazuje samo ako je kategorija/podkategorija
-          stvarno ima — motocikl je nema, a prije je visjela svugdje. */}
-      {hasField("bodyType") && (
-        <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
-      )}
 
-      {hasField("color") && (
-        <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
-      )}
+      {/**
+       * ⚠️ Karlo 05.08.2026: "ne stanu svi filteri, napravi osnovni set koji
+       * stane punom visinom, a napredni u pop-upu."
+       *
+       * U SIDEBARU (`compact`) staju samo polja iznad — Podkategorija, Tip
+       * ponude, Stanje, Marka/Model, Cijena, Godina, Kilometraža, Gorivo.
+       * Sve ispod (Mjenjač, Karoserija s ikonama, Boja s uzorcima, Županija,
+       * Prodavač) je visoko i gura panel izvan ekrana → ide u "Više filtera".
+       *
+       * U pop-upu (mobilni i "Više filtera") prikazuje se SVE, kao dosad.
+       */}
+      {!compact && (
+        <>
+          {hasField("transmission") && (
+            <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
+          )}
+          {/* Karlo 29.07: Karoserija se prikazuje samo ako je kategorija/podkategorija
+              stvarno ima — motocikl je nema, a prije je visjela svugdje. */}
+          {hasField("bodyType") && (
+            <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
+          )}
 
-      <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
-      <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
+          {hasField("color") && (
+            <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
+          )}
+
+          <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+          <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
+        </>
+      )}
 
       {/* Više filtera → full-screen napredna panel */}
       <button
@@ -183,7 +209,7 @@ export function FilterSidebar({ mobile, onClose }: Props) {
         onClick={() => setPanelOpen(true)}
         className="w-full h-11 px-4 rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
       >
-        <SlidersHorizontal className="size-4" /> Više filtera
+        <SlidersHorizontal className="size-4" /> {compact ? "Svi filteri" : "Više filtera"}
       </button>
     </div>
   );

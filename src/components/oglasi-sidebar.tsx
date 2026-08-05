@@ -31,9 +31,11 @@ export function OglasiSidebar() {
         <Filter className="size-4 text-[var(--color-accent-dark)]" />
         Filtri
       </div>
-      {/* `min-h-0` je nužan — bez njega flex dijete ne dopušta scroll djetetu. */}
+      {/* `min-h-0` je nužan — bez njega flex dijete ne dopušta scroll djetetu.
+          Scroll ostaje kao zaštita: na niskim ekranima (npr. 768 px) i osnovni
+          set može premašiti visinu. */}
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-1">
-        <FilterSidebar />
+        <FilterSidebar compact />
       </div>
     </div>
   );
