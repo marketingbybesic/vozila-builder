@@ -19,6 +19,16 @@ async function resolveSeller(id: string) {
     const seller = await db().getUserById(id);
     if (seller) return { kind: "db" as const, seller };
   }
+  /**
+   * ⚠️ Karlo 05.08.2026: slug trgovca (npr. `autohaus-rijeka`) prije je uvijek
+   * padao na STATIČNI demo — profil je prikazivao mrtve kartice bez linkova.
+   * `scripts/seed-dealers.mts` seedao je te trgovce kao prave korisnike s
+   * e-mailom `<slug>@vozila.hr`, pa slug prvo pokušavamo razriješiti u BAZI.
+   * Statični demo ostaje samo kao zaštita za slugove koji nisu seedani.
+   */
+  const dbSeller = await db().getUserByEmail(`${id}@vozila.hr`);
+  if (dbSeller) return { kind: "db" as const, seller: dbSeller };
+
   const dealer = FEATURED_DEALERS.find((d) => d.slug === id);
   if (dealer) return { kind: "static" as const, dealer };
   return null;
@@ -55,7 +65,9 @@ export default async function DealerProfilePage({
   }
 
   const seller = r.seller;
-  const userListings = await db().getListingsByUser(id);
+  // ⚠️ ID razriješenog korisnika, NE `id` iz URL-a — kad je URL slug
+  // (`autohaus-rijeka`), upit po njemu vratio bi prazno.
+  const userListings = await db().getListingsByUser(seller.id);
   const active = userListings.filter((l) => l.status === "active");
 
   return (
@@ -73,9 +85,20 @@ export default async function DealerProfilePage({
           </nav>
 
           <div className="flex flex-wrap items-start gap-6">
-            <div className="size-20 rounded-full bg-gradient-to-br from-[var(--color-ink)] to-[var(--color-ink-soft)] text-white grid place-items-center font-display text-2xl">
-              {seller.firstName.charAt(0)}{seller.lastName.charAt(0)}
-            </div>
+            {/* Logotip trgovca / profilna privatnog korisnika (Dino 05.08.2026).
+                Inicijali ostaju kao zamjena kad avatara nema. */}
+            {seller.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={seller.avatarUrl}
+                alt={`${seller.firstName} ${seller.lastName}`.trim()}
+                className="size-20 rounded-full object-cover bg-[var(--color-line)] shrink-0"
+              />
+            ) : (
+              <div className="size-20 rounded-full bg-gradient-to-br from-[var(--color-ink)] to-[var(--color-ink-soft)] text-white grid place-items-center font-display text-2xl">
+                {seller.firstName.charAt(0)}{seller.lastName.charAt(0)}
+              </div>
+            )}
             <div className="flex-1 min-w-[260px]">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <Badge variant={seller.sellerType === "Trgovac" ? "accent" : "neutral"}>

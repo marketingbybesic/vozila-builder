@@ -40,13 +40,15 @@ function DealerBlock({ dealer }: { dealer: Dealer }) {
       </div>
 
       {/* 3 listings u jednom redu.
-          Showcase kartice → dealer profil (stvarna ruta), NE pojedinačni oglas
-          (ti demo oglasi nemaju DB stranicu → izbjegava 404 + prefetch greške). */}
+          ⚠️ Karlo 05.08.2026: klik na sliku auta sad vodi na PRAVI OGLAS.
+          Prije je vodio na profil trgovca jer su ovi oglasi bili statični demo
+          bez zapisa u bazi (404). Skripta `scripts/seed-dealers.mts` seedala ih
+          je kao prave oglase pravih korisnika, pa slug sada postoji. */}
       <div className="grid grid-cols-3 gap-1.5">
         {cars.map((l) => (
           <Link
             key={l.slug}
-            href={`/trgovci/${dealer.slug}`}
+            href={`/oglasi/${l.slug}`}
             prefetch={false}
             className="group relative rounded-[var(--radius-sm)] overflow-hidden bg-[var(--color-line)]"
           >
