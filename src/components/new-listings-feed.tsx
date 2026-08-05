@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Gauge, Calendar, Fuel } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { SummaryIcon } from "@/components/listing-card";
 import { formatPrice, formatKm, timeAgo } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
 import { cardSummary } from "@/lib/listing-fields";
@@ -38,10 +39,13 @@ function MiniCard({ listing, entering }: { listing: Listing; entering: boolean }
         {/* Karlo 28.07: red se mora smjeti prelomiti i skupiti — bez min-w-0
             dugo gorivo ("Električni") gurne karticu preko ruba i cijela
             stranica dobije horizontalni scroll na 390px ekranu. */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0 text-[10px] text-[var(--color-ink-soft)] mt-1.5">
+        {/* ⚠️ Karlo 05.08.: ikona se bira po SADRŽAJU (`SummaryIcon`), ne po
+            indeksu — inače snaga dobiva ikonu pumpe. Razmak ikona↔tekst
+            povećan s `gap-0.5` na `gap-1.5`. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 min-w-0 text-[10px] text-[var(--color-ink-soft)] mt-1.5">
           {cardSummary(listing).map((part, i) => (
-            <span key={part} className={"inline-flex items-center gap-0.5 " + (i === 2 ? "min-w-0" : "shrink-0")}>
-              {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3 shrink-0" />}
+            <span key={part} className={"inline-flex items-center gap-1.5 " + (i === 2 ? "min-w-0" : "shrink-0")}>
+              <SummaryIcon part={part} />
               <span className={i === 2 ? "truncate" : ""}>{part}</span>
             </span>
           ))}

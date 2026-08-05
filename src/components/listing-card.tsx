@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Gauge, Calendar, Fuel } from "lucide-react";
+import { MapPin, Gauge, Calendar, Fuel, Zap, Clock, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SaveButton } from "@/components/save-button";
 import { CompareButton } from "@/components/compare-button";
@@ -58,10 +58,10 @@ export function ListingCard({ listing, variant = "grid" }: { listing: Listing; v
         {/* Karlo 31.07: prije je kartica UVIJEK pisala godinu/km/gorivo, pa je
             oglas za filter pokazivao "0 km · Benzin" s ikonom pumpe. Sada sažetak
             dolazi iz sheme (lib/listing-fields.ts) i prilagođen je kategoriji. */}
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
-          {cardSummary(listing).map((part, i) => (
-            <span key={part} className="inline-flex items-center gap-1">
-              {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3" />}
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[var(--color-ink-soft)]">
+          {cardSummary(listing).map((part) => (
+            <span key={part} className="inline-flex items-center gap-1.5">
+              <SummaryIcon part={part} />
               {part}
             </span>
           ))}
@@ -124,14 +124,14 @@ function ListingRow({ listing }: { listing: Listing }) {
           {listing.variant && (
             <p className="text-xs text-[var(--color-muted)] line-clamp-1 mt-0.5">{listing.variant}</p>
           )}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--color-ink-soft)] mt-1.5">
-            {cardSummary(listing).map((part, i) => (
-              <span key={part} className="inline-flex items-center gap-1">
-                {i === 0 ? <Calendar className="size-3" /> : i === 1 ? <Gauge className="size-3" /> : <Fuel className="size-3" />}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-ink-soft)] mt-1.5">
+            {cardSummary(listing).map((part) => (
+              <span key={part} className="inline-flex items-center gap-1.5">
+                <SummaryIcon part={part} />
                 {part}
               </span>
             ))}
-            <span className="inline-flex items-center gap-1"><MapPin className="size-3" />{listing.city}</span>
+            <span className="inline-flex items-center gap-1.5"><MapPin className="size-3" />{listing.city}</span>
           </div>
         </div>
         <div className="shrink-0 sm:text-right">
@@ -148,4 +148,23 @@ function ListingRow({ listing }: { listing: Listing }) {
       </div>
     </Link>
   );
+}
+
+/**
+ * Ikona uz podatak u sažetku kartice.
+ *
+ * ⚠️ Karlo 05.08.2026: "nije dobro, postavi neku ikonu motora."
+ * Prije se ikona birala po INDEKSU (`i === 0 ? Calendar : i === 1 ? Gauge :
+ * Fuel`), pa je sve iza drugog mjesta dobivalo ikonu pumpe — snaga je imala
+ * ikonu goriva. Sad se bira po SADRŽAJU, pa redoslijed može biti bilo kakav
+ * i svaka kategorija dobiva svoju ikonu.
+ */
+export function SummaryIcon({ part }: { part: string }) {
+  const c = "size-3 shrink-0";
+  if (/\bkW\b/.test(part)) return <Zap className={c} />;            // snaga
+  if (/\bkm\b/.test(part)) return <Gauge className={c} />;          // kilometraža
+  if (/^\d{4}\.$/.test(part)) return <Calendar className={c} />;    // godina
+  if (/\bh$/.test(part)) return <Clock className={c} />;            // radni sati (mehanizacija)
+  if (/^(Novo|Rabljeno|Oldtimer)$/i.test(part)) return <Tag className={c} />;
+  return <Fuel className={c} />;                                     // gorivo / pogon
 }
