@@ -318,8 +318,10 @@ const AUTO_FIELDS: FilterField[] = [
   // Karlo 31.07: klizna vrata NISU broj vrata nego zasebna oznaka (auto može
   // imati 5 vrata OD KOJIH su neka klizna). Prije su bila u istoj listi, pa se
   // moralo birati ili broj ili "klizna".
+  // Karlo st. 23 (05.08.2026): dodana 2 vrata (coupe/roadster) — lista je
+  // kretala od 3. Zod (min(2)) i baza (integer) već primaju 2.
   { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Vrata i sjedala",
-    options: [{ value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }] },
+    options: [{ value: "2", label: "2 vrata" }, { value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }] },
   { key: "slidingDoors", label: "Klizna vrata", type: "toggle", storage: "attr", group: "Vrata i sjedala" },
   // Karlo t.17: dodan broj 3
   { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Vrata i sjedala",
