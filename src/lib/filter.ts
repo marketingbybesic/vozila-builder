@@ -261,7 +261,9 @@ export function applyFilters(
   return out;
 }
 
-export const PAGE_SIZE = 12;
+// Karlo st. 19 (05.08.2026): 12 → 24 rezultata po stranici. Dijele ga
+// /oglasi (rezultati) i /moj-racun/oglasi.
+export const PAGE_SIZE = 24;
 
 export function paginate(items: Listing[], page: number) {
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
