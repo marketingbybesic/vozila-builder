@@ -55,6 +55,12 @@ const SKIP_KEYS = new Set([
   // Karlo 31.07: dokumenti se renderiraju ručno u koraku 2 ("Osnovno"),
   // pa ih korak 3 ("Specifikacije") ne smije ponoviti.
   "vin", "firstRegistration", "roadworthyUntil",
+  // Karlo st. 21 (05.08.2026): "vrsta" već ima vlastiti OBAVEZNI izbor u
+  // koraku 1 ("Vrsta artikla", JEDNA vrijednost — string). U shemi je pak
+  // multi (za pretragu), pa ju je korak 3 renderirao kao MultiSelect koji je
+  // nad stringom zvao .map → "this page couldn't load" za kamping opremu i
+  // SVE dijelove. Korak 3 je ne smije ponoviti.
+  "vrsta",
 ]);
 
 type Attrs = Record<string, string | string[] | boolean | undefined>;
@@ -708,11 +714,20 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       );
     }
     // multi
+    // ⚠️ Vrijednost NIJE nužno niz: `?? []` pali samo za undefined, a atribut
+    // upisan drugdje kao string (slučaj "vrsta") srušio bi .map u MultiSelectu.
+    // Normalizacija drži čarobnjaka živim i za buduća takva polja.
+    const rawMulti = s.attributes[f.key];
+    const multiValues = Array.isArray(rawMulti)
+      ? (rawMulti as string[])
+      : rawMulti != null && rawMulti !== ""
+        ? [String(rawMulti)]
+        : [];
     return (
       <MultiSelect
         key={f.key}
         label={f.label}
-        values={(s.attributes[f.key] as string[] | undefined) ?? []}
+        values={multiValues}
         onChange={(v) => setAttr(f.key, v)}
         options={f.options ?? []}
         placeholder="Odaberi"
