@@ -148,6 +148,68 @@ export async function saveDraftListingAction(input: unknown): Promise<ListingAct
   return { ok: true, slug: created?.slug ?? "" };
 }
 
+/**
+ * UREĐIVANJE OGLASA — Dino 05.08.2026: "Uredi ne radi u prikazu mojih oglasa".
+ *
+ * ⚠️ Gumb nije bio "mrtav" — akcija i stranica NIKAD nisu postojale. U bazi je
+ * `updateListing` bio spreman (provjerava vlasništvo, whitelista polja), ali ga
+ * ništa nije zvalo.
+ *
+ * Sva polja su OPCIONALNA (patch): forma šalje samo ono što mijenja, a adapter
+ * izbacuje `undefined` ključeve prije upisa.
+ */
+const UpdateListing = z.object({
+  id: z.string().uuid(),
+  make: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  variant: z.string().optional(),
+  year: z.coerce.number().int().min(1950).max(2030).optional(),
+  priceEur: z.coerce.number().int().positive().optional(),
+  km: z.coerce.number().int().nonnegative().optional(),
+  fuel: z.enum(FUEL_TYPES).optional(),
+  transmission: z.enum(ALL_TRANSMISSIONS).optional(),
+  bodyType: z.enum(ALL_BODY_TYPES).optional(),
+  drive: z.enum(DRIVES).optional(),
+  color: z.enum(COLORS).optional(),
+  condition: z.enum(CONDITIONS).optional(),
+  engineCc: z.coerce.number().int().nonnegative().optional(),
+  powerKw: z.coerce.number().int().nonnegative().optional(),
+  doors: z.coerce.number().int().min(2).max(5).optional(),
+  seats: z.coerce.number().int().min(2).max(9).optional(),
+  city: z.string().min(1).optional(),
+  county: z.string().min(1).optional(),
+  description: z.string().min(30).max(2000).optional(),
+  attributes: z.record(z.string(), z.unknown()).optional(),
+  features: z.array(z.string()).optional(),
+  images: z.array(z.string()).min(1, "Dodaj barem jednu fotografiju").optional(),
+});
+
+export async function updateListingAction(input: unknown): Promise<ListingActionResult> {
+  const user = await requireUser();
+  const parsed = UpdateListing.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Neispravni podaci" };
+  }
+  const { id, ...patch } = parsed.data;
+  try {
+    // `updateListing` sam provjerava da oglas pripada ovom korisniku.
+    const updated = await db().updateListing(id, user.id, patch as Parameters<
+      ReturnType<typeof db>["updateListing"]
+    >[2]);
+    revalidatePath("/oglasi");
+    revalidatePath("/moj-racun/oglasi");
+    if (updated?.slug) revalidatePath(`/oglasi/${updated.slug}`);
+    return { ok: true, slug: updated?.slug ?? "" };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error && /nije pronađen/i.test(e.message)
+        ? "Oglas nije pronađen ili nije tvoj."
+        : "Spremanje nije uspjelo. Pokušaj ponovno.",
+    };
+  }
+}
+
 const StatusInput = z.object({
   id: z.string().uuid(),
   status: z.enum(["active", "paused", "sold", "deleted"]),

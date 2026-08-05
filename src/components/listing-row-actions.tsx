@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Pencil, Pause, Play, Trash2 } from "lucide-react";
 import { setListingStatusAction, deleteListingAction } from "@/actions/listings";
 
@@ -26,7 +27,15 @@ export function ListingRowActions({ id, status }: { id: string; status: "active"
 
   return (
     <>
-      <ActionButton icon={<Pencil className="size-3.5" />} label="Uredi" />
+      {/* ⚠️ Dino 05.08.2026: "Uredi ne radi" — gumb NIJE imao `onClick`, a ni
+          ruta ni server action nisu postojali. Sad vodi na stranicu uređivanja. */}
+      <Link
+        href={`/moj-racun/oglasi/${id}/uredi`}
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/50 hover:text-[var(--color-ink)]"
+      >
+        <Pencil className="size-3.5" />
+        Uredi
+      </Link>
       <ActionButton
         icon={status === "paused" ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
         label={status === "paused" ? "Aktiviraj" : "Pauziraj"}
