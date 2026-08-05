@@ -6,50 +6,32 @@
  * preko CSS-a: aside se sakrije, grid postane jedan stupac).
  */
 
-import { useState } from "react";
-import { Filter, X } from "lucide-react";
+import { Filter } from "lucide-react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 
 /**
- * ⚠️ Karlo 05.08.2026: "nedostaje ista ikona na desktopu".
- * Mobilni prekidač koristi ikonu LJEVKA (`Filter`), a desktop je imao ikone
- * panela (`PanelLeftClose/Open`) uz tekst — dvije različite ikone za istu radnju.
- * Sad je i ovdje ljevak, u kvadratnom gumbu istog izgleda kao na mobitelu.
+ * Bočni filteri na DESKTOPU (Karlo 05.08.2026).
+ *
+ * ⚠️ "Filteri ostaju u sidebaru u punoj visini bez da osoba mora scrollati."
+ * Zato: `sticky` uz vrh (ispod zaglavlja + trake kategorija = 7rem),
+ * visina `calc(100vh - 8rem)` i VLASTITI okomiti scroll. Panel tako stoji na
+ * mjestu dok se rezultati desno pomiču, a dugačak popis filtera se kotrlja
+ * unutar panela — ne pomiče cijelu stranicu.
+ *
+ * Prekidač za skrivanje je UKLONJEN — Karlo: "ikona ne mora skrivati filtere".
+ * Na mobitelu filteri idu kroz pop-up (`MobileFilterToggle`).
  */
 export function OglasiSidebar() {
-  const [hidden, setHidden] = useState(false);
-
-  const gumb =
-    "relative size-10 shrink-0 grid place-items-center rounded-[var(--radius-md)] border transition-colors";
-
-  if (hidden) {
-    return (
-      <button
-        type="button"
-        onClick={() => setHidden(false)}
-        aria-label="Prikaži filtere"
-        title="Prikaži filtere"
-        className={`${gumb} sticky top-20 border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] hover:text-[var(--color-ink)]`}
-      >
-        <Filter className="size-4" />
-      </button>
-    );
-  }
-
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setHidden(true)}
-        aria-label="Sakrij filtere"
-        title="Sakrij filtere"
-        className={`${gumb} mb-3 border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent-dark)] hover:bg-[var(--color-accent)]/20`}
-      >
-        <Filter className="size-4" />
-        {/* Križić u kutu — jasno da klik ZATVARA otvoreni panel. */}
-        <X className="size-2.5 absolute top-1 right-1 opacity-70" />
-      </button>
-      <FilterSidebar />
+    <div className="sticky top-28 h-[calc(100vh-8rem)] flex flex-col">
+      <div className="shrink-0 flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--color-ink)]">
+        <Filter className="size-4 text-[var(--color-accent-dark)]" />
+        Filtri
+      </div>
+      {/* `min-h-0` je nužan — bez njega flex dijete ne dopušta scroll djetetu. */}
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-1">
+        <FilterSidebar />
+      </div>
     </div>
   );
 }

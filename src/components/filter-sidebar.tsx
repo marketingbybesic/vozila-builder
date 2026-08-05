@@ -192,13 +192,11 @@ export function FilterSidebar({ mobile, onClose }: Props) {
   if (mobile) {
     return (
       <>
-        {/* ⚠️ Karlo 05.08.2026: isti preklop koristi i DESKTOP.
-            Mobilni ostaje ladica odozdo (savršen, ne dirati); od `lg` se
-            centrira i dobiva zaobljene rubove sa svih strana — filtri se
-            prikazuju "u punoj duljini" umjesto skrivanja bočnog panela. */}
-        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:justify-center lg:items-center lg:p-8">
+        {/* Ladica odozdo — SAMO mobitel (Karlo: "mobile je savršen").
+            Na desktopu filteri žive u bočnom stupcu, ne u preklopu. */}
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
-          <div className="relative bg-[var(--color-bg)] rounded-t-2xl max-h-[88vh] flex flex-col animate-slide-up shadow-2xl lg:rounded-2xl lg:w-full lg:max-w-4xl lg:max-h-[85vh]">
+          <div className="relative bg-[var(--color-bg)] rounded-t-2xl max-h-[88vh] flex flex-col animate-slide-up shadow-2xl">
             <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-[var(--color-line)]">
               <h2 className="font-display text-xl">Filtri</h2>
               <button onClick={onClose} className="size-9 rounded-lg hover:bg-[var(--color-line)] grid place-items-center" aria-label="Zatvori">
