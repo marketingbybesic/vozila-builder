@@ -212,19 +212,42 @@ export default async function ListingDetailPage({
                     klik nije radio ništa. Sad vodi na sve njegove oglase.
                     Fallback na `<div>` kad `sellerId` nema (statični demo-dealeri),
                     da se ne stvori mrtav link na `/trgovci/undefined`. */}
+                {/* ⚠️ Dino 05.08.2026 (2. runda): klikabilni su i LOGOTIP i ime.
+                    Cijeli blok je jedan link — veći dodirni cilj na mobitelu. */}
                 {listing.sellerId ? (
                   <Link
                     href={`/trgovci/${listing.sellerId}`}
-                    className="font-medium hover:text-[var(--color-accent-dark)] hover:underline transition-colors"
+                    className="flex items-center gap-2.5 group/seller rounded-md -m-1 p-1 hover:bg-[var(--color-line)]/40 transition-colors"
                   >
-                    {listing.sellerName}
+                    {listing.sellerAvatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={listing.sellerAvatar}
+                        alt={listing.sellerName}
+                        className="size-10 rounded-full object-cover shrink-0 bg-[var(--color-line)]"
+                      />
+                    ) : (
+                      <div className="size-10 rounded-full bg-[var(--color-ink)] text-white grid place-items-center text-xs font-bold shrink-0">
+                        {listing.sellerName.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="font-medium truncate group-hover/seller:text-[var(--color-accent-dark)] transition-colors">
+                        {listing.sellerName}
+                      </div>
+                      <div className="text-xs text-[var(--color-muted)]">
+                        {listing.sellerType} · {listing.city}
+                      </div>
+                    </div>
                   </Link>
                 ) : (
-                  <div className="font-medium">{listing.sellerName}</div>
+                  <>
+                    <div className="font-medium">{listing.sellerName}</div>
+                    <div className="text-xs text-[var(--color-muted)] mt-0.5">
+                      {listing.sellerType} · {listing.city}
+                    </div>
+                  </>
                 )}
-                <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                  {listing.sellerType} · {listing.city}
-                </div>
                 {listing.sellerId && (
                   <Link
                     href={`/trgovci/${listing.sellerId}`}

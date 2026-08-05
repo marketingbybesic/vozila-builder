@@ -20,7 +20,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-1",
     name: "Auto Centar Zagreb",
     slug: "auto-centar-zagreb",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%230A1628%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%23F5A524%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%23F5A524%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3EAC%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Zagreb",
     county: "Grad Zagreb",
     listings: [
@@ -36,7 +36,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-2",
     name: "Premium Motors Split",
     slug: "premium-motors-split",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%2312233D%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%23E85D2A%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%23E85D2A%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3EPM%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Split",
     county: "Splitsko-dalmatinska",
     listings: [
@@ -52,7 +52,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-3",
     name: "Autohaus Rijeka",
     slug: "autohaus-rijeka",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%230F1D33%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%233FA9F5%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%233FA9F5%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3EAR%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Rijeka",
     county: "Primorsko-goranska",
     listings: [
@@ -68,7 +68,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-4",
     name: "Euro Auto Osijek",
     slug: "euro-auto-osijek",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%23141F33%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%234CAF50%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%234CAF50%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3EEA%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Osijek",
     county: "Osjecko-baranjska",
     listings: [
@@ -84,7 +84,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-5",
     name: "Dalmatina Auto",
     slug: "dalmatina-auto",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%231A1A2E%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%23E94560%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%23E94560%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3EDA%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Zadar",
     county: "Zadarska",
     listings: [
@@ -100,7 +100,7 @@ export const FEATURED_DEALERS: Dealer[] = [
     id: "dealer-6",
     name: "Slavonija Motors",
     slug: "slavonija-motors",
-    logoUrl: "",
+    logoUrl: "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%20width%3D%22128%22%20height%3D%22128%22%3E%0A%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%230D1B2A%22%2F%3E%0A%3Cpath%20d%3D%22M0%2096%20L128%2064%20L128%20128%20L0%20128%20Z%22%20fill%3D%22%23FFC947%22%20opacity%3D%220.14%22%2F%3E%0A%3Cpath%20d%3D%22M18%20104%20L110%2078%22%20stroke%3D%22%23FFC947%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%0A%3Ctext%20x%3D%2264%22%20y%3D%2270%22%20font-family%3D%22Helvetica%2CArial%2Csans-serif%22%20font-size%3D%2246%22%20font-weight%3D%22700%22%0A%20%20%20%20%20%20fill%3D%22%23FFFFFF%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20letter-spacing%3D%221%22%3ESM%3C%2Ftext%3E%0A%3C%2Fsvg%3E",
     city: "Slavonski Brod",
     county: "Brodsko-posavska",
     listings: [

@@ -105,7 +105,9 @@ async function logAudit(
   await dbq.insert(adminAuditLog).values({ actorId, action, targetType, targetId, metadata });
 }
 
-function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sellerType: string): Listing {
+// `sellerAvatar` je OPCIONALAN peti parametar — postojećih 8 poziva ostaje
+// valjano, a popunjavaju ga oni koji imaju `users` join.
+function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sellerType: string, sellerAvatar?: string | null): Listing {
   return {
     id: r.id,
     slug: r.slug,
@@ -146,6 +148,7 @@ function rowToListing(r: DbListing, sellerName: string, sellerPhone: string, sel
     sellerPhone,
     // Omogućuje link s oglasa na SVE oglase istog prodavača (`/trgovci/<id>`).
     sellerId: r.userId,
+    sellerAvatar: sellerAvatar ?? undefined,
     views: r.views,
     phoneReveals: r.phoneReveals,
     featured: r.featured,
@@ -277,7 +280,8 @@ export const supabaseAdapter: DbAdapter = {
       rows[0].l,
       rows[0].u ? `${rows[0].u.firstName} ${rows[0].u.lastName}` : "",
       rows[0].u?.phone ?? "",
-      rows[0].u?.sellerType ?? "Privatni"
+      rows[0].u?.sellerType ?? "Privatni",
+      rows[0].u?.avatarUrl
     );
   },
 

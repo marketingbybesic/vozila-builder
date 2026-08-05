@@ -130,6 +130,8 @@ export const Listing = z.object({
    * Opcionalan jer ga statični demo-dealeri i pregled objave nemaju.
    */
   sellerId: z.string().optional(),
+  /** Logotip trgovca / profilna privatnog prodavača (Dino 05.08.2026). */
+  sellerAvatar: z.string().optional(),
   sellerEmail: z.string().email().optional(),
   views: z.number().int().nonnegative(),
   phoneReveals: z.number().int().nonnegative().optional(),

@@ -17,12 +17,27 @@ function DealerBlock({ dealer }: { dealer: Dealer }) {
     <div className="bg-white rounded-[var(--radius-md)] p-2.5 shadow-sm text-[var(--color-ink)] flex-1 flex flex-col justify-center">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="size-8 rounded-full bg-[var(--color-ink)] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
-            {dealer.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
-          </div>
+        {/* ⚠️ Dino 05.08.2026: logotip I ime vode na profil trgovca — prije su
+            bili obični `<div>`-ovi, pa je jedini ulaz bio "Svi oglasi →".
+            Cijelo zaglavlje je jedan link (veći dodirni cilj na mobitelu). */}
+        <Link
+          href={`/trgovci/${dealer.slug}`}
+          className="flex items-center gap-2 min-w-0 group/dealer rounded-md -m-1 p-1 hover:bg-[var(--color-line)]/40 transition-colors"
+        >
+          {dealer.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={dealer.logoUrl}
+              alt={dealer.name}
+              className="size-8 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <div className="size-8 rounded-full bg-[var(--color-ink)] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+              {dealer.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+            </div>
+          )}
           <div className="min-w-0">
-            <div className="text-sm font-bold leading-tight truncate text-[var(--color-ink)]">
+            <div className="text-sm font-bold leading-tight truncate text-[var(--color-ink)] group-hover/dealer:text-[var(--color-accent-dark)] transition-colors">
               {dealer.name}
             </div>
             <div className="text-[10px] text-[var(--color-ink-soft)] flex items-center gap-0.5">
@@ -30,7 +45,7 @@ function DealerBlock({ dealer }: { dealer: Dealer }) {
               {dealer.city}
             </div>
           </div>
-        </div>
+        </Link>
         <Link
           href={`/trgovci/${dealer.slug}`}
           className="text-[10px] font-medium text-[var(--color-ink-soft)] hover:underline shrink-0"
