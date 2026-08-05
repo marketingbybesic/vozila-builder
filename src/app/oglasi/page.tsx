@@ -59,12 +59,16 @@ export default async function OglasiPage({
         </div>
 
         <div>
-          <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+          {/* ⚠️ Karlo 05.08.2026: `flex-wrap` je na uskom ekranu lomio redak —
+              "Filtri" je ostajao sam gore, a prekidač prikaza i sortiranje
+              padali su u drugi red. Sad je jedan redak: ljevak lijevo,
+              ostalo desno; sortiranje se skuplja (`min-w-0`) umjesto da lomi. */}
+          <div className="flex items-center gap-2 sm:gap-3 mb-6">
             <MobileFilterToggle count={filterCount} />
-            <div className="ml-auto flex items-center gap-2 flex-wrap">
+            <div className="ml-auto flex items-center gap-2 min-w-0">
               {filterCount > 0 && <SaveSearchButton filters={filters} />}
               <ViewToggle />
-              <span className="hidden sm:inline text-sm text-[var(--color-muted)]">
+              <span className="hidden sm:inline text-sm text-[var(--color-muted)] shrink-0">
                 Sortiraj:
               </span>
               <SortDropdown />
