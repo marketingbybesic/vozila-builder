@@ -130,9 +130,13 @@ const firstBody = BODY_TYPES[0];
 const firstDrive = DRIVES[0];
 const firstColor = COLORS[0];
 
-export function PostListingForm() {
+type Profile = { firstName: string; lastName: string; phone: string; email: string };
+
+export function PostListingForm({ profile }: { profile?: Profile }) {
   const [step, setStep] = useState(1);
-  const [s, setS] = useState<State>(empty);
+  // Kontakt podaci predpopunjeni iz profila (Karlo st. 12) — korisnik ih u
+  // koraku 5 i dalje može izmijeniti; izmjena vrijedi samo za taj oglas.
+  const [s, setS] = useState<State>(() => (profile ? { ...empty, ...profile } : empty));
   const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
 
@@ -158,7 +162,20 @@ export function PostListingForm() {
       if (!raw) return;
       const saved = JSON.parse(raw) as { state: State; step: number };
       if (saved?.state) {
-        setS(saved.state);
+        // Nacrt ima prednost (korisnikove izmjene), ali PRAZNA kontakt polja
+        // starog nacrta popuni iz profila — inače bi nacrt od prije ove
+        // funkcije poništio predpopunu.
+        setS(
+          profile
+            ? {
+                ...saved.state,
+                firstName: saved.state.firstName || profile.firstName,
+                lastName: saved.state.lastName || profile.lastName,
+                phone: saved.state.phone || profile.phone,
+                email: saved.state.email || profile.email,
+              }
+            : saved.state
+        );
         setStep(saved.step ?? 1);
         setDirty(true);
       }
@@ -956,7 +973,16 @@ export function PostListingForm() {
             </div>
 
             <div className="border-t border-[var(--color-line)] pt-5">
-              <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)] mb-3">Tvoji kontakt podaci</div>
+              {/* flex-wrap: na mobilnom napomena padne u drugi red ispod naslova,
+                  na desktopu stoji uz njega — bez zauzimanja dodatnog prostora. */}
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
+                <span className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">Tvoji kontakt podaci</span>
+                {profile && (
+                  <span className="text-xs text-[var(--color-muted)]">
+                    ispunjeno iz tvog profila — po potrebi izmijeni
+                  </span>
+                )}
+              </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Ime">
                   <Input value={s.firstName} onChange={(e) => set("firstName", e.target.value)} />
