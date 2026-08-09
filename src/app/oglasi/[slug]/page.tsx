@@ -9,6 +9,7 @@ import { ListingCard } from "@/components/listing-card";
 import { SaveButton } from "@/components/save-button";
 import { ShareButton } from "@/components/share-button";
 import { CompareButton } from "@/components/compare-button";
+import { MessageSeller } from "@/components/message-seller";
 import { db } from "@/db";
 import {
   formatPrice,
@@ -191,10 +192,9 @@ export default async function ListingDetailPage({
                   <Phone className="size-4" />
                   {listing.sellerPhone}
                 </Button>
-                <Button variant="primary" size="lg" className="w-full">
-                  <MessageSquare className="size-4" />
-                  Pošalji poruku
-                </Button>
+                {/* Karlo 09.08. (st. 14): gumb je bio mrtav (bez handlera) —
+                    sad otvara polje i šalje kroz postojeći sustav poruka. */}
+                <MessageSeller listingId={listing.id} />
                 <div className="grid grid-cols-2 gap-2">
                   <SaveButton listingId={listing.id} variant="detail" className="w-full" />
                   <ShareButton title={`${listing.make} ${listing.model}`} />
