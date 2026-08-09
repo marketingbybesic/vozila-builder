@@ -150,6 +150,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // I poštuj `scope`: polje s scope-om prikaži samo za tu podkategoriju.
   const dynamicFields = useMemo(
     () => filterDef.fields.filter((f) => {
+      // Karlo 09.08. (st. 9): "Garancija" iz sheme se NE renderira ovdje —
+      // gornji osnovni panel već ima ručni TogglePill (isti a.warranty URL
+      // ključ), pa se polje pojavljivalo dvaput. Samo prikaz; objava netaknuta.
+      if (f.key === "warranty") return false;
       if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
       if (f.searchable === false) return false;
       if (f.scope && f.scope.length > 0) {
