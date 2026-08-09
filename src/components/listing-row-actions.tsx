@@ -17,6 +17,14 @@ export function ListingRowActions({ id, status }: { id: string; status: "active"
     });
   };
 
+  const publishDraft = () => {
+    setErr(null);
+    start(async () => {
+      const res = await setListingStatusAction({ id, status: "active" });
+      if (!res.ok) setErr(res.error);
+    });
+  };
+
   const remove = () => {
     if (!confirm("Obrisati oglas? Ova akcija se ne može poništiti.")) return;
     setErr(null);
@@ -43,6 +51,17 @@ export function ListingRowActions({ id, status }: { id: string; status: "active"
           icon={status === "paused" ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
           label={status === "paused" ? "Aktiviraj" : "Pauziraj"}
           onClick={togglePause}
+          disabled={pending}
+        />
+      )}
+      {/* Karlo 09.08. (st. 2): skica se prije NIJE mogla objaviti — "Pogledaj
+          oglas" je vodio na javnu stranicu koja za skicu vraća 404. Sada skica
+          ima izravan gumb "Objavi". */}
+      {status === "draft" && (
+        <ActionButton
+          icon={<Play className="size-3.5" />}
+          label="Objavi"
+          onClick={publishDraft}
           disabled={pending}
         />
       )}

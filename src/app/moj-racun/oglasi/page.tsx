@@ -168,8 +168,15 @@ export default async function MyListingsPage({
                     <div className="font-display text-xl">{formatPrice(l.priceEur)}</div>
                   </div>
                   <div className="flex gap-1.5">
+                    {/* Karlo 09.08. (st. 2): javna stranica za skicu vraća 404 —
+                        "Pogledaj" na skici vodi na uređivanje (tamo je i gumb
+                        Objavi). */}
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/oglasi/${l.slug}`}>Pogledaj</Link>
+                      {l.status === "draft" ? (
+                        <Link href={`/moj-racun/oglasi/${l.id}/uredi`}>Pogledaj</Link>
+                      ) : (
+                        <Link href={`/oglasi/${l.slug}`}>Pogledaj</Link>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -199,18 +206,20 @@ export default async function MyListingsPage({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { variant: "success" | "outline" | "neutral"; label: string }> = {
+  // Karlo 09.08. (st. 6): pauziran = crven, skica = plav (aktivan ostaje
+  // zelen). Standardne Tailwind boje — var()-kombinacije v4 zna tiho ispustiti.
+  const map: Record<string, { variant: "success" | "outline" | "neutral"; label: string; className?: string }> = {
     active: { variant: "success", label: "Aktivan" },
-    paused: { variant: "outline", label: "Pauziran" },
+    paused: { variant: "neutral", label: "Pauziran", className: "bg-red-600/15 text-red-700" },
     sold: { variant: "neutral", label: "Prodano" },
     // ⚠️ Bez ovog unosa skica je padala na `active` i prikazivala se kao
     // "Aktivan" — vlasnik ju nije mogao razlikovati od objavljenih oglasa.
-    draft: { variant: "outline", label: "Skica" },
+    draft: { variant: "neutral", label: "Skica", className: "bg-blue-600/15 text-blue-700" },
     // Isti razlog: bez ovog unosa obrisani oglas piše "Aktivan".
     deleted: { variant: "neutral", label: "Obrisan" },
   };
   const m = map[status] ?? map.active;
-  return <Badge variant={m.variant}>{m.label}</Badge>;
+  return <Badge variant={m.variant} className={m.className}>{m.label}</Badge>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
