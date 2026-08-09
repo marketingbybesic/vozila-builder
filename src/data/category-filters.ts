@@ -310,7 +310,10 @@ const AUTO_FIELDS: FilterField[] = [
   { key: "bodyType", label: "Oblik karoserije", type: "multi", storage: "column", group: "Karoserija",
     options: [
       v("Microcar"), v("Limuzina"), v("Hatchback"), v("Karavan"),
-      v("Monovolumen"), v("SUV"), v("Coupe"), v("Cabrio"), v("Pickup"),
+      // Karlo 09.08. (st. 8): labeli prošireni — VRIJEDNOSTI ostaju "Coupe" /
+      // "Cabrio" (tipizirani stupac u bazi, postojeći oglasi ih nose).
+      v("Monovolumen"), v("SUV"), { value: "Coupe", label: "Coupe/Sportski" },
+      { value: "Cabrio", label: "Cabrio/Roadster" }, v("Pickup"),
     ] },
   // Karlo 31.07: "Pogon" izbačen iz Karoserije — pogon je svojstvo motora,
   // ne oblika. ⚠️ `drive` je TIPIZIRANI STUPAC i ostaje u bazi (akcija ga i
