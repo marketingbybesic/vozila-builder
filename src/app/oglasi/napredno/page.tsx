@@ -11,6 +11,9 @@ export const metadata: Metadata = {
 
 export default function NaprednoPage() {
   return (
+    // Karlo 09.08. (st. 7): pozadina stranice nijansu tamnija od zadane
+    // (#FAFAF7) — bijeli paneli rubrika dobivaju jasniji kontrast.
+    <div className="bg-[#EFEDE6] min-h-screen">
     <Container className="py-10 max-w-4xl">
       <header className="mb-8">
         <h1 className="font-display text-3xl md:text-4xl tracking-tight">Napredna pretraga</h1>
@@ -22,5 +25,6 @@ export default function NaprednoPage() {
         <NaprednoForm />
       </Suspense>
     </Container>
+    </div>
   );
 }
