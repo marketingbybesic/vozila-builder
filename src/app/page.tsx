@@ -36,9 +36,14 @@ export default async function HomePage() {
   // veze s bazom. `listListings` već vraća `total`, samo se nije koristio.
   let totalListings = 0;
   try {
-    const result = await db().listListings({ sort: "newest", page: 1 });
-    latest = result.items.slice(0, 12);
-    totalListings = result.total;
+    // Karlo 09.08. (st. 10): sekcija se zove "Zadnji auto oglasi" pa feed vuče
+    // SAMO auto kategoriju. Ukupni brojač u heroju i dalje broji sve oglase.
+    const [autoResult, totalResult] = await Promise.all([
+      db().listListings({ sort: "newest", page: 1, category: "auto" }),
+      db().listListings({ sort: "newest", page: 1 }),
+    ]);
+    latest = autoResult.items.slice(0, 12);
+    totalListings = totalResult.total;
   } catch (err) {
     console.warn("[home] listListings failed:", err);
   }
@@ -211,22 +216,19 @@ export default async function HomePage() {
       </section>
 
       {/* NEW LISTINGS — animated feed */}
+      {/* Karlo 09.08. (st. 10 + 11): "Novi oglasi" → "Zadnji auto oglasi",
+          link "Svi oglasi" izbrisan, gornji razmak na desktopu smanjen
+          (89px → 34px) da sekcija sjedne bliže logotipovima marki. */}
       {latest.length > 0 && (
-        <section className="py-[34px] md:py-[89px]">
+        <section className="py-[34px] md:pt-[34px] md:pb-[89px]">
           <Container>
             <div className="flex items-end justify-between mb-4 md:mb-6">
               <div>
-                <h2 className="font-display text-xl md:text-3xl">Novi oglasi</h2>
+                <h2 className="font-display text-xl md:text-3xl">Zadnji auto oglasi</h2>
                 <p className="text-xs md:text-sm text-[var(--color-muted)] mt-0.5">
-                  Najnoviji oglasi dodani na platformu
+                  Najnoviji auto oglasi dodani na platformu
                 </p>
               </div>
-              <Link
-                href="/oglasi?sort=newest"
-                className="text-sm font-medium text-[var(--color-ink-soft)] hover:text-[var(--color-accent-dark)]"
-              >
-                Svi oglasi &rarr;
-              </Link>
             </div>
             <NewListingsFeed listings={latest} />
           </Container>
