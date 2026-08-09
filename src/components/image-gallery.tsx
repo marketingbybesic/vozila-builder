@@ -100,12 +100,15 @@ export function ImageGallery({ images, alt }: { images: string[]; alt: string })
           className="relative block w-full aspect-[16/10] bg-[var(--color-line)] rounded-[var(--radius-lg)] overflow-hidden group"
           aria-label="Otvori sliku u punoj veličini"
         >
+          {/* Karlo 09.08. (st. 4): `object-contain` umjesto `object-cover` —
+              cover je rezao motiv (alu felga se vidjela tek u lightboxu).
+              Podloga iza slike je već siva (`bg-[var(--color-line)]`). */}
           <Image
             src={images[active]}
             alt={alt}
             fill
             sizes="(max-width: 1024px) 100vw, 60vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+            className="object-contain transition-transform duration-300 group-hover:scale-[1.01]"
             priority
           />
           <span className="absolute bottom-3 right-3 text-xs bg-black/60 text-white px-2 py-1 rounded">
