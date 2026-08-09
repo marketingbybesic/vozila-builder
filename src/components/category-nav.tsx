@@ -27,7 +27,13 @@ const ICONS = {
  * ovo živi u zasebnom djetetu iza <Suspense fallback={null}>: statični HTML
  * nema highlight, hidracija ga doda.
  */
-function ActiveCategoryTracker({ onChange }: { onChange: (slug: string | null) => void }) {
+function ActiveCategoryTracker({
+  onChange,
+  onRouteChange,
+}: {
+  onChange: (slug: string | null) => void;
+  onRouteChange: (routeKey: string) => void;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const active =
@@ -37,6 +43,12 @@ function ActiveCategoryTracker({ onChange }: { onChange: (slug: string | null) =
   useEffect(() => {
     onChange(active);
   }, [active, onChange]);
+  // Karlo 09.08. (st. 12): javlja SVAKU promjenu rute — panel se zatvara tek
+  // kad navigacija stvarno prođe (vidi komentar uz raniji onClick-close).
+  const routeKey = `${pathname}?${searchParams.toString()}`;
+  useEffect(() => {
+    onRouteChange(routeKey);
+  }, [routeKey, onRouteChange]);
   return null;
 }
 
@@ -64,6 +76,23 @@ export function CategoryNav({
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [openSubSlug, setOpenSubSlug] = useState<string | null>(null);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+
+  /**
+   * ⚠️⚠️ Karlo 09.08. (st. 12): panel se NE SMIJE zatvarati u onClick-u linka.
+   * Zatvaranje odmah unmounta <Link> usred started navigacije i klijentska
+   * navigacija se TIHO PREKINE — izmjereno na produkciji: klik na podkategoriju
+   * iz panela NIKAD ne promijeni URL (45 s čekanja, 3/3 pokušaja), dok isti
+   * takav link IZVAN panela radi. Zato se panel zatvara tek kad se ruta
+   * STVARNO promijeni (routeKey iz ActiveCategoryTracker-a).
+   */
+  const routeKeyRef = useRef<string | null>(null);
+  const onRouteChange = (key: string) => {
+    if (routeKeyRef.current !== null && routeKeyRef.current !== key) {
+      setOpenSlug(null);
+      setOpenSubSlug(null);
+    }
+    routeKeyRef.current = key;
+  };
 
   const openCategory = CATEGORIES.find((c) => c.slug === openSlug);
   const openSub = openCategory?.subcategories.find((s) => s.slug === openSubSlug);
@@ -101,7 +130,7 @@ export function CategoryNav({
   return (
     <nav aria-label="Kategorije vozila" ref={navRef}>
       <Suspense fallback={null}>
-        <ActiveCategoryTracker onChange={setActiveSlug} />
+        <ActiveCategoryTracker onChange={setActiveSlug} onRouteChange={onRouteChange} />
       </Suspense>
       <ul
         className={cn(
@@ -233,18 +262,12 @@ export function CategoryNav({
               : "border border-white/15 bg-white/[0.06]",
           )}
           /**
-           * ⚠️ Klik na PODKATEGORIJU nije zatvarao panel — korisnik ode na
-           * rezultate, a izbornik ostane raširen preko njih. Hvata se ovdje, na
-           * roditelju, umjesto da se `onClick` lijepi na svaki od ~120 linkova.
-           * Gumbi 2. nivoa (`<button>`) namjerno NISU obuhvaćeni — oni granaju
-           * unutar panela i moraju ga ostaviti otvorenim.
+           * ⚠️⚠️ Karlo 09.08. (st. 12): ovdje je STAJAO onClick koji je na klik
+           * linka odmah zatvarao panel. To je UBIJALO navigaciju — unmount
+           * <Link>-a usred router.push-a i URL se nikad ne promijeni (mjereno
+           * na produkciji, 3/3). Panel sada zatvara `onRouteChange` (gore) kad
+           * navigacija stvarno prođe. NE VRAĆATI onClick-close.
            */
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest("a")) {
-              setOpenSlug(null);
-              setOpenSubSlug(null);
-            }
-          }}
         >
           {openSub && hasChildren(openSub) ? (
             // 2. nivo — children odabrane podkategorije (dijelovi)
