@@ -553,6 +553,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         try { localStorage.removeItem(DRAFT_KEY); } catch {}
         setDirty(false);
         setSubmitted({ slug: res.slug });
+        // Karlo 09.08. (st. 3): potvrda "Oglas je objavljen" renderira se na
+        // vrhu, a korisnik je nakon zadnjeg koraka na dnu — bez scrolla je
+        // vidio prazninu i morao ručno gore.
+        window.scrollTo({ top: 0, behavior: "instant" });
         /**
          * ⚠️ `router.refresh()` je MAKNUT (Dino 04.08.2026: "obavijest 'oglas je
          * objavljen' se ponekad odmah makne i vrati na početnu").
