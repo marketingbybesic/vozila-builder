@@ -229,12 +229,11 @@ export function HeroSearch() {
         <ArrowRight className="size-4" />
       </button>
 
-      <div className="mt-3 flex items-center justify-between text-[11px] text-[var(--color-muted)]">
-        <Link href="/oglasi" className="hover:text-[var(--color-ink)]">
-          Pregledaj sve oglase &rarr;
-        </Link>
+      {/* Karlo 09.08. (st. 10): "Pregledaj sve oglase" maknut; preostali link
+          preimenovan i vodi na najnovije SAMO auto oglase. */}
+      <div className="mt-3 flex items-center justify-end text-[11px] text-[var(--color-muted)]">
         <Link href="/oglasi/najnoviji" className="hover:text-[var(--color-ink)]">
-          Najnoviji oglasi &rarr;
+          Najnoviji auto oglasi &rarr;
         </Link>
       </div>
     </form>

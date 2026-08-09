@@ -5,7 +5,7 @@ import { ListingCard } from "@/components/listing-card";
 import { db } from "@/db";
 
 export const metadata: Metadata = {
-  title: "Najnoviji oglasi",
+  title: "Najnoviji auto oglasi",
   description: "Posljednjih 100 oglasa rabljenih i novih automobila u Hrvatskoj.",
 };
 
@@ -15,9 +15,9 @@ export default async function NajnovijiPage() {
   return (
     <Container className="py-8 md:py-12">
       <header className="mb-8">
-        <h1 className="font-display text-3xl md:text-4xl tracking-tight">Najnoviji oglasi</h1>
+        <h1 className="font-display text-3xl md:text-4xl tracking-tight">Najnoviji auto oglasi</h1>
         <p className="text-sm text-[var(--color-muted)] mt-1">
-          Posljednjih {allItems.length} oglasa — od najnovijeg prema starijem.
+          Posljednjih {allItems.length} auto oglasa — od najnovijeg prema starijem.
         </p>
         <Link
           href="/oglasi"
@@ -40,7 +40,9 @@ async function fetchUpTo100() {
   const out: Awaited<ReturnType<ReturnType<typeof db>["listListings"]>>["items"] = [];
   try {
     for (let page = 1; page <= 9; page++) {
-      const { items, total } = await db().listListings({ sort: "newest", page });
+      // Karlo 09.08. (st. 10): stranica prikazuje SAMO auto oglase — ulazni
+      // link s naslovnice sad glasi "Najnoviji auto oglasi".
+      const { items, total } = await db().listListings({ sort: "newest", page, category: "auto" });
       out.push(...items);
       if (out.length >= 100 || out.length >= total) break;
     }
