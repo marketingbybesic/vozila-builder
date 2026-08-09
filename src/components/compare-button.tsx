@@ -115,21 +115,30 @@ export function CompareBar() {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/moj-racun");
 
-  if (hide || slugs.length < 2) return null;
+  // Karlo 09.08. (st. 13): traka se pojavljuje već kod PRVOG odabira s uputom
+  // što dalje — prije se ništa nije dogodilo dok se ne odaberu 2, pa korisnik
+  // nije znao da je klik uopće upalio.
+  if (hide || slugs.length < 1) return null;
 
   const params = new URLSearchParams();
   slugs.forEach((s, i) => params.set(["a", "b", "c", "d"][i], s));
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[var(--color-ink)] text-white rounded-full shadow-xl pl-4 pr-1 py-1 flex items-center gap-3 text-sm">
-      <GitCompare className="size-4" />
-      <span>{slugs.length} u usporedbi</span>
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[var(--color-ink)] text-white rounded-full shadow-xl pl-4 pr-1 py-1 flex items-center gap-3 text-sm max-w-[calc(100vw-2rem)]">
+      <GitCompare className="size-4 shrink-0" />
+      {slugs.length < 2 ? (
+        <span className="py-2 pr-3">Odaberi još barem jedno vozilo za usporedbu</span>
+      ) : (
+        <span>{slugs.length} u usporedbi</span>
+      )}
+      {slugs.length >= 2 && (
       <a
         href={`/usporedi?${params.toString()}`}
-        className="h-9 px-4 rounded-full bg-[var(--color-accent)] text-[var(--color-ink)] font-medium hover:brightness-95"
+        className="h-9 px-4 rounded-full bg-[var(--color-accent)] text-[var(--color-ink)] font-medium hover:brightness-95 inline-flex items-center"
       >
         Usporedi sad
       </a>
+      )}
       <button
         type="button"
         onClick={() => writeSet([])}
