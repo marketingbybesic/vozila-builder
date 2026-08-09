@@ -80,7 +80,9 @@ export default async function MojRacunPage() {
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            {active.slice(0, 3).map((l) => (
+            {/* Karlo 09.08. (st. 5): pregled prikazuje zadnjih 6 aktivnih
+                (bila 3) — dva puna reda na desktopu; ostatak na "Svi moji oglasi". */}
+            {active.slice(0, 6).map((l) => (
               <ListingCard key={l.id} listing={l} />
             ))}
           </div>
