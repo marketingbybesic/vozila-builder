@@ -287,9 +287,14 @@ export function CategoryNav({
                 </span>
               </div>
               <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {/* ⚠️ Karlo 09.08. (st. 12): `prefetch={false}` na SVIM panel
+                    linkovima — otvaranje panela je okidalo ~19 RSC prefetch
+                    zahtjeva (svaki = pun listListings bez LIMIT-a), pa je klik
+                    odmah po otvaranju znao visjeti/propasti u toj gužvi. */}
                 <li>
                   <Link
                     href={subcategoryHref(openCategory.slug, openSub.slug)}
+                    prefetch={false}
                     className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs font-medium text-[var(--color-accent)] bg-white/[0.04] hover:bg-white/10 transition-colors"
                   >
                     Sve: {openSub.name}
@@ -299,6 +304,7 @@ export function CategoryNav({
                   <li key={child.slug}>
                     <Link
                       href={subChildHref(openCategory.slug, openSub.slug, child.slug)}
+                      prefetch={false}
                       className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                     >
                       {child.name}
@@ -332,6 +338,7 @@ export function CategoryNav({
                     <li key={sub.slug}>
                       <Link
                         href={subcategoryHref(openCategory.slug, sub.slug)}
+                        prefetch={false}
                         className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                       >
                         {sub.name}
