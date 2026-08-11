@@ -56,7 +56,7 @@ export default async function OglasiPage({
       {/* ⚠️ Karlo 05.08.2026: na DESKTOPU filteri ostaju u bočnom stupcu, u punoj
           visini ekrana i bez scrollanja stranice (panel ima vlastiti scroll).
           Na mobitelu je pop-up (ljevak gore lijevo). */}
-      <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+      <div className="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-8">
         {/* ⚠️ `self-start` je NUŽAN: grid stavka se po zadanom rasteže na visinu
             retka (izmjereno 1626 px), pa se `sticky` dijete unutar nje slobodno
             kreće do dna i ne "zalijepi" se. Sa `self-start` aside je visok
@@ -70,7 +70,12 @@ export default async function OglasiPage({
           <OglasiSidebar />
         </aside>
 
-        <div>
+        {/* ⚠️ Karlo 11.08.2026: bez `min-w-0` grid stavka ima pod = širina
+            najšireg sadržaja (zadano `min-width:auto`), pa se stupac razvukao
+            na 450 px u ekranu od 390 px i sve unutra — traka sa sortiranjem i
+            kartice — virilo je van (mjereno: +146 px na 320, +76 px na 390,
+            samo kad je filtar aktivan jer tad dolazi i "Spremi pretragu"). */}
+        <div className="min-w-0">
           {/* ⚠️ Karlo 05.08.2026: `flex-wrap` je na uskom ekranu lomio redak —
               "Filtri" je ostajao sam gore, a prekidač prikaza i sortiranje
               padali su u drugi red. Sad je jedan redak: ljevak lijevo,

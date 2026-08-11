@@ -43,10 +43,15 @@ export function SaveSearchButton({ filters }: { filters: ListingFilters }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] text-xs font-medium hover:bg-[var(--color-line)]/40"
+        aria-label="Spremi pretragu"
+        className="inline-flex shrink-0 items-center gap-1.5 h-9 px-3 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] text-xs font-medium hover:bg-[var(--color-line)]/40"
       >
-        <BookmarkPlus className="size-3.5" />
-        Spremi pretragu
+        <BookmarkPlus className="size-3.5 shrink-0" />
+        {/* ⚠️ Karlo 11.08.2026: puni tekst (98 px) je stiskao sortiranje u
+            prazan okvir bez ijednog slova (mjereno 7 px na 390 px). Na
+            mobitelu ostaje samo ikona — `aria-label` nosi značenje — a puni
+            tekst tek od `sm:` (640 px), gdje sve četiri kontrole stanu. */}
+        <span className="hidden sm:inline">Spremi pretragu</span>
       </button>
 
       {open && (

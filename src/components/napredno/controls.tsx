@@ -226,7 +226,10 @@ export function SelectField({
           {Icon && (
             <Icon className={"size-4.5 shrink-0 " + (value ? "text-[var(--color-accent-dark)]" : "text-[var(--color-muted)]")} />
           )}
-          <span className="truncate flex-1">{current ? current.label : placeholder}</span>
+          {/* ⚠️ Karlo 11.08.2026: bez `min-w-0` je `truncate` bio mrtvo slovo —
+              flex dijete ima zadano `min-width:auto` pa se span držao pune
+              širine teksta (mjereno 144 px) i gurao sortiranje van ekrana. */}
+          <span className="truncate flex-1 min-w-0">{current ? current.label : placeholder}</span>
           <ChevronDown className={"size-4 text-[var(--color-muted)] shrink-0 transition-transform " + (open ? "rotate-180" : "")} />
         </button>
 
