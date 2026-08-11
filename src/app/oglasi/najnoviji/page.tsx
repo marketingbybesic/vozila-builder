@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { ListingCard } from "@/components/listing-card";
@@ -19,12 +18,6 @@ export default async function NajnovijiPage() {
         <p className="text-sm text-[var(--color-muted)] mt-1">
           Posljednjih {allItems.length} auto oglasa — od najnovijeg prema starijem.
         </p>
-        <Link
-          href="/oglasi"
-          className="inline-block mt-3 text-sm font-medium text-[var(--color-accent-dark)] hover:underline"
-        >
-          Vidi sve oglase →
-        </Link>
       </header>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
