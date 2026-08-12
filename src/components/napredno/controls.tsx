@@ -6,14 +6,17 @@
  * opens a checkbox list; selections render as removable chips below the field.
  */
 
-import { useEffect, useId, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
   Tractor, Bike, Box, Disc3, type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
-export type Opt = { value: string; label: string };
+/** ⚠️ Karlo 12.08.2026: `header` je neobavezno zaglavlje grupe (npr.
+ *  "Najpopularnije marke" / "Sve marke"). Renderira se kao nekliktabilna
+ *  natuknica iznad opcije. Bez njega se sve ponaša kao i prije. */
+export type Opt = { value: string; label: string; header?: string };
 
 /** Ikona može biti lucide ili naša SVG silueta — obje primaju `className`. */
 type IconComp = React.ComponentType<{ className?: string }>;
@@ -243,20 +246,28 @@ export function SelectField({
               <span className="size-4.5 shrink-0" />
               {placeholder}
             </button>
-            {options.map((o) => {
+            {options.map((o, i) => {
               const active = o.value === value;
               return (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => { onChange(o.value); setOpen(false); }}
-                  className={optionCls(active)}
-                >
-                  <span className="size-4.5 shrink-0 grid place-items-center">
-                    {active && <Check className="size-3.5 text-[var(--color-accent-dark)]" strokeWidth={3} />}
-                  </span>
-                  {o.label}
-                </button>
+                // ⚠️ ključ mora nositi i indeks: ista marka se namjerno pojavi
+                // dvaput (popularne + abecedno), pa bi `key={o.value}` dao duple.
+                <Fragment key={`${o.value}-${i}`}>
+                  {o.header && (
+                    <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+                      {o.header}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { onChange(o.value); setOpen(false); }}
+                    className={optionCls(active)}
+                  >
+                    <span className="size-4.5 shrink-0 grid place-items-center">
+                      {active && <Check className="size-3.5 text-[var(--color-accent-dark)]" strokeWidth={3} />}
+                    </span>
+                    {o.label}
+                  </button>
+                </Fragment>
               );
             })}
           </Popover>

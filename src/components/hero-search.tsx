@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, SlidersHorizontal } from "lucide-react";
-import { MAKES as AUTO_MAKES } from "@/data/makes";
+import { MAKES as AUTO_MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
 import { FUEL_TYPES, TRANSMISSIONS, BODY_TYPES } from "@/lib/types";
 
 const PRICE_STEPS = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000, 150000, 200000];
@@ -90,10 +90,21 @@ export function HeroSearch() {
             onChange={(e) => { setMake(e.target.value); setModel(""); }}
             className={selectClass}
           >
+            {/* ⚠️ Karlo 12.08.2026: native <select> → grupe idu kroz <optgroup>,
+                ne kroz `header` (to razumije samo naš SelectField). Popularne se
+                namjerno ponavljaju u "Sve marke", pa `key` nosi i prefiks grupe. */}
             <option value="">Sve marke</option>
-            {AUTO_MAKES.map((m) => (
-              <option key={m.slug} value={m.slug}>{m.name}</option>
-            ))}
+            <optgroup label="Najpopularnije marke">
+              {POPULAR_MAKE_SLUGS.map((s) => {
+                const m = AUTO_MAKES.find((x) => x.slug === s);
+                return m ? <option key={`pop-${m.slug}`} value={m.slug}>{m.name}</option> : null;
+              })}
+            </optgroup>
+            <optgroup label="Sve marke">
+              {AUTO_MAKES.map((m) => (
+                <option key={`all-${m.slug}`} value={m.slug}>{m.name}</option>
+              ))}
+            </optgroup>
           </select>
         </label>
 

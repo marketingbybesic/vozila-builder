@@ -7,6 +7,7 @@ import { MobileFilterToggle } from "@/components/mobile-filter-toggle";
 import { SaveSearchButton } from "@/components/save-search-button";
 import { UrlActiveChips } from "@/components/napredno/active-filters";
 import { ViewToggle } from "@/components/view-toggle";
+import { getMake } from "@/data/makes";
 import { db } from "@/db";
 import { PAGE_SIZE, parseFilters, activeFilterCount } from "@/lib/filter";
 import type { Metadata } from "next";
@@ -42,8 +43,12 @@ export default async function OglasiPage({
     <Container className="py-[34px] md:py-[55px]">
       <div className="mb-8 md:mb-10">
         <h1 className="font-display text-3xl md:text-4xl tracking-tight">
+          {/* ⚠️ Karlo 12.08.2026: naslov je kapitalizirao SLUG, pa je pisalo
+              "Mercedes-benz", "Dr-automobiles", "Moskvic". Uzmi pravi `name`
+              iz MAKES (ima dijakritiku i ispravnu velika/mala slova), a slug
+              ostaje samo kao rezerva za marke izvan popisa. */}
           {filters.make
-            ? `Oglasi · ${filters.make.charAt(0).toUpperCase() + filters.make.slice(1)}`
+            ? `Oglasi · ${getMake(filters.make)?.name ?? (filters.make.charAt(0).toUpperCase() + filters.make.slice(1))}`
             : "Svi oglasi"}
         </h1>
         <p className="text-sm text-[var(--color-muted)] mt-1">

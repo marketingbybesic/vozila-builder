@@ -11,7 +11,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MAKES } from "@/data/makes";
+import { MAKES, makeOptionsGrouped } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
@@ -126,9 +126,16 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const isGospodarska = category === "gospodarska";
 
   const makeOptions: Opt[] = useMemo(() => {
+    // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
+    // na vrhu, pa cijela abeceda. Moto/gospodarska imaju vlastite kratke
+    // popise i ostaju plosnate.
+    // ⚠️ Uvjetuj po KATEGORIJI, ne po `categoryDef?.makes` — auto kategorija
+    // također ima `makes` (isti AUTO_MAKES), pa bi provjera postojanja uvijek
+    // pala u plosnatu granu i grupe se ne bi vidjele.
     const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
+    if (!category || category === "auto") return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
-  }, [categoryDef]);
+  }, [category, categoryDef]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {

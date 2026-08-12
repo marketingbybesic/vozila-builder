@@ -11,7 +11,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
 } from "@/lib/types";
-import { MAKES } from "@/data/makes";
+import { MAKES, makeOptionsGrouped } from "@/data/makes";
 import { getCategory, makesDbFor } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
@@ -71,6 +71,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const selectedMake = current.make ?? "";
   const makeOptions: Opt[] = useMemo(() => {
     const list = (!category || category === "auto") ? MAKES.map((m) => ({ slug: m.slug, name: m.name })) : (categoryDef?.makes ?? []);
+    // ⚠️ Karlo 12.08.2026: auto → popularne na vrhu pa cijela abeceda.
+    // Ostale kategorije (moto/gospodarska/…) imaju vlastite, kratke popise —
+    // ondje grupiranje nema smisla, ide plosnato kao i prije.
+    if (!category || category === "auto") return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
   }, [category, categoryDef]);
   // Karlo 29.07: modeli iz baze TE kategorije (prije samo auto → moto i
