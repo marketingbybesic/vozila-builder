@@ -11,7 +11,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
 } from "@/lib/types";
-import { MAKES, makeOptionsGrouped } from "@/data/makes";
+import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { getCategory, makesDbFor } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
@@ -81,8 +81,11 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   // gospodarska marke nisu imale nijedan model ni ovdje u sidebaru).
   const modelOptions: Opt[] = useMemo(() => {
     if (!selectedMake) return [];
-    return (makesDbFor(category || "auto").find((m) => m.slug === selectedMake)?.models ?? [])
-      .map((m) => ({ value: m, label: m }));
+    // ⚠️ Karlo 12.08.2026: zadnja stavka je uvijek "Modela nema na listi" —
+    // i kod marki bez ijednog modela (AEV), gdje je to jedini izbor.
+    return modelOptionsFor(
+      makesDbFor(category || "auto").find((m) => m.slug === selectedMake)?.models ?? []
+    );
   }, [category, selectedMake]);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category || "auto"), [category]);
   const bodyOptions = filterDef.fields.find((f) => f.key === "bodyType")?.options ?? toOpts(BODY_TYPES);

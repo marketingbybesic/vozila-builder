@@ -1,5 +1,6 @@
 import type { Listing, ListingFilters, SortOption } from "@/lib/types";
 import { slugify } from "@/lib/utils";
+import { MODEL_NOT_LISTED, getMake } from "@/data/makes";
 
 function asArray(v: string | string[] | undefined): string[] {
   if (!v) return [];
@@ -216,7 +217,13 @@ export function applyFilters(
     if (f.category && l.category !== f.category) return false;
     if (f.subcategory && l.subcategory !== f.subcategory) return false;
     if (f.make && slugify(l.make) !== f.make) return false;
-    if (f.model && l.model !== f.model) return false;
+    // ⚠️ Karlo 12.08.2026: "Modela nema na listi" u PRETRAZI znači "oglasi čiji
+    // model nije među poznatima za tu marku" — doslovna usporedba bi tražila
+    // ključ `__other__` i uvijek vraćala 0 rezultata (mrtav filtar).
+    if (f.model === MODEL_NOT_LISTED) {
+      const known = getMake(slugify(l.make))?.models ?? [];
+      if (known.includes(l.model)) return false;
+    } else if (f.model && l.model !== f.model) return false;
     if (f.hidePriceless && !(l.priceEur > 0)) return false;
     if (f.priceMin !== undefined && l.priceEur < f.priceMin) return false;
     if (f.priceMax !== undefined && l.priceEur > f.priceMax) return false;

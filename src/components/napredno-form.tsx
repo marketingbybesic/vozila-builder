@@ -11,7 +11,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MAKES, makeOptionsGrouped } from "@/data/makes";
+import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
@@ -140,8 +140,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {
     if (!make) return [];
-    return (makesDbFor(category).find((m) => m.slug === make)?.models ?? [])
-      .map((m) => ({ value: m, label: m }));
+    // ⚠️ Karlo 12.08.2026: zadnja stavka uvijek "Modela nema na listi".
+    return modelOptionsFor(makesDbFor(category).find((m) => m.slug === make)?.models ?? []);
   }, [make, category]);
 
   const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));

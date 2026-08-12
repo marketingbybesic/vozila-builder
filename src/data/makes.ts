@@ -9,19 +9,25 @@ export const MAKES: CarMake[] = [
     slug: "abarth",
     name: "Abarth",
     country: "Italija",
-    models: ["500", "595", "695", "124 Spider", "500e", "600e"],
+    // ⚠️ Karlo 12.08.2026: njegov screenshot pokazuje 124/595/695, ali je
+    // odrezan. "500" NE brišem — 6 živih oglasa na produkciji koristi baš taj
+    // model, brisanje bi ih izbacilo iz filtera po modelu. Dodan "124".
+    models: ["124", "124 Spider", "500", "500e", "595", "600e", "695"],
   },
   {
     slug: "aeolus",
     name: "Aeolus",
     country: "Kina",
-    models: ["AX7", "E70", "Shine", "Yixuan"],
+    // ⚠️ Karlo 12.08.2026: točan popis s avto.neta (poslao screenshot).
+    models: ["AX7", "E70", "Haohan", "Haoji", "L7", "L8", "Sky EV01", "Yixuan"],
   },
   {
     slug: "aev",
     name: "AEV",
     country: "SAD",
-    models: ["Brute", "Prospector"],
+    // ⚠️ Karlo 12.08.2026: na avto.netu AEV nema nijedan model — samo
+    // "svi modeli" i "modela nema na listi". Prazan niz je namjeran.
+    models: [],
   },
   {
     slug: "aito",
@@ -1234,6 +1240,25 @@ export const POPULAR_MAKE_SLUGS = [
 
 export function getMake(slug: string): CarMake | undefined {
   return MAKES.find((m) => m.slug === slug);
+}
+
+/**
+ * ⚠️ Karlo 12.08.2026: "Zadnja stavka kod svake marke na listi modela mora
+ * stajati izbor 'modela nema na listi'." Vrijedi za SVAKU marku — i za one
+ * bez ijednog modela (AEV), gdje je to jedini izbor uz "Svi modeli".
+ *
+ * Vrijednost je stabilan ključ (ne prijevod) jer završi u URL-u i u bazi kao
+ * `model`. Ne mijenjati bez migracije postojećih oglasa.
+ */
+export const MODEL_NOT_LISTED = "__other__";
+export const MODEL_NOT_LISTED_LABEL = "Modela nema na listi";
+
+/** Modeli marke + obavezna zadnja stavka "Modela nema na listi". */
+export function modelOptionsFor(models: string[]): { value: string; label: string }[] {
+  return [
+    ...models.map((m) => ({ value: m, label: m })),
+    { value: MODEL_NOT_LISTED, label: MODEL_NOT_LISTED_LABEL },
+  ];
 }
 
 /**

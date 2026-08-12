@@ -25,6 +25,7 @@ import {
   CONDITIONS,
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor } from "@/data/categories";
+import { MODEL_NOT_LISTED, modelOptionsFor } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
@@ -143,6 +144,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   // Kontakt podaci predpopunjeni iz profila (Karlo st. 12) — korisnik ih u
   // koraku 5 i dalje može izmijeniti; izmjena vrijedi samo za taj oglas.
   const [s, setS] = useState<State>(() => (profile ? { ...empty, ...profile } : empty));
+  /** ⚠️ Karlo 12.08.2026: što je odabrano u padajućem izboru modela. Odvojeno
+   *  od `s.model` jer kod "Modela nema na listi" izbor drži ključ, a `s.model`
+   *  ono što je korisnik upisao (to ide u bazu i naslov oglasa). */
+  const [modelPick, setModelPick] = useState("");
   const [submitted, setSubmitted] = useState<{ slug: string } | false>(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
 
@@ -300,8 +305,11 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const modelOptions: Opt[] = useMemo(
     () => {
       if (!s.make) return [];
-      return (makesDbFor(s.category).find((m) => m.slug === s.make)?.models ?? [])
-        .map((m) => ({ value: m, label: m }));
+      const known = makesDbFor(s.category).find((m) => m.slug === s.make)?.models ?? [];
+      // ⚠️ Karlo 12.08.2026: zadnja stavka uvijek "Modela nema na listi".
+      // Kategorije bez baze marki (npr. dijelovi) i dalje idu na slobodan unos.
+      if (known.length === 0 && !makesDbFor(s.category).some((m) => m.slug === s.make)) return [];
+      return modelOptionsFor(known);
     },
     [s.category, s.make]
   );
@@ -879,18 +887,36 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               <SelectField
                 label="Marka"
                 value={s.make}
-                onChange={(v) => { set("make", v); set("model", ""); }}
+                onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
                 placeholder="Odaberi marku"
                 options={makeOptions}
               />
               {modelOptions.length > 0 ? (
-                <SelectField
-                  label="Model"
-                  value={s.model}
-                  onChange={(v) => set("model", v)}
-                  placeholder={s.make ? "Odaberi model" : "Prvo odaberi marku"}
-                  options={modelOptions}
-                />
+                <div className="space-y-2">
+                  <SelectField
+                    label="Model"
+                    value={modelPick}
+                    onChange={(v) => {
+                      setModelPick(v);
+                      // Kod "nema na listi" model se UPISUJE u polju ispod,
+                      // pa ga ovdje ispraznimo da naslov ne pokupi ključ.
+                      set("model", v === MODEL_NOT_LISTED ? "" : v);
+                    }}
+                    placeholder={s.make ? "Odaberi model" : "Prvo odaberi marku"}
+                    options={modelOptions}
+                  />
+                  {/* ⚠️ Karlo 12.08.2026: kad modela nema na listi, korisnik ga
+                      upisuje — u bazu i u naslov oglasa ide taj tekst, nikad
+                      tehnički ključ `__other__`. */}
+                  {modelPick === MODEL_NOT_LISTED && (
+                    <TextField
+                      label="Upiši model"
+                      value={s.model}
+                      onChange={(v) => set("model", v)}
+                      placeholder="npr. Brute"
+                    />
+                  )}
+                </div>
               ) : (
                 <TextField
                   label="Model"
