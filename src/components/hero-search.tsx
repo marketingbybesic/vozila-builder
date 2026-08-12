@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, SlidersHorizontal } from "lucide-react";
-import { MAKES as AUTO_MAKES, POPULAR_MAKE_SLUGS } from "@/data/makes";
+import { MAKES as AUTO_MAKES, POPULAR_MAKE_SLUGS, MODEL_NOT_LISTED, MODEL_NOT_LISTED_LABEL } from "@/data/makes";
 import { FUEL_TYPES, TRANSMISSIONS, BODY_TYPES } from "@/lib/types";
 
 const PRICE_STEPS = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000, 150000, 200000];
@@ -123,6 +123,11 @@ export function HeroSearch() {
             {selectedMake?.models.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
+            {/* ⚠️ Karlo 12.08.2026: zadnja stavka na SVAKOJ listi modela, bez
+                iznimke — i ovdje u brzoj pretrazi na naslovnici. */}
+            {selectedMake && (
+              <option value={MODEL_NOT_LISTED}>{MODEL_NOT_LISTED_LABEL}</option>
+            )}
           </select>
         </label>
 

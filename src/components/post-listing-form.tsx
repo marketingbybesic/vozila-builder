@@ -305,10 +305,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const modelOptions: Opt[] = useMemo(
     () => {
       if (!s.make) return [];
+      // ⚠️ Karlo 12.08.2026: zadnja stavka je "Modela nema na listi" na SVAKOJ
+      // listi modela, bez iznimke — i kad marka nema nijedan model, i kad
+      // kategorija nema bazu marki. Bez uvjeta.
       const known = makesDbFor(s.category).find((m) => m.slug === s.make)?.models ?? [];
-      // ⚠️ Karlo 12.08.2026: zadnja stavka uvijek "Modela nema na listi".
-      // Kategorije bez baze marki (npr. dijelovi) i dalje idu na slobodan unos.
-      if (known.length === 0 && !makesDbFor(s.category).some((m) => m.slug === s.make)) return [];
       return modelOptionsFor(known);
     },
     [s.category, s.make]
