@@ -9,7 +9,7 @@
  * Vizualni indikatori: ikona po sekciji + badge s brojem odabranog.
  */
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { LISTINGS } from "@/data/listings";
@@ -311,6 +311,28 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     setEngineMin(""); setEngineMax(""); setPowerMin(""); setPowerMax("");
     setKmMin(""); setKmMax(""); setAttrs({});
   };
+
+  /**
+   * ⚠️ Karlo 13.08.2026 (st. 4): iz gornjeg menija se biralo Auto/Osobni pa
+   * Moto/Skuter — a forma je ostajala na Auto. Uzrok: stanje se čitalo iz URL-a
+   * SAMO pri prvom montiranju (`useState(g(...))`), a klik u meniju vodi na
+   * ISTU rutu `/oglasi/napredno` s drugim parametrima → React ne montira
+   * komponentu ponovno, pa se ništa nije mijenjalo (mjereno: URL se nije ni
+   * promijenio jer je Next preskočio navigaciju na identičnu rutu).
+   * Sad pratimo `?category=` i `?subcategory=` iz URL-a i primjenjujemo ih.
+   */
+  const urlCategory = sp.get("category") ?? "";
+  const urlSubcategory = sp.get("subcategory") ?? "";
+  useEffect(() => {
+    if (urlCategory && urlCategory !== category) {
+      // ista logika kao ručna promjena: nova kategorija = čist kontekst
+      changeCategory(urlCategory);
+      setSubcategory(urlSubcategory);
+    } else if (urlSubcategory !== subcategory && urlCategory === category) {
+      setSubcategory(urlSubcategory);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlCategory, urlSubcategory]);
 
   // hasField: prikaži hardkodiranu sekciju samo ako kategorija ima to polje.
   // Karlo 27.07: mora poštovati `scope` kao i dynamicFields — inače polje koje

@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/db";
 import { formatPrice, formatKm, formatPower } from "@/lib/utils";
-import { listingHasField } from "@/lib/listing-fields";
+import { listingHasField, specGroupsFor } from "@/lib/listing-fields";
 import type { Listing } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -87,9 +87,50 @@ export default async function ComparePage({
 
   // Redak bez `key` je univerzalan (cijena, lokacija, prodavač). Redak s `key`
   // ostaje samo ako ga barem jedan uspoređivani oglas stvarno ima.
-  const rows = allRows.filter(
+  const baseRows = allRows.filter(
     (r) => !r.key || items.some((l) => listingHasField(l, r.key!))
   );
+
+  /**
+   * ⚠️ Karlo 13.08.2026 (st. 2): "kod usporedbe stavi rubrike sve kao što je na
+   * oglasu da bude usporedba potpuna". Gore je bilo 15 FIKSNIH redaka, dok
+   * detaljna stranica gradi rubrike iz sheme (`specGroupsFor`), pa su nedostajali
+   * Stanje vozila, Povijest, Dodatne opcije i svi atributi po kategoriji
+   * (nosivost viličara, širina gume, broj ležišta kampera…).
+   * Sad se dodaju SVE rubrike koje uspoređivani oglasi stvarno imaju — isti
+   * izvor kao detalj, pa se usporedba i oglas ne mogu razići.
+   */
+  // ⚠️ Shema ista polja imenuje drukčije nego fiksni redci gore ("Oblik
+  // karoserije" = "Karoserija", "Boja vozila" = "Boja"). Bez ovoga se rubrika
+  // pojavi DVAPUT i Karlu to izgleda kao greška.
+  const ISTO: Record<string, string> = {
+    "oblik karoserije": "karoserija",
+    "boja vozila": "boja",
+    "obujam motora": "obujam",
+    "snaga motora": "snaga",
+    "prijeđeni kilometri": "kilometri",
+    "godina proizvodnje": "godina",
+  };
+  const kanon = (s: string) => ISTO[s.toLowerCase()] ?? s.toLowerCase();
+  const seen = new Set(baseRows.map((r) => kanon(r.label)));
+  const specRows: Row[] = [];
+  for (const l of items) {
+    for (const grupa of specGroupsFor(l)) {
+      for (const it of grupa.items) {
+        const k = kanon(it.label);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        specRows.push({
+          label: it.label,
+          render: (x: Listing) =>
+            specGroupsFor(x)
+              .flatMap((g) => g.items)
+              .find((y) => y.label === it.label)?.value ?? "—",
+        });
+      }
+    }
+  }
+  const rows = [...baseRows, ...specRows];
 
   return (
     <Container className="py-8 md:py-12">
@@ -116,7 +157,10 @@ export default async function ComparePage({
                       alt={l.title}
                       fill
                       sizes="200px"
-                      className="object-cover"
+                      /* ⚠️ Karlo 13.08.2026 (st. 1): cijelo vozilo mora stati u
+                         okvir — `object-cover` je rezao rubove (isti popravak
+                         kao na detaljnoj 09.08.). */
+                      className="object-contain"
                     />
                   </div>
                   <Link

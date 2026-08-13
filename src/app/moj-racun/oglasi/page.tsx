@@ -137,7 +137,7 @@ export default async function MyListingsPage({
               <div className="grid sm:grid-cols-[200px_1fr_auto] gap-4 p-4">
                 <div className="relative aspect-[4/3] sm:aspect-auto sm:h-32 rounded-md overflow-hidden bg-[var(--color-line)]">
                   {l.images[0] && (
-                    <Image src={l.images[0]} alt={l.title} fill sizes="200px" className="object-cover" />
+                    <Image src={l.images[0]} alt={l.title} fill sizes="200px" className="object-contain" />
                   )}
                 </div>
 

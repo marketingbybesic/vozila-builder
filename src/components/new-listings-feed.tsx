@@ -25,7 +25,7 @@ function MiniCard({ listing, entering, className = "" }: { listing: Listing; ent
           src={listing.images[0]}
           alt={listing.title}
           fill
-          className="object-cover"
+          className="object-contain"
           sizes="(min-width: 1024px) 176px, 130px"
         />
       </div>

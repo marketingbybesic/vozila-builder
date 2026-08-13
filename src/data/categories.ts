@@ -60,7 +60,10 @@ const MOTO_SUBS: Subcategory[] = [
   { slug: "oldtimer", name: "Oldtimer" },
   { slug: "gokart", name: "Go-kart" },
   { slug: "motorne-sanke", name: "Motorne sanke" },
-  { slug: "e-skuter", name: "E-skuter" },
+  // ⚠️ Karlo 13.08.2026 (st. 3): naziv "E-skuter" → "E-romobil". SLUG ostaje
+  // `e-skuter` — mijenjanje sluga bi izbacilo postojeće oglase iz filtera
+  // (enum drift) i razbilo `scope` u category-filters.ts.
+  { slug: "e-skuter", name: "E-romobil" },
   { slug: "e-bicikl", name: "E-bicikl" },
   { slug: "e-moto", name: "E-moto" },
   { slug: "najam", name: "Ponude za najam" },

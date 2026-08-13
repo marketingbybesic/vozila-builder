@@ -24,7 +24,10 @@ export function ListingCard({ listing, variant = "grid" }: { listing: Listing; v
           alt={listing.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          /* ⚠️ Karlo 13.08.2026 (st. 1): cijelo vozilo/proizvod mora stati u
+             okvir. `object-cover` je rezao rubove (kod felgi/dijelova se gubio
+             pola proizvoda) — isti popravak kao na detaljnoj 09.08. */
+          className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {listing.featured && (
@@ -109,7 +112,10 @@ function ListingRow({ listing }: { listing: Listing }) {
           alt={listing.title}
           fill
           sizes="(max-width: 640px) 128px, 208px"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          /* ⚠️ Karlo 13.08.2026 (st. 1): cijelo vozilo/proizvod mora stati u
+             okvir. `object-cover` je rezao rubove (kod felgi/dijelova se gubio
+             pola proizvoda) — isti popravak kao na detaljnoj 09.08. */
+          className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
         />
         {listing.featured && (
           <Badge variant="accent" className="absolute top-2 left-2 shadow-sm text-[10px]">Izdvojeno</Badge>
