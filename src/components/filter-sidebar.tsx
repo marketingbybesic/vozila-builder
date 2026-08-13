@@ -6,7 +6,7 @@
  * Live: svaka promjena odmah ažurira URL (scroll:false).
  */
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
@@ -46,6 +46,31 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [panelOpen, setPanelOpen] = useState(false);
+  /** Karlo 13.08.2026 (st. 2): je li bočni stupac proširen na SVE filtere. */
+  const [sviFilteri, setSviFilteri] = useState(false);
+
+  /**
+   * ⚠️ Karlo 13.08.2026 (st. 1): mobilni filtar nije pokazivao KOLIKO je
+   * rezultata pronađeno — korisnik bira filtre naslijepo i mora zatvoriti panel
+   * da vidi ishod. Sad gumb piše "Prikaži N vozila" i broj se mijenja uživo.
+   *
+   * ⚠️ Broji SERVER (`/api/count`), ne klijent. Klijentsko brojanje nad
+   * `LISTINGS` je demo seed od ~52 oglasa i davalo bi izmišljen broj — ista
+   * greška zbog koje je `/api/count` i nastao (vidi komentar u toj ruti).
+   */
+  const [liveCount, setLiveCount] = useState<number | null>(null);
+  const qs = params.toString();
+  useEffect(() => {
+    if (!mobile) return;
+    let otkazano = false;
+    const t = setTimeout(() => {
+      fetch(`/api/count?${qs}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (!otkazano && d && typeof d.total === "number") setLiveCount(d.total); })
+        .catch(() => { /* brojač je informativan — tiho preskoči */ });
+    }, 250); // debounce: filtri se mijenjaju u nizu
+    return () => { otkazano = true; clearTimeout(t); };
+  }, [qs, mobile]);
 
   const current = useMemo(() => Object.fromEntries(params.entries()), [params]);
 
@@ -197,7 +222,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
        *
        * U pop-upu (mobilni i "Više filtera") prikazuje se SVE, kao dosad.
        */}
-      {!compact && (
+      {(!compact || sviFilteri) && (
         <>
           {hasField("transmission") && (
             <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
@@ -212,18 +237,28 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
           )}
 
-          <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+          {/* U `compact` je Županija već gore među brzim filterima — bez ovog
+              uvjeta bi se u proširenom stupcu pojavila DVAPUT. */}
+          {!compact && (
+            <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+          )}
           <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
         </>
       )}
 
-      {/* Više filtera → full-screen napredna panel */}
+      {/**
+       * ⚠️ Karlo 13.08.2026 (st. 2): "Svi filteri" je BACAO na naprednu pretragu
+       * (full-screen panel) umjesto da izlista ostatak filtera u stupcu.
+       * Sad u bočnom stupcu (`compact`) samo proširuje stupac na licu mjesta;
+       * puni panel ostaje samo za pop-up varijantu ("Više filtera").
+       */}
       <button
         type="button"
-        onClick={() => setPanelOpen(true)}
+        onClick={() => (compact ? setSviFilteri((s) => !s) : setPanelOpen(true))}
         className="w-full h-11 px-4 rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
       >
-        <SlidersHorizontal className="size-4" /> {compact ? "Svi filteri" : "Više filtera"}
+        <SlidersHorizontal className="size-4" />
+        {compact ? (sviFilteri ? "Manje filtera" : "Svi filteri") : "Više filtera"}
       </button>
     </div>
   );
@@ -238,15 +273,29 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
           <div className="relative bg-[var(--color-bg)] rounded-t-2xl max-h-[88vh] flex flex-col animate-slide-up shadow-2xl">
             <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-[var(--color-line)]">
-              <h2 className="font-display text-xl">Filtri</h2>
+              <div>
+                <h2 className="font-display text-xl">Filtri</h2>
+                {/* ⚠️ Karlo 13.08.2026 (st. 1): broj se vidi ODMAH pri otvaranju
+                    panela, ne tek na gumbu na dnu. */}
+                {liveCount !== null && (
+                  <p className="text-xs text-[var(--color-muted)] mt-0.5">
+                    Pronađeno {liveCount} {liveCount === 1 ? "oglas" : "oglasa"}
+                  </p>
+                )}
+              </div>
               <button onClick={onClose} className="size-9 rounded-lg hover:bg-[var(--color-line)] grid place-items-center" aria-label="Zatvori">
                 <X className="size-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">{body}</div>
             <div className="shrink-0 px-4 py-3 border-t border-[var(--color-line)]">
+              {/* ⚠️ Karlo 13.08.2026 (st. 1): broj pronađenih rezultata. Dok
+                  brojač još učitava, ostaje neutralan tekst — bolje nego da
+                  bljesne kriva brojka. */}
               <button onClick={onClose} className="w-full h-12 rounded-xl bg-[var(--color-accent)] text-[var(--color-ink)] font-semibold hover:bg-[var(--color-accent-dark)] hover:text-white transition-colors">
-                Prikaži rezultate
+                {liveCount === null
+                  ? "Prikaži rezultate"
+                  : `Prikaži ${liveCount} ${liveCount === 1 ? "oglas" : "oglasa"}`}
               </button>
             </div>
           </div>

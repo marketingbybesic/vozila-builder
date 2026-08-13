@@ -89,6 +89,37 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
     });
   };
 
+  /**
+   * ⚠️ Karlo 13.08.2026 (st. 3): "kod uređivanja oglasa fali uređivanje slika".
+   * Forma je imala SVE osim fotografija — `updateListingAction` ih je već
+   * prihvaćao (`images`), samo sučelja nije bilo.
+   *
+   * Ovdje se slike PRESLAGUJU, briše se višak i bira glavna (prva = naslovna).
+   * ⚠️ DODAVANJE novih nije uključeno — `uploadListingPhotoAction` piše na
+   * lokalni disk (`public/uploads/`), a na Vercelu je disk efemeran pa bi
+   * slika nestala pri sljedećem deployu. Za to treba Supabase Storage bucket
+   * (vidi PRODUCTION.md → "Image uploads"). Prijavljeno Dini.
+   */
+  const [images, setImages] = useState<string[]>([...(listing.images ?? [])]);
+  const pomakni = (i: number, smjer: -1 | 1) => {
+    setOk(false);
+    setImages((p) => {
+      const j = i + smjer;
+      if (j < 0 || j >= p.length) return p;
+      const n = [...p];
+      [n[i], n[j]] = [n[j], n[i]];
+      return n;
+    });
+  };
+  const obrisi = (i: number) => {
+    setOk(false);
+    setImages((p) => (p.length <= 1 ? p : p.filter((_, k) => k !== i)));
+  };
+  const naGlavnu = (i: number) => {
+    setOk(false);
+    setImages((p) => (i === 0 ? p : [p[i], ...p.filter((_, k) => k !== i)]));
+  };
+
   const [s, setS] = useState({
     make: listing.make,
     model: listing.model,
@@ -141,6 +172,8 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
         county: s.county,
         city: s.city,
         description: s.description,
+        // Karlo 13.08. (st. 3): redoslijed slika (prva = naslovna) i brisanje.
+        images,
         // Karlo 09.08. (st. 1): rubrike Stanje vozila / Povijest / Dodatne
         // opcije — attributes se šalju CIJELI (uključivo ključeve koje forma ne
         // renderira, npr. `vrsta`), a `features` se izvodi isto kao pri objavi.
@@ -229,6 +262,59 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
           <NumberField label="Kilometraža" unit="km" value={s.km} onChange={(v) => set("km", v)} placeholder="npr. 95000" />
         </div>
         <SelectField label="Stanje" value={s.condition} onChange={(v) => set("condition", v as Listing["condition"])} options={opts(CONDITIONS)} />
+      </section>
+
+      {/* ⚠️ Karlo 13.08.2026 (st. 3): uređivanje fotografija — redoslijed,
+          naslovna i brisanje. Dodavanje novih traži Storage bucket. */}
+      <section className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 space-y-4">
+        <h2 className="font-display text-xl">Fotografije</h2>
+        <p className="text-sm text-[var(--color-muted)] -mt-2">
+          Prva fotografija je naslovna — nju kupci vide u rezultatima.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {images.map((src, i) => (
+            <div
+              key={`${src}-${i}`}
+              className="relative rounded-[var(--radius-md)] overflow-hidden border border-[var(--color-line)] bg-[var(--color-bg)]"
+            >
+              <div className="relative aspect-[4/3]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={`Fotografija ${i + 1}`} className="absolute inset-0 w-full h-full object-contain" />
+                {i === 0 && (
+                  <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-[var(--color-accent)] text-[var(--color-ink)] text-[10px] font-bold">
+                    Naslovna
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-1 p-1.5 border-t border-[var(--color-line)]">
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => pomakni(i, -1)} disabled={i === 0}
+                    className="size-7 grid place-items-center rounded-md border border-[var(--color-line)] text-xs disabled:opacity-30 hover:bg-[var(--color-line)]/40"
+                    aria-label="Pomakni lijevo">←</button>
+                  <button type="button" onClick={() => pomakni(i, 1)} disabled={i === images.length - 1}
+                    className="size-7 grid place-items-center rounded-md border border-[var(--color-line)] text-xs disabled:opacity-30 hover:bg-[var(--color-line)]/40"
+                    aria-label="Pomakni desno">→</button>
+                </div>
+                <div className="flex gap-1">
+                  {i !== 0 && (
+                    <button type="button" onClick={() => naGlavnu(i)}
+                      className="h-7 px-2 rounded-md border border-[var(--color-line)] text-[11px] hover:bg-[var(--color-line)]/40">
+                      Naslovna
+                    </button>
+                  )}
+                  <button type="button" onClick={() => obrisi(i)} disabled={images.length <= 1}
+                    className="size-7 grid place-items-center rounded-md border border-[var(--color-line)] text-xs text-red-700 disabled:opacity-30 hover:bg-red-600/10"
+                    aria-label="Obriši fotografiju">✕</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {images.length <= 1 && (
+          <p className="text-xs text-[var(--color-muted)]">
+            Oglas mora imati barem jednu fotografiju.
+          </p>
+        )}
       </section>
 
       <section className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 space-y-4">
