@@ -51,7 +51,7 @@ export const MAKES: CarMake[] = [
     slug: "alfa-romeo",
     name: "Alfa Romeo",
     country: "Italija",
-    models: ["145", "146", "147", "155", "156", "156 Sportwagon", "159", "159 Sportwagon", "164", "166", "1750", "33", "4C", "75", "8C", "90", "Alfasud", "Alfetta", "Brera", "Crosswagon", "Giulia", "Giulietta", "GT", "GTV", "Junior", "MiTo", "RZ", "Spider", "Sprint", "Stelvio", "SZ", "Tonale"],
+    models: ["33", "75", "90", "145", "146", "147", "155", "156", "159", "164", "166", "1750", "4C", "8C", "Alfasud", "Alfetta", "Brera", "Crosswagon", "Giulia", "Giulietta", "GT", "GTV", "Junior", "MiTo", "RZ", "Spider", "Sprint", "Stelvio", "SZ", "Tonale"],
   },
   {
     slug: "alpine",
@@ -75,13 +75,13 @@ export const MAKES: CarMake[] = [
     slug: "aston-martin",
     name: "Aston Martin",
     country: "Velika Britanija",
-    models: ["Cygnet", "DB", "DB11", "DB12", "DB7", "DB9", "DBS", "DBX", "Lagonda", "One-77", "Rapide", "V8", "Vanquish", "Vantage", "Virage", "Volante", "Zagato"],
+    models: ["Cygnet", "DB", "DB7", "DB9", "DB11", "DB12", "DBS", "DBX", "Lagonda", "One-77", "Rapide", "V8", "Vanquish", "Vantage", "Virage", "Volante", "Zagato"],
   },
   {
     slug: "audi",
     name: "Audi",
     country: "Njemačka",
-    models: ["100", "200", "50", "60", "80", "90", "A1", "A2", "A3", "A3 Cabriolet", "A4", "A4 Allroad", "A4 Avant", "A4 Cabriolet", "A5", "A5 Avant", "A5 Cabriolet", "A5 Sportback", "A6", "A6 Allroad", "A6 Avant", "A6 Avant e-tron", "A6 Sportback e-tron", "A7", "A8", "Cabriolet", "Coupe", "e-tron", "e-tron GT", "e-tron Sportback", "Q1", "Q2", "Q3", "Q3 Sportback", "Q4", "Q4 e-tron", "Q4 Sportback e-tron", "Q5", "Q5 Sportback", "Q6", "Q6 e-tron", "Q6 Sportback e-tron", "Q7", "Q8", "Q8 e-tron", "Q8 e-tron Sportback", "R8", "RS Q3", "RS Q3 Sportback", "RS Q8", "RS2", "RS3", "RS4", "RS4 Avant", "RS5", "RS5 Cabriolet", "RS6", "RS6 Avant", "RS7", "S1", "S2", "S3", "S3 Cabriolet", "S4", "S4 Cabriolet", "S5", "S5 Avant", "S5 Sportback", "S6", "S7", "S8", "SQ2", "SQ5", "SQ6 e-tron", "SQ6 Sportback e-tron", "SQ7", "SQ8", "TT", "TT RS", "TTS", "V8"],
+    models: ["50", "60", "80", "90", "100", "200", "A1", "A2", "A3", "A3 Cabriolet", "A4", "A4 Allroad", "A4 Avant", "A4 Cabriolet", "A5", "A5 Avant", "A5 Cabriolet", "A5 Sportback", "A6", "A6 Allroad", "A6 Avant", "A6 Avant e-tron", "A6 Sportback e-tron", "A7", "A8", "Cabriolet", "Coupe", "e-tron", "e-tron GT", "e-tron Sportback", "Q1", "Q2", "Q3", "Q3 Sportback", "Q4", "Q4 e-tron", "Q4 Sportback e-tron", "Q5", "Q5 Sportback", "Q6", "Q6 e-tron", "Q6 Sportback e-tron", "Q7", "Q8", "Q8 e-tron", "Q8 e-tron Sportback", "R8", "RS2", "RS3", "RS4", "RS4 Avant", "RS5", "RS5 Cabriolet", "RS6", "RS6 Avant", "RS7", "RS Q3", "RS Q3 Sportback", "RS Q8", "S1", "S2", "S3", "S3 Cabriolet", "S4", "S4 Cabriolet", "S5", "S5 Avant", "S5 Sportback", "S6", "S7", "S8", "SQ2", "SQ5", "SQ6 e-tron", "SQ6 Sportback e-tron", "SQ7", "SQ8", "TT", "TT RS", "TTS", "V8"],
   },
   {
     slug: "austin",
@@ -99,7 +99,7 @@ export const MAKES: CarMake[] = [
     slug: "baic",
     name: "BAIC",
     country: "Kina",
-    models: ["BJ30", "BJ40 PRO", "BJ60", "X55", "X7"],
+    models: ["BJ30", "BJ40 PRO", "BJ60", "X7", "X55"],
   },
   {
     slug: "baw",
@@ -129,13 +129,13 @@ export const MAKES: CarMake[] = [
     slug: "bestune",
     name: "Bestune",
     country: "Kina",
-    models: ["T77", "T99", "B70"],
+    models: ["B70", "T77", "T99"],
   },
   {
     slug: "bmw",
     name: "BMW",
     country: "Njemačka",
-    models: ["1802", "1M Coupe", "2002", "i3", "i4", "i5", "i7", "i8", "iX", "iX1", "iX2", "iX3", "M1", "M2", "M3", "M4", "M5", "M6", "M8", "Serija 1", "Serija 1 Cabrio", "Serija 1 Coupe", "Serija 2", "Serija 2 Active Tourer", "Serija 2 Cabrio", "Serija 2 Coupe", "Serija 2 Gran Coupe", "Serija 2 Gran Tourer", "Serija 3", "Serija 3 Cabrio", "Serija 3 Compact", "Serija 3 Coupe", "Serija 3 Gran Turismo", "Serija 3 Touring", "Serija 4", "Serija 4 Cabrio", "Serija 4 Coupe", "Serija 4 Gran Coupe", "Serija 5", "Serija 5 Gran Turismo", "Serija 5 Touring", "Serija 6", "Serija 6 Cabrio", "Serija 6 Coupe", "Serija 6 Gran Coupe", "Serija 6 Gran Turismo", "Serija 7", "Serija 8", "Serija 8 Cabrio", "Serija 8 Coupe", "Serija 8 Gran Coupe", "Serija X1", "Serija X2", "Serija X3", "Serija X4", "Serija X5", "Serija X6", "Serija X7", "X1", "X1 SDRIVE18D", "X3", "X3 XDRIVE20D", "XM", "Z1", "Z3", "Z4", "Z8"],
+    models: ["1802", "2002", "1M Coupe", "i3", "i4", "i5", "i7", "i8", "iX", "iX1", "iX2", "iX3", "M1", "M2", "M3", "M4", "M5", "M6", "M8", "Serija 1", "Serija 1 Cabrio", "Serija 1 Coupe", "Serija 2", "Serija 2 Active Tourer", "Serija 2 Cabrio", "Serija 2 Coupe", "Serija 2 Gran Coupe", "Serija 2 Gran Tourer", "Serija 3", "Serija 3 Cabrio", "Serija 3 Compact", "Serija 3 Coupe", "Serija 3 Gran Turismo", "Serija 3 Touring", "Serija 4", "Serija 4 Cabrio", "Serija 4 Coupe", "Serija 4 Gran Coupe", "Serija 5", "Serija 5 Gran Turismo", "Serija 5 Touring", "Serija 6", "Serija 6 Cabrio", "Serija 6 Coupe", "Serija 6 Gran Coupe", "Serija 6 Gran Turismo", "Serija 7", "Serija 8", "Serija 8 Cabrio", "Serija 8 Coupe", "Serija 8 Gran Coupe", "Serija X1", "Serija X2", "Serija X3", "Serija X4", "Serija X5", "Serija X6", "Serija X7", "X1", "X1 SDRIVE18D", "X3", "X3 XDRIVE20D", "XM", "Z1", "Z3", "Z4", "Z8"],
   },
   {
     slug: "borgward",
@@ -213,7 +213,7 @@ export const MAKES: CarMake[] = [
     slug: "citroen",
     name: "Citroën",
     country: "Francuska",
-    models: ["2 CV", "Ami", "AX", "Berlingo", "BX", "C-Crosser", "C-Elysee", "C-Zero", "C1", "C2", "C3", "C3 Aircross", "C3 Picasso", "C3 Pluriel", "C4", "C4 Aircross", "C4 Cactus", "C4 Grand Picasso", "C4 Grand SpaceTourer", "C4 Picasso", "C4 SpaceTourer", "C4 X", "C5", "C5 Aircross", "C5 X", "C6", "C8", "CX", "DS", "DS3", "DS4", "DS5", "Dyane", "Evasion", "GS", "GSA", "Jumpy", "LN", "Lomax", "Nemo", "Saxo", "SM", "SpaceTourer", "Visa", "Xantia", "XM", "Xsara", "Xsara Picasso", "ZX"],
+    models: ["2 CV", "Ami", "AX", "Berlingo", "BX", "C1", "C2", "C3", "C3 Aircross", "C3 Picasso", "C3 Pluriel", "C4", "C4 Aircross", "C4 Cactus", "C4 Grand Picasso", "C4 Grand SpaceTourer", "C4 Picasso", "C4 SpaceTourer", "C4 X", "C5", "C5 Aircross", "C5 X", "C6", "C8", "C-Crosser", "C-Elysee", "C-Zero", "CX", "DS", "DS3", "DS4", "DS5", "Dyane", "Evasion", "GS", "GSA", "Jumpy", "LN", "Lomax", "Nemo", "Saxo", "SM", "SpaceTourer", "Visa", "Xantia", "XM", "Xsara", "Xsara Picasso", "ZX"],
   },
   {
     slug: "cobra",
@@ -321,19 +321,19 @@ export const MAKES: CarMake[] = [
     slug: "exeed",
     name: "Exeed",
     country: "Kina",
-    models: ["TXL", "VX", "LX", "RX"],
+    models: ["LX", "RX", "TXL", "VX"],
   },
   {
     slug: "ferrari",
     name: "Ferrari",
     country: "Italija",
-    models: ["12 Cilindri", "208", "296", "308", "328", "348", "355", "360", "365", "400", "412", "430", "456", "458", "488", "512", "550 Maranello", "575", "599", "612 Scaglietti", "812", "Amalfi", "California", "Daytona SP3", "Dino", "Enzo", "F12", "F40", "F50", "F8", "F80", "FF", "GTC4Lusso", "GTO", "LaFerrari", "Luce", "Mondial", "Monza", "Portofino", "Purosangue", "Roma", "SF90", "Superamerica", "Testarossa"],
+    models: ["208", "296", "308", "328", "348", "355", "360", "365", "400", "412", "430", "456", "458", "488", "512", "575", "599", "812", "12 Cilindri", "550 Maranello", "612 Scaglietti", "Amalfi", "California", "Daytona SP3", "Dino", "Enzo", "F8", "F12", "F40", "F50", "F80", "FF", "GTC4Lusso", "GTO", "LaFerrari", "Luce", "Mondial", "Monza", "Portofino", "Purosangue", "Roma", "SF90", "Superamerica", "Testarossa"],
   },
   {
     slug: "fiat",
     name: "Fiat",
     country: "Italija",
-    models: ["1100", "124", "124 Spider", "125", "126", "127", "130", "131", "132", "1500", "500", "500C", "500L", "500X", "600", "850", "Albea", "Argenta", "Barchetta", "Brava", "Bravo", "Campagnola", "Cinquecento", "Coupe", "Croma", "Dino", "Doblo", "DUCATO", "Freemont", "Fullback", "Grande Panda", "Grizzly", "Grizzly Fastback", "Idea", "Linea", "Marea", "Multipla", "Palio", "Panda", "Punto", "Qubo", "Regata", "Ritmo", "Scudo", "Sedici", "Seicento", "Spider", "Stilo", "Talento", "Tempra", "Tipo", "Topolino", "Ulysse", "Uno", "X 1/9"],
+    models: ["124", "125", "126", "127", "130", "131", "132", "500", "600", "850", "1100", "1500", "124 Spider", "500C", "500L", "500X", "Albea", "Argenta", "Barchetta", "Brava", "Bravo", "Campagnola", "Cinquecento", "Coupe", "Croma", "Dino", "Doblo", "DUCATO", "Freemont", "Fullback", "Grande Panda", "Grizzly", "Grizzly Fastback", "Idea", "Linea", "Marea", "Multipla", "Palio", "Panda", "Punto", "Qubo", "Regata", "Ritmo", "Scudo", "Sedici", "Seicento", "Spider", "Stilo", "Talento", "Tempra", "Tipo", "Topolino", "Ulysse", "Uno", "X 1/9"],
   },
   {
     slug: "fisker",
@@ -399,7 +399,7 @@ export const MAKES: CarMake[] = [
     slug: "haval",
     name: "Haval",
     country: "Kina",
-    models: ["H2", "H6", "Jolion", "Dargo", "F7"],
+    models: ["Dargo", "F7", "H2", "H6", "Jolion"],
   },
   {
     slug: "honda",
@@ -423,7 +423,7 @@ export const MAKES: CarMake[] = [
     slug: "hycan",
     name: "Hycan",
     country: "Kina",
-    models: ["007", "Z03", "V09"],
+    models: ["007", "V09", "Z03"],
   },
   {
     slug: "hyundai",
@@ -495,7 +495,7 @@ export const MAKES: CarMake[] = [
     slug: "jetour",
     name: "Jetour",
     country: "Kina",
-    models: ["X70", "X90", "Dashing", "T2"],
+    models: ["Dashing", "T2", "X70", "X90"],
   },
   {
     slug: "kaiyi",
@@ -507,7 +507,7 @@ export const MAKES: CarMake[] = [
     slug: "karma",
     name: "Karma",
     country: "SAD",
-    models: ["Revero", "GS-6"],
+    models: ["GS-6", "Revero"],
   },
   {
     slug: "kg-mobility",
@@ -525,7 +525,7 @@ export const MAKES: CarMake[] = [
     slug: "koenigsegg",
     name: "Koenigsegg",
     country: "Švedska",
-    models: ["CC8S", "CCX", "Agera", "Regera", "Jesko", "Gemera"],
+    models: ["Agera", "CC8S", "CCX", "Gemera", "Jesko", "Regera"],
   },
   {
     slug: "ktm",
@@ -591,7 +591,7 @@ export const MAKES: CarMake[] = [
     slug: "livan",
     name: "Livan",
     country: "Kina",
-    models: ["X3 Pro", "7"],
+    models: ["7", "X3 Pro"],
   },
   {
     slug: "london-taxi",
@@ -657,7 +657,7 @@ export const MAKES: CarMake[] = [
     slug: "mazda",
     name: "Mazda",
     country: "Japan",
-    models: ["121", "3", "323", "626", "929", "BT-50", "CX-3", "CX-30", "CX-5", "CX-50", "CX-60", "CX-6e", "CX-7", "CX-80", "CX-9", "Demio", "Mazda2", "Mazda3", "Mazda5", "Mazda6", "Mazda6e", "MPV", "MX-3", "MX-30", "MX-5", "MX-6", "Premacy", "RX-7", "RX-8", "Tribute", "Xedos 6", "Xedos 9"],
+    models: ["3", "121", "323", "626", "929", "BT-50", "CX-3", "CX-5", "CX-6e", "CX-7", "CX-9", "CX-30", "CX-50", "CX-60", "CX-80", "Demio", "Mazda2", "Mazda3", "Mazda5", "Mazda6", "Mazda6e", "MPV", "MX-3", "MX-5", "MX-6", "MX-30", "Premacy", "RX-7", "RX-8", "Tribute", "Xedos 6", "Xedos 9"],
   },
   {
     slug: "mclaren",
@@ -723,13 +723,13 @@ export const MAKES: CarMake[] = [
     slug: "neta",
     name: "Neta",
     country: "Kina",
-    models: ["V", "U", "S", "GT"],
+    models: ["GT", "S", "U", "V"],
   },
   {
     slug: "nio",
     name: "Nio",
     country: "Kina",
-    models: ["ES6", "ES8", "ET5", "ET7", "EL6", "EL7"],
+    models: ["EL6", "EL7", "ES6", "ES8", "ET5", "ET7"],
   },
   {
     slug: "nissan",
@@ -741,7 +741,7 @@ export const MAKES: CarMake[] = [
     slug: "noble",
     name: "Noble",
     country: "Velika Britanija",
-    models: ["M12", "M600", "M500"],
+    models: ["M12", "M500", "M600"],
   },
   {
     slug: "nsu",
@@ -759,7 +759,7 @@ export const MAKES: CarMake[] = [
     slug: "omoda",
     name: "Omoda",
     country: "Kina",
-    models: ["4", "5", "5 EV", "5 SHS-H", "7", "9"],
+    models: ["4", "5", "7", "9", "5 EV", "5 SHS-H"],
   },
   {
     slug: "opel",
@@ -771,7 +771,7 @@ export const MAKES: CarMake[] = [
     slug: "ora",
     name: "Ora",
     country: "Kina",
-    models: ["Funky Cat", "03", "07", "Good Cat"],
+    models: ["03", "07", "Funky Cat", "Good Cat"],
   },
   {
     slug: "overland",
@@ -783,25 +783,25 @@ export const MAKES: CarMake[] = [
     slug: "pagani",
     name: "Pagani",
     country: "Italija",
-    models: ["Zonda", "Huayra", "Utopia"],
+    models: ["Huayra", "Utopia", "Zonda"],
   },
   {
     slug: "panhard",
     name: "Panhard",
     country: "Francuska",
-    models: ["Dyna", "24", "PL17"],
+    models: ["24", "Dyna", "PL17"],
   },
   {
     slug: "perodua",
     name: "Perodua",
     country: "Malezija",
-    models: ["Myvi", "Axia", "Kancil"],
+    models: ["Axia", "Kancil", "Myvi"],
   },
   {
     slug: "peugeot",
     name: "Peugeot",
     country: "Francuska",
-    models: ["1007", "104", "106", "107", "108", "2008", "204", "205", "206", "207", "208", "3008", "301", "304", "305", "306", "307", "308", "309", "4007", "4008", "404", "405", "406", "407", "408", "5008", "504", "505", "508", "604", "605", "607", "806", "807", "Bipper", "E-3008", "E-5008", "Expert", "iOn", "Partner", "Pick Up", "RCZ", "Rifter", "Traveller"],
+    models: ["104", "106", "107", "108", "204", "205", "206", "207", "208", "301", "304", "305", "306", "307", "308", "309", "404", "405", "406", "407", "408", "504", "505", "508", "604", "605", "607", "806", "807", "1007", "2008", "3008", "4007", "4008", "5008", "Bipper", "E-3008", "E-5008", "Expert", "iOn", "Partner", "Pick Up", "RCZ", "Rifter", "Traveller"],
   },
   {
     slug: "piaggio",
@@ -831,7 +831,7 @@ export const MAKES: CarMake[] = [
     slug: "porsche",
     name: "Porsche",
     country: "Njemačka",
-    models: ["356", "718", "718 Boxster", "718 Cayman", "911", "911 Cabriolet", "911 Targa", "912", "914", "924", "928", "944", "959", "968", "Boxster", "Carrera GT", "Cayenne", "Cayenne Coupe", "Cayman", "Macan", "Panamera", "Panamera Sport Turismo", "Taycan", "Taycan Sport Turismo"],
+    models: ["356", "718", "911", "912", "914", "924", "928", "944", "959", "968", "718 Boxster", "718 Cayman", "911 Cabriolet", "911 Targa", "Boxster", "Carrera GT", "Cayenne", "Cayenne Coupe", "Cayman", "Macan", "Panamera", "Panamera Sport Turismo", "Taycan", "Taycan Sport Turismo"],
   },
   {
     slug: "proton",
@@ -855,7 +855,7 @@ export const MAKES: CarMake[] = [
     slug: "renault",
     name: "Renault",
     country: "Francuska",
-    models: ["4 E-Tech", "5 E-Tech", "Alaskan", "Alpine", "Arkana", "Austral", "Avantime", "Captur", "Clio", "Espace", "Fluence", "Fuego", "Grand Espace", "Grand Kangoo", "Grand Modus", "Grand Scenic", "Kadjar", "Kangoo", "Koleos", "Laguna", "Latitude", "Megane", "Megane Conquest", "Megane E-Tech", "Modus", "R 10", "R 11", "R 12", "R 14", "R 16", "R 18", "R 19", "R 20", "R 21", "R 25", "R 30", "R 4", "R 5", "R 8", "R 9", "Rafale", "Safrane", "Scenic", "Scenic E-Tech", "Sport Spider", "Symbioz", "Talisman", "Thalia", "Twingo", "Twizy", "Vel Satis", "Wind", "Zoe"],
+    models: ["4 E-Tech", "5 E-Tech", "Alaskan", "Alpine", "Arkana", "Austral", "Avantime", "Captur", "Clio", "Espace", "Fluence", "Fuego", "Grand Espace", "Grand Kangoo", "Grand Modus", "Grand Scenic", "Kadjar", "Kangoo", "Koleos", "Laguna", "Latitude", "Megane", "Megane Conquest", "Megane E-Tech", "Modus", "R 4", "R 5", "R 8", "R 9", "R 10", "R 11", "R 12", "R 14", "R 16", "R 18", "R 19", "R 20", "R 21", "R 25", "R 30", "Rafale", "Safrane", "Scenic", "Scenic E-Tech", "Sport Spider", "Symbioz", "Talisman", "Thalia", "Twingo", "Twizy", "Vel Satis", "Wind", "Zoe"],
   },
   {
     slug: "replica",
@@ -867,7 +867,7 @@ export const MAKES: CarMake[] = [
     slug: "riley",
     name: "Riley",
     country: "Velika Britanija",
-    models: ["RM", "Elf", "Kestrel"],
+    models: ["Elf", "Kestrel", "RM"],
   },
   {
     slug: "rimac",
@@ -879,7 +879,7 @@ export const MAKES: CarMake[] = [
     slug: "rivian",
     name: "Rivian",
     country: "SAD",
-    models: ["R1T", "R1S"],
+    models: ["R1S", "R1T"],
   },
   {
     slug: "rolls-royce",
@@ -903,7 +903,7 @@ export const MAKES: CarMake[] = [
     slug: "saab",
     name: "Saab",
     country: "Švedska",
-    models: ["9-3", "9-3x", "9-4x", "9-5", "9-7x", "90", "900", "9000", "96", "99"],
+    models: ["90", "96", "99", "900", "9000", "9-3", "9-3x", "9-4x", "9-5", "9-7x"],
   },
   {
     slug: "saturn",
@@ -921,7 +921,7 @@ export const MAKES: CarMake[] = [
     slug: "sehol",
     name: "Sehol",
     country: "Kina",
-    models: ["E10X", "X8", "QX"],
+    models: ["E10X", "QX", "X8"],
   },
   {
     slug: "seres",
@@ -957,7 +957,7 @@ export const MAKES: CarMake[] = [
     slug: "skywell",
     name: "Skywell",
     country: "Kina",
-    models: ["ET5", "BE11"],
+    models: ["BE11", "ET5"],
   },
   {
     slug: "smart",
@@ -987,7 +987,7 @@ export const MAKES: CarMake[] = [
     slug: "studebaker",
     name: "Studebaker",
     country: "SAD",
-    models: ["Champion", "Commander", "Avanti", "Hawk"],
+    models: ["Avanti", "Champion", "Commander", "Hawk"],
   },
   {
     slug: "subaru",
@@ -1041,13 +1041,13 @@ export const MAKES: CarMake[] = [
     slug: "togg",
     name: "Togg",
     country: "Turska",
-    models: ["T10X", "T10F"],
+    models: ["T10F", "T10X"],
   },
   {
     slug: "toyota",
     name: "Toyota",
     country: "Japan",
-    models: ["4-Runner", "Auris", "Avalon", "Avensis", "Avensis Verso", "Aygo", "Aygo X", "bZ4X", "C-HR", "C-HR+", "Camry", "Carina", "Celica", "Corolla", "Corolla Cross", "Corolla Verso", "Crown", "FJ", "GR Yaris", "GR86", "GT86", "HiAce", "Highlander", "Hilux", "IQ", "Land Cruiser", "LiteAce", "Mirai", "MR2", "Paseo", "Picnic", "Previa", "Prius", "Proace", "Proace City Verso", "Proace Verso", "RAV4", "Starlet", "Supra", "Tercel", "TONERO", "Urban Cruiser", "Verso", "Verso-S", "Yaris", "Yaris Cross", "Yaris Verso"],
+    models: ["4-Runner", "Auris", "Avalon", "Avensis", "Avensis Verso", "Aygo", "Aygo X", "bZ4X", "C-HR", "C-HR+", "Camry", "Carina", "Celica", "Corolla", "Corolla Cross", "Corolla Verso", "Crown", "FJ", "GR86", "GR Yaris", "GT86", "HiAce", "Highlander", "Hilux", "IQ", "Land Cruiser", "LiteAce", "Mirai", "MR2", "Paseo", "Picnic", "Previa", "Prius", "Proace", "Proace City Verso", "Proace Verso", "RAV4", "Starlet", "Supra", "Tercel", "TONERO", "Urban Cruiser", "Verso", "Verso-S", "Yaris", "Yaris Cross", "Yaris Verso"],
   },
   {
     slug: "trabant",
@@ -1077,7 +1077,7 @@ export const MAKES: CarMake[] = [
     slug: "ultima",
     name: "Ultima",
     country: "Velika Britanija",
-    models: ["GTR", "Evolution", "RS"],
+    models: ["Evolution", "GTR", "RS"],
   },
   {
     slug: "unimog",
@@ -1149,7 +1149,7 @@ export const MAKES: CarMake[] = [
     slug: "wey",
     name: "Wey",
     country: "Kina",
-    models: ["VV5", "VV7", "Coffee 01"],
+    models: ["Coffee 01", "VV5", "VV7"],
   },
   {
     slug: "wiesmann",
@@ -1161,13 +1161,13 @@ export const MAKES: CarMake[] = [
     slug: "wolseley",
     name: "Wolseley",
     country: "Velika Britanija",
-    models: ["Hornet", "1500", "6/110"],
+    models: ["1500", "6/110", "Hornet"],
   },
   {
     slug: "wuling",
     name: "Wuling",
     country: "Kina",
-    models: ["Hongguang Mini EV", "Bingo", "Air EV"],
+    models: ["Air EV", "Bingo", "Hongguang Mini EV"],
   },
   {
     slug: "xev",
@@ -1191,7 +1191,7 @@ export const MAKES: CarMake[] = [
     slug: "yugo",
     name: "Yugo",
     country: "Srbija",
-    models: ["45", "55", "65", "Koral", "Florida", "Tempo"],
+    models: ["45", "55", "65", "Florida", "Koral", "Tempo"],
   },
   {
     slug: "yunlong",
@@ -1203,7 +1203,7 @@ export const MAKES: CarMake[] = [
     slug: "zastava",
     name: "Zastava",
     country: "Srbija",
-    models: ["101", "128", "1300", "1500", "750", "850", "Buggy", "Yugo", "Yugo Florida"],
+    models: ["101", "128", "750", "850", "1300", "1500", "Buggy", "Yugo", "Yugo Florida"],
   },
   {
     slug: "zaz",
@@ -1227,7 +1227,7 @@ export const MAKES: CarMake[] = [
     slug: "zotye",
     name: "Zotye",
     country: "Kina",
-    models: ["T600", "SR9", "Nomad"],
+    models: ["Nomad", "SR9", "T600"],
   },
 ];
 
