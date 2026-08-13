@@ -78,6 +78,32 @@ export function CategoryNav({
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
 
   /**
+   * ⚠️⚠️ Karlo 13.08.2026 (st. 4): "ne mozes menjat izmedju kategorija u gornjem
+   * meniju kad jednom izaberes kategoriju". Izmjereno na produkciji: klik na
+   * MOTO/Skuter dok si na `/oglasi/napredno?category=auto` NIJE promijenio ni
+   * URL — 0 mrežnih zahtjeva, 0 grešaka u konzoli.
+   *
+   * Uzrok: Next App Router na klijentsku navigaciju prema ISTOM `pathname`
+   * (mijenjaju se samo query parametri) ne remounta stranicu; kod statički
+   * generirane `/oglasi/napredno` to znači da se ne dogodi ništa vidljivo.
+   *
+   * Lijek: kad odredište ima isti `pathname` kao trenutna stranica, idemo
+   * TVRDOM navigacijom (`location.assign`) — stranica se ponovno učita s novim
+   * parametrima. Na različitu rutu ostaje normalna, brza klijentska navigacija.
+   *
+   * ⚠️ NE koristiti `useSearchParams` ovdje — traži Suspense granicu i ruši
+   * build svih statičnih stranica (traka je u zaglavlju na svima). `usePathname`
+   * je dovoljan: uspoređujemo samo putanju, ne parametre.
+   */
+  const naviPath = usePathname();
+  const istaRutaNav = (href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const [putanja] = href.split("?");
+    if (putanja !== naviPath) return; // druga ruta → pusti Next da odradi
+    e.preventDefault();
+    window.location.assign(href);
+  };
+
+  /**
    * ⚠️⚠️ Karlo 09.08. (st. 12): panel se NE SMIJE zatvarati u onClick-u linka.
    * Zatvaranje odmah unmounta <Link> usred started navigacije i klijentska
    * navigacija se TIHO PREKINE — izmjereno na produkciji: klik na podkategoriju
@@ -294,6 +320,7 @@ export function CategoryNav({
                 <li>
                   <Link
                     href={subcategoryHref(openCategory.slug, openSub.slug)}
+                    onClick={istaRutaNav(subcategoryHref(openCategory.slug, openSub.slug))}
                     prefetch={false}
                     className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs font-medium text-[var(--color-accent)] bg-white/[0.04] hover:bg-white/10 transition-colors"
                   >
@@ -304,6 +331,7 @@ export function CategoryNav({
                   <li key={child.slug}>
                     <Link
                       href={subChildHref(openCategory.slug, openSub.slug, child.slug)}
+                      onClick={istaRutaNav(subChildHref(openCategory.slug, openSub.slug, child.slug))}
                       prefetch={false}
                       className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                     >
@@ -338,6 +366,7 @@ export function CategoryNav({
                     <li key={sub.slug}>
                       <Link
                         href={subcategoryHref(openCategory.slug, sub.slug)}
+                        onClick={istaRutaNav(subcategoryHref(openCategory.slug, sub.slug))}
                         prefetch={false}
                         className="block rounded-[var(--radius-sm)] px-2.5 py-2 text-xs text-white/85 bg-white/[0.04] hover:bg-white/10 hover:text-white transition-colors"
                       >
