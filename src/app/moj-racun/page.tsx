@@ -20,7 +20,8 @@ export default async function MojRacunPage() {
   const stats = [
     { label: "Aktivni oglasi", value: String(active.length), icon: Car, change: active.length > 0 ? "Aktivno" : "—" },
     { label: "Ukupno pregleda", value: new Intl.NumberFormat("hr-HR").format(totalViews), icon: Eye, change: totalViews > 0 ? "+0 danas" : "—" },
-    { label: "Parkirali kupci", value: String(saved.length), icon: CircleParking, change: "—" },
+    // ⚠️ Karlo 13.08.2026: "Parkirali kupci" → "Parkirana vozila".
+    { label: "Parkirana vozila", value: String(saved.length), icon: CircleParking, change: "—" },
     { label: "Nove poruke", value: String(unread), icon: MessageSquare, change: unread > 0 ? "Pročitaj" : "—" },
   ];
 
