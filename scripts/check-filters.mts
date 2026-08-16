@@ -24,6 +24,12 @@ const CASES: Array<[string, string]> = [
   ["gospodarska", "dostavna"],
   ["gospodarska", "kamioni"],
   ["gospodarska", "prikolice"],
+  // ⚠️ 16.08.2026: autobusi/utv/najam NISU bili pokriveni — mijenjali smo im
+  // shemu (Karlo st.2/st.4) nad neprovjerenim terenom. Bez ovih redaka guard
+  // prolazi zeleno bez obzira što se dogodi.
+  ["gospodarska", "autobusi"],
+  ["gospodarska", "utv"],
+  ["gospodarska", "najam"],
   ["mehanizacija", "poljoprivredni-strojevi"],
   ["mehanizacija", "vilicari"],
   ["mehanizacija", "gradevinski-strojevi"],

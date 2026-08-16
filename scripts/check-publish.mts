@@ -30,6 +30,10 @@ const CASES: Array<[string, string]> = [
   ["gospodarska", "dostavna"],
   ["gospodarska", "kamioni"],
   ["gospodarska", "prikolice"],
+  // ⚠️ 16.08.2026: vidi komentar u check-filters.mts — isti razlog.
+  ["gospodarska", "autobusi"],
+  ["gospodarska", "utv"],
+  ["gospodarska", "najam"],
   ["mehanizacija", "poljoprivredni-strojevi"],
   ["mehanizacija", "vilicari"],
   ["prosti-cas", "kamperi"],

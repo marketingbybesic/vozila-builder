@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { CircleParking, MessageSquare, User, Plus, Search, Menu, X, ChevronDown } from "lucide-react";
@@ -10,6 +11,22 @@ import { ChevronRight } from "lucide-react";
 import { CATEGORIES, subcategoryHref, subChildHref, hasChildren } from "@/data/categories";
 
 export function SiteHeader() {
+  /**
+   * ⚠️ Karlo 16.08.2026 (st.5): "svaki put kad klikneš Napredna pretraga nek te
+   * baci na početak pretrage". Next ne remounta istu rutu, a `NaprednoForm`
+   * čita URL samo pri mountu (`napredno-form.tsx:81-121`) → staro stanje
+   * (kategorija, marka, filtri) preživi klik i korisnik ostane gdje je bio.
+   * Lijek: kad si VEĆ na `/oglasi/napredno`, tvrda navigacija na čist URL.
+   * Isti obrazac kao `istaRutaNav` u `category-nav.tsx:99-104`.
+   * ⚠️ NE koristiti `useSearchParams` — traži Suspense i ruši statični build.
+   */
+  const pathname = usePathname();
+  const resetNapredne = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== "/oglasi/napredno") return; // druga ruta → normalna navigacija
+    e.preventDefault();
+    window.location.assign("/oglasi/napredno");
+  };
+
   const [open, setOpen] = useState(false);
   const [openCat, setOpenCat] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState<string | null>(null);
@@ -55,6 +72,7 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/oglasi/napredno"
+            onClick={resetNapredne}
             className="hidden sm:flex h-10 items-center justify-center gap-1.5 rounded-md px-2.5 text-[var(--color-ink-soft)] hover:bg-[var(--color-line)]/40 hover:text-[var(--color-ink)] transition-colors"
             aria-label="Napredna pretraga"
             title="Napredna pretraga"
@@ -217,7 +235,7 @@ export function SiteHeader() {
 
             <Link
               href="/oglasi/napredno"
-              onClick={closeMenu}
+              onClick={(e) => { closeMenu(); resetNapredne(e); }}
               className="px-3 py-2.5 rounded-md text-sm font-medium text-[var(--color-accent-dark)] hover:bg-[var(--color-line)]/40 inline-flex items-center gap-2"
             >
               <Search className="size-4" />

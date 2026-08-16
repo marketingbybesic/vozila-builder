@@ -60,9 +60,14 @@ export default async function MojRacunPage() {
           <h2 className="font-display text-2xl tracking-tight">
             {allMine.length === 0 ? "Objavi svoj prvi oglas" : "Imaš još jedan auto za prodaju?"}
           </h2>
-          <p className="mt-1 text-sm text-white/70">
-            {allMine.length === 0 ? "Prvi oglas je besplatan. Traje 2 minute." : "Drugi oglas je 4,90 €. Dva oglasa = 30% više pregleda."}
-          </p>
+          {/* ⚠️ Karlo 16.08.2026: maknut tekst "Drugi oglas je 4,90 €. Dva oglasa
+              = 30% više pregleda." Cijeli <p> se renderira samo za novog korisnika
+              — prazan bi ostavio suvišan `mt-1` razmak ispod naslova. */}
+          {allMine.length === 0 && (
+            <p className="mt-1 text-sm text-white/70">
+              Prvi oglas je besplatan. Traje 2 minute.
+            </p>
+          )}
         </div>
         <Button asChild variant="accent" size="lg">
           <Link href="/objavi">

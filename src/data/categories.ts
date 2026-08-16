@@ -389,7 +389,10 @@ export function getDefaultCategory(): Category {
 export const ADVANCED_SUBCATEGORIES: Record<string, string[]> = {
   auto: ["auto-oglasi"],
   moto: ["motocikl", "skuter", "atv-utv"],
-  gospodarska: ["dostavna", "kamioni", "prikolice"],
+  // ⚠️ Karlo 16.08.2026 (st.3): "utv" dodan — bez njega je klik na
+  // Gospodarska/UTV vodio na /oglasi umjesto na naprednu pretragu, dok se
+  // Moto/ATV otvarao ispravno. To je bio JEDINI uzrok razlike.
+  gospodarska: ["dostavna", "kamioni", "prikolice", "utv"],
   mehanizacija: ["gradevinski-strojevi", "poljoprivredni-strojevi", "vilicari"],
   "prosti-cas": ["kamperi", "kamp-prikolice"],
   dijelovi: [],
