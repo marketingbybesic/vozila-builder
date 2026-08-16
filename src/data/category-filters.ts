@@ -861,7 +861,7 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
 
   { key: "priceVat",
-    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"], label: "PDV", type: "select", storage: "attr", group: "Cijena",
+    scope: ["dostavna", "kamioni", "autobusi", "najam"], label: "PDV", type: "select", storage: "attr", group: "Cijena",
     options: [
       { value: "brutto", label: "S PDV-om" },
       { value: "netto", label: "Bez PDV-a" },
@@ -1032,6 +1032,8 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     scope: ["prikolice"] },
   // Prodavačeva strana (gospodarska): bez ovoga filter "Prikaz oštećenih" nema što čitati.
   { key: "damageState", label: "Oštećenja na vozilu", type: "select", storage: "attr",
+    // ⚠️ Karlo 16.08.2026: scope dodan da UTV bude 1:1 s Moto/ATV — ATV ovo polje nema.
+    scope: ["dostavna", "kamioni", "autobusi", "prikolice", "najam", "gospodarska-ostalo"],
     group: "Stanje vozila", searchable: false, placeholder: "Bez oštećenja",
     options: [
       { value: "osteceno", label: "Vozilo je oštećeno" },
@@ -1040,15 +1042,15 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
   { key: "engineRuns", label: "Vozilo je u voznom stanju", type: "select", storage: "attr",
     group: "Stanje vozila", searchable: false, placeholder: "Da, pali i vozi",
-    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"],
+    scope: ["dostavna", "kamioni", "autobusi", "najam"],
     options: [
       { value: "pali-ne-vozi", label: "Pali, ali ne vozi" },
       { value: "ne-pali", label: "Ne pali (u kvaru)" },
     ] },
   { key: "registrationUntil", label: "Registriran do", type: "text", storage: "attr", group: "Povijest",
-    scope: ["utv", "najam"] },
+    scope: ["najam"] },
   { key: "importedFrom", label: "Uvezeno iz", type: "text", storage: "attr", group: "Povijest",
-    scope: ["utv", "najam"] },
+    scope: ["najam"] },
 
   { key: "color",
     scope: ["dostavna", "kamioni", "utv", "najam"], label: "Boja", type: "multi", storage: "column", group: "Boja",
