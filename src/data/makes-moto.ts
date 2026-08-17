@@ -13,6 +13,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("aima", "AIMA", "", []),
   M("ajp", "AJP", "", ["GALP", "PR3 125", "PR3 240", "PR4 125", "PR4 200", "PR4 240", "PR5 250", "PR7", "SPR 125", "SPR 240", "SPR 250", "SPR 310", "SPR 510"]),
   M("ajs", "AJS", "", ["16M", "71 Desert Scrambler", "Bobber 125", "Cadwell 125", "CR3", "Crazy Naked 50", "CSR NKT1 125", "Daytona 125", "DD 50", "DD 125", "Digita", "Eco-3", "Eco 125", "Eos 125", "Eos 350", "Exactly 50", "Exactly 125", "Firefox 50", "Flight 125", "G6 Bigport", "Insetto", "JSM 50", "JSM 125", "Model 8", "Model 14", "Model 16", "Model 18", "Model 20", "Model 30", "Model 31", "Modena 50", "Modena 125", "NAC12", "R7", "Regal Raptor 50", "Regal Raptor 125", "Regal Raptor 250", "Regal Raptor 350", "Sorvio", "SPT 350", "Stellar 350", "Stormer", "Tempest", "TN 12", "TN25 250", "YX-R-125"]),
+  M("akumoto", "Akumoto", "Kina", []),
   M("apollo-motors", "Apollo Motors", "", []),
   M("aprilia", "Aprilia", "Italija", ["Caponord 1200", "Dorsoduro 900", "Mana 850", "Pegaso 650", "RS 125", "RS 660", "RSV4", "Scarabeo 100", "Scarabeo 200", "Shiver 900", "SR 50", "SR GT 125", "SR GT 200", "SXR 50", "SXR 125", "Tuareg 660", "Tuono 125", "Tuono 660", "Tuono V4"]),
   M("asiawing", "Asiawing", "", []),
@@ -31,6 +32,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("brut-x", "BRUT-X", "", []),
   M("bucci-moto", "Bucci Moto", "", []),
   M("buell", "Buell", "", ["1125CR Cafe Racer", "1125R", "Blast", "Firebolt XB9R", "Firebolt XB12R", "Lightning XB9S", "Lightning XB12S", "M2 Cyclone", "S1 Lightning", "Thunderbolt", "Ulysses", "X1 Lightning"]),
+  M("bye-bike", "Bye Bike", "Italija", []),
   M("cagiva", "Cagiva", "", ["125", "900 I.E.", "Alazzurra 350", "Alazzurra 650", "Canyon 500", "Canyon 600", "Elefant 350", "Elefant 650", "Elefant 750", "Elefant 900", "Grand Canyon", "Mito 125", "Mito 525", "Navigator", "Planet", "Raptor 125", "Raptor 650", "Raptor 1000", "River 500", "River 600", "Roadster 125", "Roadster 200", "SST 125", "SST 250", "SST 350", "Super City 125", "SX 250", "SX 350", "SXT 125", "T4 350", "T4 500", "V Raptor 650", "V Raptor 1000", "W8 125", "Xtra Raptor"]),
   M("can-am", "Can-Am", "", ["DS 70", "DS 90", "DS 250", "DS 450", "MX6 400", "Outlander 400", "Outlander 450", "Outlander 500", "Outlander 650", "Outlander 800", "Outlander 1000", "Renegade 500", "Renegade 800", "Renegade 1000", "Ryker 600", "Ryker 900", "Spyder F3", "Spyder Roadster", "Spyder RS", "Spyder RT", "Spyder ST", "TnT 250"]),
   M("cf-moto", "CF Moto", "Kina", ["150 NK", "300 NK", "400 NK", "450 SR", "650 MT", "650 NK", "700 CL-X", "800 MT", "CForce 450", "CForce 520", "CForce 625", "CForce 850", "CForce 1000", "UForce 600", "UForce 1000", "ZForce 800", "ZForce 950"]),
@@ -54,7 +56,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("e-ton", "E-Ton", "", ["Beamer 50", "Beamer 150", "Matrix 50", "Matrix 150", "Sport 50", "Sport 150", "Viper 50", "Viper 90", "Viper 150", "Challenger", "E-MO", "Vector", "Yukon"]),
   M("etriko", "Etriko", "", []),
   M("evt-scooter", "EVT Scooter", "", []),
-  M("e-z-go", "E-Z_GO", "", []),
+  M("e-z-go", "E-Z-GO", "SAD", []),
   M("fantic", "Fantic", "Italija", ["Caballero 125", "Caballero 500", "XEF 250", "XEF 450", "XX 125", "XX 250"]),
   M("fb-mondial", "FB Mondial", "", ["Flat Track 125", "Hipster 125", "Hipster 250", "HPS 125", "HPS 300", "Pagani 1948", "SMX 125", "Sport Classic 125", "Sport Classic 300"]),
   M("felo", "Felo", "", []),
@@ -148,6 +150,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("qulbix", "Qulbix", "", []),
   M("regal-raptor", "Regal Raptor", "", []),
   M("rieju", "Rieju", "Španjolska", ["Century 125", "Marathon 125", "MRT 50", "MRT 125", "Tango 250"]),
+  M("rog", "Rog", "Slovenija", []),
   M("romet", "Romet", "", ["ADV", "Arrow Fly 50", "Arrow Fly 125", "Division", "Malibu", "Ogar Caffe", "Pony", "R 150", "R 250", "RX 125", "Soft 125", "Z 50", "Z 175", "Z-One", "ZK 50", "ZK 125", "ZXT 125"]),
   M("royal-enfield", "Royal Enfield", "Indija", ["Bullet 350", "Bullet 500", "Classic 350", "Classic 500", "Continental GT 650", "Himalayan", "Hunter 350", "Interceptor 650", "Meteor 350", "Shotgun 650", "Super Meteor 650"]),
   M("sachs", "Sachs", "", ["49er", "Bee 50", "Bee 125", "Eagle 50", "Eagle 125", "MadAss 50", "MadAss 125", "Oliver", "Prima", "Roadster 125", "Roadster 650", "Roadster 800", "SpeedForce", "SpeedJet", "SX", "Typhoon", "X-Road", "XTC 50", "XTC 125", "ZX", "ZZ"]),
@@ -160,6 +163,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("silence", "Silence", "", ["S01", "S02"]),
   M("skygo", "Skygo", "", []),
   M("skyteam", "Skyteam", "", ["Ace", "Aero", "Cobra", "Girino", "Le Mans", "PBR", "Skymax", "ST", "Supermoto", "T-Rex", "Trail Road", "V-Raptor"]),
+  M("solex", "Solex", "Francuska", []),
   M("stallions", "Stallions", "", []),
   M("stark", "Stark", "", []),
   M("stomp", "Stomp", "", []),
@@ -179,6 +183,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("tm-racing", "TM Racing", "", ["Black Dream 125", "C1", "C2", "CR2", "EN 125", "EN 144", "EN 250", "EN 300", "EN 450", "EN 530", "FT Flat Track", "MX 85", "MX 125", "MX 144", "MX 250", "MX 300", "MX 450", "MX 530", "SMM 125", "SMM 450", "SMM 530", "SMR 125", "SMR 300", "SMR 450", "SMR 530", "SMX 85", "SMX 300", "SMX 450", "SMX 530", "SMX 660"]),
   M("tms", "TMS", "", []),
   M("tomos", "Tomos", "", ["125", "Alpino", "Arrow", "ATX 50", "BT", "Classic XL", "E-lite", "Flexer", "Funtastic", "Hip Hop", "Luxe EX", "LX", "MC 36", "MC 50", "MC 80", "Nitro 50", "Nitro 125", "Racing", "Revival", "SE 125", "SM 125", "Sportmate", "Sprint", "ST", "Standard", "Street Soul", "Streetmate", "Twister 50", "Twister 125", "Youngstr"]),
+  M("tori", "Tori", "Kina", []),
   M("torrot", "Torrot", "", ["Kids Enduro", "Kids Supermotard", "Kids Trial", "Muvi", "Velocipedo"]),
   M("trike", "Trike", "", []),
   M("triton", "Triton", "", ["Baja", "Black Lizard", "Carbon", "Defcon", "Outback", "Predator", "Reactor", "RS 700", "Supermoto"]),
@@ -248,8 +253,16 @@ export const POPULAR_SKUTER_MAKE_SLUGS = [
   "aprilia", "honda", "kymco", "piaggio", "peugeot", "suzuki", "sym", "yamaha",
 ];
 
-/** Popularne marke za podkategoriju (skuter/e-skuter → skuterske, inače moto). */
+/**
+ * ⚠️ Karlo 17.08.2026: MOPEDI opet imaju svoje. Na njegovim slikama moped popis
+ * ide ravno abecedno (Akumoto → Zongshen) BEZ grupe "najpopularnije" — pa je
+ * ovaj popis namjerno prazan, ne zaboravljen. Ne dodavati moto-popularne ovdje.
+ */
+export const POPULAR_MOPED_MAKE_SLUGS: readonly string[] = [];
+
+/** Popularne marke za podkategoriju (skuter/e-skuter → skuterske, moped → nema, inače moto). */
 export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
+  if (subcategory === "moped") return POPULAR_MOPED_MAKE_SLUGS;
   return subcategory === "skuter" || subcategory === "e-skuter"
     ? POPULAR_SKUTER_MAKE_SLUGS
     : POPULAR_MOTO_MAKE_SLUGS;
