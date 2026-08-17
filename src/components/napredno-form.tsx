@@ -506,7 +506,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    */
   const bodyPicker = hasField("bodyType") ? (
     <BodyTypePicker label="Oblik karoserije" values={bodyType} onChange={setBodyType}
-      options={bodyOpts(filterDef)} cols={3} />
+      options={bodyOpts(filterDef, contextSubcategory)} cols={3} />
   ) : null;
 
   const motorSection =
@@ -527,12 +527,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         {(hasField("fuel") || hasField("transmission")) && (
           <div className="grid sm:grid-cols-2 gap-3">
             {hasField("fuel") && (
-              <MultiSelect label={fuelLabel(filterDef)} values={fuel} onChange={setFuel}
-                options={fuelOpts(filterDef)} placeholder="Sve" />
+              <MultiSelect label={fuelLabel(filterDef, contextSubcategory)} values={fuel} onChange={setFuel}
+                options={fuelOpts(filterDef, contextSubcategory)} placeholder="Sve" />
             )}
             {hasField("transmission") && (
               <MultiSelect label="Mjenjač" values={transmission} onChange={setTransmission}
-                options={transmissionOpts(filterDef)} placeholder="Sve" />
+                options={transmissionOpts(filterDef, contextSubcategory)} placeholder="Sve" />
             )}
           </div>
         )}
@@ -660,7 +660,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       {hasField("color") && (
         <Panel>
           <SectionHead icon={Palette} title="Boje" />
-          <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef)} />
+          <ColorPicker label="Boja vozila" values={color} onChange={setColor} options={colorOpts(filterDef, contextSubcategory)} />
           {/* Karlo 31.07: "Tip boje" i "Boja tapacirunga" bili su OVDJE hardkodirani,
               pa ih je vidjela samo napredna pretraga — prodavač ih nije mogao
               upisati. Sada su prava polja sheme (group "Boja" / "Vrata i sjedala")
@@ -752,25 +752,38 @@ function SectionHead({ icon: Icon, title }: { icon: LucideIcon; title: string })
 }
 
 // Opcije izvučene iz filterDef (po kategoriji), s fallbackom.
-function optsFromField(def: CategoryFilters, key: string, fallback: Opt[]): Opt[] {
-  const f = def.fields.find((x) => x.key === key);
-  return f?.options ?? fallback;
+/**
+ * ⚠️ Karlo 17.08.2026: ove funkcije su uzimale PRVO polje s tim ključem u
+ * kategoriji, BEZ obzira na podkategoriju. U gospodarskoj postoje dva `fuel`
+ * zapisa — kamionsko "Gorivo" (prvo) i UTV "Pogon" (drugo, scope ["utv"]) — pa
+ * je UTV uvijek dobivao kamionsku oznaku i 8 boja umjesto ATV-ovih 9.
+ * Isti problem za color/bodyType/transmission.
+ * Zato biramo polje koje ODGOVARA podkategoriji, s fallbackom na ono bez scope-a.
+ */
+function poljeZa(def: CategoryFilters, key: string, sub: string) {
+  const kand = def.fields.filter((x) => x.key === key);
+  return kand.find((x) => x.scope?.length && sub && x.scope.includes(sub))
+      ?? kand.find((x) => !x.scope?.length)
+      ?? kand[0];
 }
-function fuelOpts(def: CategoryFilters): Opt[] {
-  return optsFromField(def, "fuel", ["Benzin", "Dizel", "Hibrid", "Električni", "Plin"].map((v) => ({ value: v, label: v })));
+function optsFromField(def: CategoryFilters, key: string, fallback: Opt[], sub = ""): Opt[] {
+  return poljeZa(def, key, sub)?.options ?? fallback;
 }
-// Naziv polja goriva (moto/mehanizacija ga zovu "Pogon").
-function fuelLabel(def: CategoryFilters): string {
-  return def.fields.find((x) => x.key === "fuel")?.label ?? "Vrsta goriva";
+function fuelOpts(def: CategoryFilters, sub = ""): Opt[] {
+  return optsFromField(def, "fuel", ["Benzin", "Dizel", "Hibrid", "Električni", "Plin"].map((v) => ({ value: v, label: v })), sub);
 }
-function transmissionOpts(def: CategoryFilters): Opt[] {
-  return optsFromField(def, "transmission", [{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }]);
+// Naziv polja goriva (moto/mehanizacija/UTV ga zovu "Pogon").
+function fuelLabel(def: CategoryFilters, sub = ""): string {
+  return poljeZa(def, "fuel", sub)?.label ?? "Vrsta goriva";
 }
-function bodyOpts(def: CategoryFilters): Opt[] {
+function transmissionOpts(def: CategoryFilters, sub = ""): Opt[] {
+  return optsFromField(def, "transmission", [{ value: "Ručni", label: "Ručni" }, { value: "Automatski", label: "Automatski" }], sub);
+}
+function bodyOpts(def: CategoryFilters, sub = ""): Opt[] {
   return optsFromField(def, "bodyType",
-    ["Microcar", "Limuzina", "Hatchback", "Karavan", "Monovolumen", "SUV", "Coupe", "Cabrio", "Pickup"].map((v) => ({ value: v, label: v })));
+    ["Microcar", "Limuzina", "Hatchback", "Karavan", "Monovolumen", "SUV", "Coupe", "Cabrio", "Pickup"].map((v) => ({ value: v, label: v })), sub);
 }
-function colorOpts(def: CategoryFilters): string[] {
-  const f = def.fields.find((x) => x.key === "color");
+function colorOpts(def: CategoryFilters, sub = ""): string[] {
+  const f = poljeZa(def, "color", sub);
   return f?.options?.map((o) => o.label) ?? ["Crna", "Bijela", "Siva", "Srebrna", "Plava", "Crvena", "Zelena", "Smeđa", "Žuta", "Narančasta"];
 }

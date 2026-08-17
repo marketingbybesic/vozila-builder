@@ -116,10 +116,23 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     );
   }, [category, selectedMake]);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category || "auto"), [category]);
-  const bodyOptions = filterDef.fields.find((f) => f.key === "bodyType")?.options ?? toOpts(BODY_TYPES);
-  const fuelOptions = filterDef.fields.find((f) => f.key === "fuel")?.options ?? toOpts(FUEL_TYPES);
+  /**
+   * ⚠️ Karlo 17.08.2026: `.find()` uzima PRVO polje s tim ključem u kategoriji,
+   * bez obzira na podkategoriju. U gospodarskoj su dva `fuel` zapisa (kamionsko
+   * "Gorivo" i UTV "Pogon"), pa je UTV dobivao kamionsku oznaku i opcije.
+   * Bira se polje koje odgovara podkategoriji, pa ono bez scope-a.
+   */
+  const poljeZa = (key: string) => {
+    const kand = filterDef.fields.filter((f) => f.key === key);
+    const sub = current.subcategory ?? "";
+    return kand.find((f) => f.scope?.length && sub && f.scope.includes(sub))
+        ?? kand.find((f) => !f.scope?.length)
+        ?? kand[0];
+  };
+  const bodyOptions = poljeZa("bodyType")?.options ?? toOpts(BODY_TYPES);
+  const fuelOptions = poljeZa("fuel")?.options ?? toOpts(FUEL_TYPES);
   // U motou se polje zove "Pogon", ne "Gorivo" — uzmi naziv iz sheme.
-  const fuelLabel = filterDef.fields.find((f) => f.key === "fuel")?.label ?? "Gorivo";
+  const fuelLabel = poljeZa("fuel")?.label ?? "Gorivo";
   const subOpts: Opt[] = (categoryDef?.subcategories ?? [])
     .map((s) => ({ value: s.slug, label: s.name }));
 
@@ -237,7 +250,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           )}
 
           {hasField("color") && (
-            <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={[...COLORS]} />
+            <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
           )}
 
           {/* U `compact` je Županija već gore među brzim filterima — bez ovog
