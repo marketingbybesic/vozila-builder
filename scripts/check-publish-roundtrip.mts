@@ -4,9 +4,13 @@
  * nisu bili u shemi, prodavač ih unese a oglas ih izgubi (Karlo, 01.08.).
  */
 import { z } from "zod";
-import {
+// ⚠️ Vidi check-enum-drift.mts: bez `"type": "module"` tsx ucitava .ts kao CJS,
+// pa imenovani ESM import padne. `createRequire` prolazi i tsx i tsc.
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const {
   FUEL_TYPES, ALL_TRANSMISSIONS, ALL_BODY_TYPES, DRIVES, COLORS, CONDITIONS,
-} from "../src/lib/types";
+} = require("../src/lib/types") as typeof import("../src/lib/types");
 
 // Ogledalo sheme iz src/actions/listings.ts
 const CreateListing = z.object({

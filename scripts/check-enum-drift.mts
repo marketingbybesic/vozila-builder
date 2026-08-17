@@ -2,8 +2,16 @@
  * Guard: vrijednosti koje OBJAVA nudi vs ENUM koji baza/zod prihvaća.
  * Razilaženje = "Objavi oglas" tiho padne na validaciji (Karlo 01.08.).
  */
-import { FUEL_TYPES, ALL_TRANSMISSIONS, ALL_BODY_TYPES, DRIVES, COLORS, CONDITIONS } from "../src/lib/types";
-import { FILTER_DEFS } from "../src/data/category-filters";
+// ⚠️ Bez `"type": "module"` u package.json tsx ucitava .ts kao CJS, pa imenovani
+// ESM import padne ("does not provide an export named …") — a default-import
+// zadovolji tsx ali srusi `tsc` (modul nema pravi default). `createRequire`
+// prolazi OBA. Ne vracaj na `import { … } from "…"`.
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const { FUEL_TYPES, ALL_TRANSMISSIONS, ALL_BODY_TYPES, DRIVES, COLORS, CONDITIONS } =
+  require("../src/lib/types") as typeof import("../src/lib/types");
+const { FILTER_DEFS } =
+  require("../src/data/category-filters") as typeof import("../src/data/category-filters");
 
 // Iste liste koje `createListingAction` koristi za validaciju.
 const ENUMS: Record<string, readonly string[]> = {
