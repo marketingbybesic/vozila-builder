@@ -868,18 +868,18 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
 
   { key: "fuel",
-    scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"], label: "Gorivo", type: "multi", storage: "column", group: "Motor",
+    scope: ["dostavna", "kamioni", "autobusi", "najam"], label: "Gorivo", type: "multi", storage: "column", group: "Motor",
     options: ["Dizel","Benzin","Hibrid","Električni","Plin"].map(v) },
   { key: "transmission",
     scope: ["dostavna", "kamioni", "autobusi", "utv", "najam"], label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
     options: [v("Ručni"), v("Automatski")] },
   { key: "powerKw",
-    scope: ["dostavna", "kamioni", "utv", "najam"], label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
+    scope: ["dostavna", "kamioni", "najam"], label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor" },
   // Karlo 27.07: "Obujam" izbačen iz Kamiona.
   // Karlo 29.07 (2. runda): DOSTAVNA ga opet ima — Od/Do izbornik kao u
   // "Auto oglasi napredno" (ljestvica ENGINE_STEPS u napredno-form).
   { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 16000, step: 100, storage: "column", group: "Motor",
-    scope: ["dostavna", "utv", "najam"] },
+    scope: ["dostavna", "najam"] },
   // Karlo 27.07: "Emisijska norma" izbačena iz Dostavne i Kamiona.
   { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
     scope: ["najam"],
@@ -1053,7 +1053,7 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     scope: ["najam"] },
 
   { key: "color",
-    scope: ["dostavna", "kamioni", "utv", "najam"], label: "Boja", type: "multi", storage: "column", group: "Boja",
+    scope: ["dostavna", "kamioni", "najam"], label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Bijela","Plava","Crvena","Crna","Siva","Žuta","Zelena","Narančasta"].map(v) },
 
   // Karlo 27.07: grupa "Ostalo" izbačena iz GOSPODARSKE — "Tip ponude" i
@@ -1067,10 +1067,9 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
   { key: "motoCategory", label: "Stil", type: "multi", storage: "attr", group: "Vrsta",
     scope: ["utv"],
     options: [
-      v("Sport"), v("Chopper"), v("Tourer"),
-      { value: "naked", label: "Naked bike" },
-      v("Enduro"), v("Supermoto"), v("Trial"), v("Cross"),
-      v("Trokolica"), v("Trike"),
+      v("ATV"), v("UTV"),
+      { value: "golf-car", label: "Golf car" },
+      v("Trikolica"), v("Trike"),
     ] },
   { scope: ["utv"], key: "cylinders", label: "Cilindri", type: "select", storage: "attr", group: "Motor",
     options: [1,2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })) },
@@ -1102,6 +1101,18 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
   { scope: ["utv"], key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije" },
   ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["utv"] })),
+
+  // ⚠️ Karlo 17.08.2026: UTV mora biti IDENTICAN ATV-u — ne samo ista polja,
+  // nego iste OZNAKE, OPCIJE i RASPONI. Gospodarske verzije su kamionske
+  // (Gorivo s Dizel/Plin, obujam do 16.000 cm³, snaga do 600 kW, 8 boja),
+  // a ATV ima "Pogon" (Benzin/Elektricni), 1.500 cm³, 112 kW, 9 boja.
+  // Zato UTV dobiva KOPIJE iz MOTO_FIELDS.
+  { scope: ["utv"], key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
+    options: [v("Benzin"), v("Električni")] },
+  { scope: ["utv"], key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 1500, step: 50, storage: "column", group: "Motor" },
+  { scope: ["utv"], key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 112, step: 1, storage: "column", group: "Motor" },
+  { scope: ["utv"], key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
+    options: ["Crna","Bijela","Crvena","Plava","Zelena","Žuta","Narančasta","Siva","Srebrna"].map(v) },
 
   ...documentFields(),
 ];
