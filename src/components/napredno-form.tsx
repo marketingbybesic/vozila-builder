@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
-import { POPULAR_MOTO_MAKE_SLUGS } from "@/data/makes-moto";
+import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
@@ -136,7 +136,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
     if (!category || category === "auto") return makeOptionsGrouped(list);
-    if (category === "moto") return makeOptionsGrouped(list, POPULAR_MOTO_MAKE_SLUGS);
+    // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
+    // razlicite od motocikala → biraj po podkategoriji.
+    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(contextSubcategory));
     return list.map((m) => ({ value: m.slug, label: m.name }));
   }, [category, categoryDef]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao

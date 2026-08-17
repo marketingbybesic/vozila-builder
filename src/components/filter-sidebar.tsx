@@ -12,7 +12,7 @@ import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
 } from "@/lib/types";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
-import { POPULAR_MOTO_MAKE_SLUGS } from "@/data/makes-moto";
+import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { getCategory, makesDbFor } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
@@ -102,7 +102,9 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     // ondje grupiranje nema smisla, ide plosnato kao i prije.
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
     if (!category || category === "auto") return makeOptionsGrouped(list);
-    if (category === "moto") return makeOptionsGrouped(list, POPULAR_MOTO_MAKE_SLUGS);
+    // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
+    // razlicite od motocikala → biraj po podkategoriji.
+    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(current.subcategory ?? ""));
     return list.map((m) => ({ value: m.slug, label: m.name }));
   }, [category, categoryDef]);
   // Karlo 29.07: modeli iz baze TE kategorije (prije samo auto → moto i
