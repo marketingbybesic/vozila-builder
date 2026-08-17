@@ -1270,8 +1270,14 @@ export function modelOptionsFor(models: string[]): { value: string; label: strin
  */
 export function makeOptionsGrouped(
   list: { slug: string; name: string }[] = MAKES,
+  /**
+   * ⚠️ Karlo 17.08.2026: MOTO ima vlastitih 10 popularnih marki
+   * (`POPULAR_MOTO_MAKE_SLUGS` u `makes-moto.ts`). Bez ovog parametra bi moto
+   * lista tražila auto slugove i grupa "Najpopularnije" bi ostala prazna.
+   */
+  popularSlugs: readonly string[] = POPULAR_MAKE_SLUGS,
 ): { value: string; label: string; header?: string }[] {
-  const popular = POPULAR_MAKE_SLUGS
+  const popular = popularSlugs
     .map((s) => list.find((m) => m.slug === s))
     .filter((m): m is { slug: string; name: string } => Boolean(m));
 
