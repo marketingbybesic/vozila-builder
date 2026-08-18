@@ -263,6 +263,9 @@ export const POPULAR_MOPED_MAKE_SLUGS: readonly string[] = [];
 /** Popularne marke za podkategoriju (skuter/e-skuter → skuterske, moped → nema, inače moto). */
 export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
   if (subcategory === "moped") return POPULAR_MOPED_MAKE_SLUGS;
+  // Karlo 18.08.2026: ATV lista (vidi makes-atv.ts) ide ravno abecedno kao
+  // moped — bez grupe "Najpopularnije".
+  if (subcategory === "atv-utv") return [];
   return subcategory === "skuter" || subcategory === "e-skuter"
     ? POPULAR_SKUTER_MAKE_SLUGS
     : POPULAR_MOTO_MAKE_SLUGS;

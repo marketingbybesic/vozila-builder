@@ -24,7 +24,7 @@ import {
   COLORS,
   CONDITIONS,
 } from "@/lib/types";
-import { CATEGORIES, getCategory, makesDbFor } from "@/data/categories";
+import { CATEGORIES, getCategory, makesDbFor, makesForSub } from "@/data/categories";
 import { MODEL_NOT_LISTED, modelOptionsFor } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -277,9 +277,13 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(s.category), [s.category]);
 
   // Marka po kategoriji (kao napredno-form): categoryDef.makes.
+  // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise
+  // marki — prodavač ATV-a mora moći odabrati npr. Arctic Cat / John Deere,
+  // kojih u moto popisu nema. `s.subcategory` MORA biti u ovisnostima.
   const makeOptions: Opt[] = useMemo(
-    () => (categoryDef?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })),
-    [categoryDef]
+    () => (makesForSub(s.category, s.subcategory) ?? categoryDef?.makes ?? [])
+      .map((m) => ({ value: m.slug, label: m.name })),
+    [categoryDef, s.category, s.subcategory]
   );
   // Karlo 31.07: "Osobni auto" je sad PRAVA podkategorija — više se ne izuzima.
   const subcatOptions: Opt[] = useMemo(
@@ -308,10 +312,11 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // ⚠️ Karlo 12.08.2026: zadnja stavka je "Modela nema na listi" na SVAKOJ
       // listi modela, bez iznimke — i kad marka nema nijedan model, i kad
       // kategorija nema bazu marki. Bez uvjeta.
-      const known = makesDbFor(s.category).find((m) => m.slug === s.make)?.models ?? [];
+      const known = (makesForSub(s.category, s.subcategory) ?? makesDbFor(s.category))
+        .find((m) => m.slug === s.make)?.models ?? [];
       return modelOptionsFor(known);
     },
-    [s.category, s.make]
+    [s.category, s.subcategory, s.make]
   );
 
   const cities = useMemo(() => {

@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -133,7 +133,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Uvjetuj po KATEGORIJI, ne po `categoryDef?.makes` — auto kategorija
     // također ima `makes` (isti AUTO_MAKES), pa bi provjera postojanja uvijek
     // pala u plosnatu granu i grupe se ne bi vidjele.
-    const list = categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
+    // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
+    // popise marki s avto.neta — override ispred popisa kategorije.
+    const list = makesForSub(category, contextSubcategory)
+      ?? categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
     if (!category || category === "auto") return makeOptionsGrouped(list);
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
@@ -149,8 +152,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const modelOptions = useMemo(() => {
     if (!make) return [];
     // ⚠️ Karlo 12.08.2026: zadnja stavka uvijek "Modela nema na listi".
-    return modelOptionsFor(makesDbFor(category).find((m) => m.slug === make)?.models ?? []);
-  }, [make, category]);
+    return modelOptionsFor(
+      (makesForSub(category, contextSubcategory) ?? makesDbFor(category))
+        .find((m) => m.slug === make)?.models ?? []
+    );
+  }, [make, category, contextSubcategory]);
 
   const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));
 

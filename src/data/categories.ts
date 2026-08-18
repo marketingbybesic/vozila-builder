@@ -2,6 +2,7 @@ import type { CarMake } from "@/lib/types";
 import { MAKES as AUTO_MAKES } from "./makes";
 import { MOTO_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
+import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
 
 export type Subcategory = {
   slug: string;
@@ -442,4 +443,16 @@ export function makesDbFor(categorySlug: string): CarMake[] {
   if (categorySlug === "moto") return MOTO_MAKES;
   if (categorySlug === "gospodarska") return GOSPODARSKA_MAKES;
   return [];
+}
+
+/**
+ * Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise marki
+ * s avto.neta — ne dijele popis svoje kategorije. Vraća null kad podkategorija
+ * nema override, pa pozivatelj padne na popis kategorije. Troše ga sve TRI
+ * komponente (sidebar / napredna / objava) + model dropdownovi.
+ */
+export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
+  if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
+  if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
+  return null;
 }

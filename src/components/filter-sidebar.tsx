@@ -13,7 +13,7 @@ import {
 } from "@/lib/types";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
-import { getCategory, makesDbFor } from "@/data/categories";
+import { getCategory, makesDbFor, makesForSub } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
@@ -96,7 +96,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const categoryDef = getCategory(category === "" ? "auto" : category);
   const selectedMake = current.make ?? "";
   const makeOptions: Opt[] = useMemo(() => {
-    const list = (!category || category === "auto") ? MAKES.map((m) => ({ slug: m.slug, name: m.name })) : (categoryDef?.makes ?? []);
+    // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
+    // popise marki s avto.neta — override ispred popisa kategorije.
+    const subList = makesForSub(category, current.subcategory ?? "");
+    const list = subList ?? ((!category || category === "auto") ? MAKES.map((m) => ({ slug: m.slug, name: m.name })) : (categoryDef?.makes ?? []));
     // ⚠️ Karlo 12.08.2026: auto → popularne na vrhu pa cijela abeceda.
     // Ostale kategorije (moto/gospodarska/…) imaju vlastite, kratke popise —
     // ondje grupiranje nema smisla, ide plosnato kao i prije.
@@ -117,9 +120,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     // ⚠️ Karlo 12.08.2026: zadnja stavka je uvijek "Modela nema na listi" —
     // i kod marki bez ijednog modela (AEV), gdje je to jedini izbor.
     return modelOptionsFor(
-      makesDbFor(category || "auto").find((m) => m.slug === selectedMake)?.models ?? []
+      (makesForSub(category, current.subcategory ?? "") ?? makesDbFor(category || "auto"))
+        .find((m) => m.slug === selectedMake)?.models ?? []
     );
-  }, [category, selectedMake]);
+  }, [category, selectedMake, current.subcategory]);
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(category || "auto"), [category]);
   /**
    * ⚠️ Karlo 17.08.2026: `.find()` uzima PRVO polje s tim ključem u kategoriji,
