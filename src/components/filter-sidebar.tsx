@@ -106,7 +106,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     // razlicite od motocikala → biraj po podkategoriji.
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(current.subcategory ?? ""));
     return list.map((m) => ({ value: m.slug, label: m.name }));
-  }, [category, categoryDef]);
+    // ⚠️ Karlo 18.08.2026: `current.subcategory` MORA biti u ovisnostima — bez
+    // toga promjena podkategorije u sidebaru (skuter→moped) zadrži staru grupu
+    // "Najpopularnije" jer se memo ne preračuna (kategorija se nije mijenjala).
+  }, [category, categoryDef, current.subcategory]);
   // Karlo 29.07: modeli iz baze TE kategorije (prije samo auto → moto i
   // gospodarska marke nisu imale nijedan model ni ovdje u sidebaru).
   const modelOptions: Opt[] = useMemo(() => {

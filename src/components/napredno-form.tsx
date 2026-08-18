@@ -140,7 +140,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // razlicite od motocikala → biraj po podkategoriji.
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(contextSubcategory));
     return list.map((m) => ({ value: m.slug, label: m.name }));
-  }, [category, categoryDef]);
+    // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
+    // `contextSubcategory` u ovisnostima klijentska navigacija na drugu
+    // podkategoriju zadrži krivu grupu popularnih marki.
+  }, [category, categoryDef, contextSubcategory]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {
