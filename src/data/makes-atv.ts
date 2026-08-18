@@ -7,8 +7,8 @@
 // - Marke koje postoje u MOTO_MAKES se REFERENCIRAJU (isti slug + modeli);
 //   nove marke nastaju ovdje s praznim popisom modela (avto.net za njih na
 //   Karlovim slikama ne pokazuje modele).
-// - "Apollo": avto.net prikazuje "Apollo"; kod nas ista marka nosi slug
-//   "apollo-motors" — u ATV/UTV kontekstu prikazujemo avto.net ime.
+// - "Apollo" je na avto.netu ODVOJENA marka od "Apollo Motors" (obje postoje
+//   u njihovoj bazi) — zato ovdje ima vlastiti slug "apollo" i vlastite modele.
 import type { CarMake } from "@/lib/types";
 import { MOTO_MAKES } from "./makes-moto";
 
@@ -19,7 +19,7 @@ const moto = (slug: string, name?: string): CarMake => {
   return name ? { ...m, name } : m;
 };
 /** Nova marka bez modela. */
-const N = (slug: string, name: string): CarMake => ({ slug, name, country: "", models: [] });
+const N = (slug: string, name: string, models: string[] = []): CarMake => ({ slug, name, country: "", models });
 
 export const ATV_MAKES: CarMake[] = [
   N("access-motor", "Access Motor"),
@@ -28,11 +28,11 @@ export const ATV_MAKES: CarMake[] = [
   N("aixam", "Aixam"),
   N("alke", "Alke"),
   N("apache", "Apache"),
-  moto("apollo-motors", "Apollo"),
+  N("apollo", "Apollo", ["RFN Thunder 70", "RFN Thunder 125", "RFN Thunder 250"]),
   N("arctic-cat", "Arctic Cat"),
   N("argo", "Argo"),
   N("atv", "ATV"),
-  N("barossa", "Barossa"),
+  N("barossa", "Barossa", ["AL5", "APO", "KHB", "MAM 170", "MAM 250", "Mini AK3"]),
   moto("barton"),
   moto("bashan"),
   moto("benda"),
@@ -40,16 +40,16 @@ export const ATV_MAKES: CarMake[] = [
   N("brc", "BRC"),
   moto("can-am"),
   N("carello", "Carello"),
-  N("cectek", "Cectek"),
+  N("cectek", "Cectek", ["Gladiator", "Kingcobra", "Quadrift"]),
   moto("cf-moto"),
   N("chatenet", "Chatenet"),
   N("club-car", "Club Car"),
   N("columbia", "Columbia"),
   N("corvus", "Corvus"),
   moto("cpi"),
-  N("cushman", "Cushman"),
+  N("cushman", "Cushman", ["Eagle"]),
   N("dfm", "DFM"),
-  N("dinli", "Dinli"),
+  N("dinli", "Dinli", ["DL 281", "DL 282", "DL 700", "DL 800", "DL 900"]),
   moto("e-ton"),
   moto("e-z-go"),
   N("egl-moto", "EGL moto"),
@@ -66,7 +66,7 @@ export const ATV_MAKES: CarMake[] = [
   N("hisun", "Hisun"),
   moto("honda"),
   moto("hyosung"),
-  N("irbis", "Irbis"),
+  N("irbis", "Irbis", ["TTR 223R"]),
   moto("italjet"),
   N("jcb", "JCB"),
   N("john-deere", "John Deere"),
@@ -83,15 +83,15 @@ export const ATV_MAKES: CarMake[] = [
   moto("kymco"),
   moto("lem"),
   N("lifan", "Lifan"),
-  N("ligier", "Ligier"),
+  N("ligier", "Ligier", ["Be Four 50", "Be Four 350", "Be Pro"]),
   moto("linhai"),
   moto("lintex"),
   N("lizhong", "Lizhong"),
-  N("loncin", "Loncin"),
+  N("loncin", "Loncin", ["CR4", "CR5", "CR6", "GP200", "GP250", "GP300", "JL150", "JL200", "JL250", "LX 50", "LX 110", "LX 125", "LX 150", "LX 175", "LX 200", "LX 250", "Reiz", "SK 110", "SX1", "SX2", "TH125"]),
   N("melex", "Melex"),
   N("microcar", "Microcar"),
   N("odes", "Odes"),
-  N("orion", "Orion"),
+  N("orion", "Orion", ["50", "110", "125", "250", "AGB 50", "AGB 125", "AGB 150", "AGB 250", "Kiddy"]),
   N("parcar", "ParCar"),
   moto("pgo"),
   moto("piaggio"),
@@ -109,7 +109,7 @@ export const ATV_MAKES: CarMake[] = [
   moto("skyteam"),
   N("smc", "SMC"),
   moto("stark"),
-  N("stels", "Stels"),
+  N("stels", "Stels", ["100RS", "600Y Leopard", "800G Guepard"]),
   moto("stomp"),
   moto("suzuki"),
   moto("sym"),
@@ -119,7 +119,7 @@ export const ATV_MAKES: CarMake[] = [
   moto("tgb"),
   moto("thumpstar"),
   moto("tms"),
-  N("tomberlin", "Tomberlin"),
+  N("tomberlin", "Tomberlin", ["MadAss", "SDX 150", "SDX-200", "SDX-300", "SDX-400", "SDX-600", "TX 50", "XS"]),
   N("toro", "Toro"),
   moto("triton"),
   N("upmoto", "UPmoto"),
@@ -140,7 +140,7 @@ const atv = (slug: string): CarMake => {
 };
 
 export const UTV_MAKES: CarMake[] = [
-  moto("apollo-motors", "Apollo"),
+  atv("apollo"),
   moto("can-am"),
   moto("cf-moto"),
   moto("linhai"),
