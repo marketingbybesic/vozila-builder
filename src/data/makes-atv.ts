@@ -132,22 +132,9 @@ export const ATV_MAKES: CarMake[] = [
   moto("yamaha"),
 ];
 
-/** ATV marka po slugu (za UTV listu — dijele nove zapise poput Loncin/Odes/Segway). */
-const atv = (slug: string): CarMake => {
-  const m = ATV_MAKES.find((x) => x.slug === slug);
-  if (!m) throw new Error(`makes-atv: ATV marka "${slug}" ne postoji`);
-  return m;
-};
-
-export const UTV_MAKES: CarMake[] = [
-  atv("apollo"),
-  moto("can-am"),
-  moto("cf-moto"),
-  moto("linhai"),
-  atv("loncin"),
-  atv("odes"),
-  moto("polaris"),
-  atv("segway"),
-  moto("tgb"),
-  moto("yamaha"),
-];
+/**
+ * ⚠️ Karlo 18.08.2026 (ispravka): UTV u Gospodarskoj mora imati ISTE marke
+ * kao ATV u Moto — ne skraćeni popis. Kratka lista s njegove slike bila je
+ * kriva interpretacija.
+ */
+export const UTV_MAKES: CarMake[] = ATV_MAKES;
