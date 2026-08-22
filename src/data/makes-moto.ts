@@ -266,7 +266,57 @@ export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
   // Karlo 18.08.2026: ATV lista (vidi makes-atv.ts) ide ravno abecedno kao
   // moped — bez grupe "Najpopularnije".
   if (subcategory === "atv-utv") return [];
+  // Karlo 22.08.2026: minimoto/go-kart imaju vlastite popise (vidi ispod) —
+  // ravno abecedno kao moped/ATV, bez grupe "Najpopularnije".
+  if (subcategory === "minimoto" || subcategory === "gokart") return [];
   return subcategory === "skuter" || subcategory === "e-skuter"
     ? POPULAR_SKUTER_MAKE_SLUGS
     : POPULAR_MOTO_MAKE_SLUGS;
 }
+
+/**
+ * Minimoto — Karlova lista 22.08.2026, vlastiti popis (ne dijeli MOTO_MAKES).
+ * "Mini moto" i "Mini Moto" su DVA odvojena zapisa s njegove liste (razlikuju se
+ * samo velikim/malim slovom) — ne spajati, isto kao "Apollo"/"Apollo Motors".
+ * Redoslijed i "Ostalo" na kraju — TOČNO njegov popis, ne abecediramo.
+ */
+const MINIMOTO_MAKES_RAW: CarMake[] = [
+  M("access-motor", "Access Motor", "", []),
+  M("apollo", "Apollo", "", []),
+  M("atv", "ATV", "", []),
+  M("loncin", "Loncin", "Kina", []),
+  M("mini-moto", "Mini moto", "", []),
+  M("mini-moto-2", "Mini Moto", "", []),
+  M("moto", "MOTO", "", []),
+  M("pitbikes", "Pitbikes", "", []),
+  M("skyteam", "Skyteam", "Kina", []),
+  M("stomp", "Stomp", "SAD", []),
+  M("ycf", "YCF", "Francuska", []),
+  M("ostalo", "Ostalo", "—", []),
+];
+export const MINIMOTO_MAKES: CarMake[] = MINIMOTO_MAKES_RAW;
+
+/**
+ * Go-kart — Karlova lista 22.08.2026, vlastiti popis (ne dijeli MOTO_MAKES).
+ * Redoslijed i "Ostalo" na kraju — TOČNO njegov popis, ne abecediramo.
+ */
+const GOKART_MAKES_RAW: CarMake[] = [
+  M("amv-kart", "AMV kart", "", []),
+  M("atv", "ATV", "", []),
+  M("birel", "Birel", "Italija", []),
+  M("brm-racing", "BRM Racing", "Italija", []),
+  M("crg", "CRG", "Italija", []),
+  M("dr-racing", "DR Racing", "Italija", []),
+  M("exprit", "Exprit", "Italija", []),
+  M("go-kart", "GO KART", "", []),
+  M("gokart", "Gokart", "", []),
+  M("honda", "Honda", "Japan", []),
+  M("maranello-kart", "Maranello Kart", "Italija", []),
+  M("praga", "Praga", "Češka", []),
+  M("tm-racing", "TM Racing", "Italija", []),
+  M("tonykart", "Tonykart", "Italija", []),
+  M("top-kart", "Top-Kart", "Francuska", []),
+  M("wildkart", "Wildkart", "Italija", []),
+  M("ostalo", "Ostalo", "—", []),
+];
+export const GOKART_MAKES: CarMake[] = GOKART_MAKES_RAW;

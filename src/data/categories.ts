@@ -1,8 +1,21 @@
 import type { CarMake } from "@/lib/types";
 import { MAKES as AUTO_MAKES } from "./makes";
-import { MOTO_MAKES } from "./makes-moto";
+import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
+import {
+  GOSPODARSKA_DOSTAVNA_MAKES,
+  GOSPODARSKA_KAMIONI_MAKES,
+  GOSPODARSKA_PRIKOLICE_MAKES,
+  GOSPODARSKA_AUTOBUSI_MAKES,
+} from "./makes-gospodarska-sub";
+import {
+  MEHANIZACIJA_VILICARI_MAKES,
+  MEHANIZACIJA_GRADEVINSKI_MAKES,
+  MEHANIZACIJA_POLJOPRIVREDNI_MAKES,
+  MEHANIZACIJA_SUMARSKI_MAKES,
+  MEHANIZACIJA_KOMUNALNI_MAKES,
+} from "./makes-mehanizacija";
 
 export type Subcategory = {
   slug: string;
@@ -450,9 +463,29 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  * s avto.neta — ne dijele popis svoje kategorije. Vraća null kad podkategorija
  * nema override, pa pozivatelj padne na popis kategorije. Troše ga sve TRI
  * komponente (sidebar / napredna / objava) + model dropdownovi.
+ *
+ * 22.08.2026: prošireno na prikolice/dostavna/kamioni/autobusi (gospodarska)
+ * i vilicari/gradevinski/poljoprivredni/sumarski/komunalni (mehanizacija) —
+ * skinuto uživo s avto.neta (Dostavna SID=20000, Tovorna SID=41000, Tovorne
+ * prikolice SID=46000 — svaka VLASTiti <select name="znamka">, ne dijeljen).
+ * Autobusi/gradevinski/poljoprivredni/sumarski/komunalni nemaju vlastiti
+ * padajući popis na avto.netu (provjereno, ne pretpostavljeno) — kurirano ili
+ * uzet današnji facet-presjek, prijavljeno Karlu kao best-effort.
+ * Minimoto/gokart imaju Karlove vlastite popise (22.08.2026).
  */
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
+  if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
+  if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
+  if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
+  if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;
+  if (categorySlug === "gospodarska" && subcategory === "prikolice") return GOSPODARSKA_PRIKOLICE_MAKES;
+  if (categorySlug === "gospodarska" && subcategory === "autobusi") return GOSPODARSKA_AUTOBUSI_MAKES;
+  if (categorySlug === "mehanizacija" && subcategory === "vilicari") return MEHANIZACIJA_VILICARI_MAKES;
+  if (categorySlug === "mehanizacija" && subcategory === "gradevinski-strojevi") return MEHANIZACIJA_GRADEVINSKI_MAKES;
+  if (categorySlug === "mehanizacija" && subcategory === "poljoprivredni-strojevi") return MEHANIZACIJA_POLJOPRIVREDNI_MAKES;
+  if (categorySlug === "mehanizacija" && subcategory === "sumarski-strojevi") return MEHANIZACIJA_SUMARSKI_MAKES;
+  if (categorySlug === "mehanizacija" && subcategory === "komunalni-strojevi") return MEHANIZACIJA_KOMUNALNI_MAKES;
   return null;
 }

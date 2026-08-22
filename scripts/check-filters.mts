@@ -21,6 +21,8 @@ const CASES: Array<[string, string]> = [
   ["moto", "motocikl"],
   ["moto", "skuter"],
   ["moto", "atv-utv"],
+  ["moto", "minimoto"],
+  ["moto", "gokart"],
   ["gospodarska", "dostavna"],
   ["gospodarska", "kamioni"],
   ["gospodarska", "prikolice"],
@@ -33,6 +35,8 @@ const CASES: Array<[string, string]> = [
   ["mehanizacija", "poljoprivredni-strojevi"],
   ["mehanizacija", "vilicari"],
   ["mehanizacija", "gradevinski-strojevi"],
+  ["mehanizacija", "sumarski-strojevi"],
+  ["mehanizacija", "komunalni-strojevi"],
   ["prosti-cas", "kamperi"],
   ["prosti-cas", "kamp-prikolice"],
 ];
