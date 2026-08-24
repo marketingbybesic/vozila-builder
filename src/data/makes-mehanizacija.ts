@@ -100,7 +100,10 @@ export const MEHANIZACIJA_POLJOPRIVREDNI_MAKES: CarMake[] = [
 ];
 
 // --- Šumarski strojevi (avto.net "Gozdarska", facet 22.08.2026, 129 marki) -
+// ⚠️ 22.08.2026: presjek "na zalihi" NIJE imao Ponsse — vodeći šumarski brend
+// (harvesteri/forwarderi), a u bazi postoje Ponsse oglasi. Dodan ručno.
 const SUMARSKI_NAMES: string[] = [
+  "Ponsse",
   "AADI", "ABI", "Accord", "Aebi", "Agria", "Agriforest", "AgroPretex", "Agros", "AGT", "Airo",
   "AL-KO", "AMR", "Atlas", "Balavto", "Balfor", "Baumforst", "Bernardi", "BFM", "BGU", "Bider",
   "Bijol", "Binderberger", "BMF", "Cangini", "Cemeh", "Country", "Cramer", "Deutz-Fahr", "Energreen", "FAE",
