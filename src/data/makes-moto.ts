@@ -282,9 +282,9 @@ export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
   if (subcategory === "minimoto" || subcategory === "gokart") return [];
   // Karlo 22.08.2026: motorne sanke — vlastiti popis, ravno bez grupe.
   if (subcategory === "motorne-sanke") return [];
-  return subcategory === "skuter" || subcategory === "e-skuter"
-    ? POPULAR_SKUTER_MAKE_SLUGS
-    : POPULAR_MOTO_MAKE_SLUGS;
+  // Karlo 22.08.2026: E-romobil (slug e-skuter) ima vlastiti popis — ravno.
+  if (subcategory === "e-skuter") return [];
+  return subcategory === "skuter" ? POPULAR_SKUTER_MAKE_SLUGS : POPULAR_MOTO_MAKE_SLUGS;
 }
 
 /**
@@ -356,3 +356,38 @@ const SANKE_MAKES_RAW: CarMake[] = [
   M("ostalo", "Ostalo", "—", []),
 ];
 export const SANKE_MAKES: CarMake[] = SANKE_MAKES_RAW;
+
+/**
+ * E-romobil (slug podkategorije "e-skuter") — Karlova lista 22.08.2026, vlastiti
+ * popis (ne dijeli MOTO_MAKES). Redoslijed TOČNO njegov; "Ostalo" zadnji po
+ * pravilu "uvijek Ostalo zadnje". Segway/Volta dijele zapis s glavnim popisom.
+ */
+const EROMOBIL_MAKES_RAW: CarMake[] = [
+  M("acer", "Acer", "Tajvan", []),
+  M("city-e-cruiser", "City e-Cruiser", "", []),
+  M("dualtron", "Dualtron", "Južna Koreja", []),
+  M("eco-speed", "ECO Speed", "", []),
+  M("e-goni", "E-goni", "", []),
+  M("e-skiro", "E-Skiro", "", []),
+  M("helieli", "Helieli", "", []),
+  M("joyor", "JOYOR", "Kina", []),
+  M("kabbo", "Kabbo", "", []),
+  M("manta", "Manta", "Poljska", []),
+  M("mi", "Mi", "Kina", []),
+  M("moto", "MOTO", "", []),
+  M("ms-energy", "MS ENERGY", "Hrvatska", []),
+  M("nami", "NAMI", "", []),
+  M("robbo", "Robbo", "", []),
+  M("s1", "S1", "", []),
+  motoRef("segway"),
+  M("trevi", "Trevi", "", []),
+  M("urbanglide", "UrbanGlide", "Francuska", []),
+  M("urbis", "Urbis", "", []),
+  M("viron", "Viron", "", []),
+  motoRef("volta"),
+  M("wolf", "Wolf", "", []),
+  M("xiaomi", "Xiaomi", "Kina", []),
+  M("xplore", "Xplore", "", []),
+  M("ostalo", "Ostalo", "—", []),
+];
+export const EROMOBIL_MAKES: CarMake[] = EROMOBIL_MAKES_RAW;
