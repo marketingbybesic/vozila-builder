@@ -46,40 +46,10 @@ export const MEHANIZACIJA_VILICARI_MAKES: CarMake[] = [
   ...VILICARI_RAW.filter((m) => m.slug === "ostalo"),
 ];
 
-// --- Građevinski strojevi (avto.net nema odvojen popis — kurirano) -------
+// --- Građevinski strojevi — Karlov popis 22.08.2026, izvučen iz snimke
+// avto.net dropdowna (39 slika, A→ZF). 1367 marki + Ostalo. Ranija kurirana
+// lista od 20 zamijenjena; sve njene marke su sadržane.
 const GRADEVINSKI_RAW: CarMake[] = [
-  M("bobcat", "Bobcat", "SAD"),
-  M("case-ce", "Case CE", "SAD"),
-  M("caterpillar", "Caterpillar", "SAD"),
-  M("doosan", "Doosan", "Južna Koreja"),
-  M("hitachi", "Hitachi", "Japan"),
-  M("hyundai-ce", "Hyundai CE", "Južna Koreja"),
-  M("jcb", "JCB", "Velika Britanija"),
-  M("komatsu", "Komatsu", "Japan"),
-  M("kubota", "Kubota", "Japan"),
-  M("liebherr", "Liebherr", "Njemačka"),
-  M("manitou", "Manitou", "Francuska"),
-  M("new-holland-ce", "New Holland CE", "Italija"),
-  M("sany", "SANY", "Kina"),
-  M("takeuchi", "Takeuchi", "Japan"),
-  M("terex", "Terex", "SAD"),
-  M("volvo-ce", "Volvo CE", "Švedska"),
-  M("wacker-neuson", "Wacker Neuson", "Njemačka"),
-  M("xcmg", "XCMG", "Kina"),
-  M("yanmar", "Yanmar", "Japan"),
-  M("zoomlion", "Zoomlion", "Kina"),
-  M("ostalo", "Ostalo", "—"),
-];
-export const MEHANIZACIJA_GRADEVINSKI_MAKES: CarMake[] = [
-  ...sortHr(GRADEVINSKI_RAW.filter((m) => m.slug !== "ostalo")),
-  ...GRADEVINSKI_RAW.filter((m) => m.slug === "ostalo"),
-];
-
-// --- Poljoprivredni strojevi — Karlov popis 22.08.2026 (izvučen s 39 slika
-// avto.net dropdowna, A→ZF; njegov tekstualni popis bio odrezan na "Nante").
-// 1367 marki + Ostalo. Ranija kurirana lista od 15 je zamijenjena; sve njene
-// marke su sadržane (Case IH → "Case-IH", Same → "SAME" po avto.net pisanju).
-const POLJOPRIVREDNI_RAW: CarMake[] = [
   M("aadi", "AADI", "—"),
   M("aardenburg", "Aardenburg", "—"),
   M("abbriata", "Abbriata", "—"),
@@ -1447,6 +1417,30 @@ const POLJOPRIVREDNI_RAW: CarMake[] = [
   M("zitech", "Zitech", "—"),
   M("zunhammer", "Zunhammer", "—"),
   M("zf", "ZF", "—"),
+  M("ostalo", "Ostalo", "—"),
+];
+export const MEHANIZACIJA_GRADEVINSKI_MAKES: CarMake[] = [
+  ...sortHr(GRADEVINSKI_RAW.filter((m) => m.slug !== "ostalo")),
+  ...GRADEVINSKI_RAW.filter((m) => m.slug === "ostalo"),
+];
+
+// --- Poljoprivredni strojevi (avto.net nema odvojen popis — kurirano) ----
+const POLJOPRIVREDNI_RAW: CarMake[] = [
+  M("case-ih", "Case IH", "SAD"),
+  M("claas", "Claas", "Njemačka"),
+  M("deutz-fahr", "Deutz-Fahr", "Njemačka"),
+  M("fendt", "Fendt", "Njemačka"),
+  M("john-deere", "John Deere", "SAD"),
+  M("kubota", "Kubota", "Japan"),
+  M("kuhn", "Kuhn", "Francuska"),
+  M("landini", "Landini", "Italija"),
+  M("lindner", "Lindner", "Austrija"),
+  M("massey-ferguson", "Massey Ferguson", "SAD"),
+  M("new-holland", "New Holland", "Italija"),
+  M("same", "Same", "Italija"),
+  M("steyr", "Steyr", "Austrija"),
+  M("ursus", "Ursus", "Poljska"),
+  M("valtra", "Valtra", "Finska"),
   M("ostalo", "Ostalo", "—"),
 ];
 export const MEHANIZACIJA_POLJOPRIVREDNI_MAKES: CarMake[] = [
