@@ -1425,9 +1425,10 @@ export const MEHANIZACIJA_GRADEVINSKI_MAKES: CarMake[] = [
 ];
 
 // --- Poljoprivredni strojevi — Karlo 22.08.2026. Njegov popis je ISTI
-// globalni avto.net katalog kao građevinski (poslao ga dvaput; tekstualna
-// verzija bila odrezana na 616 od 1367 — skok "Imants → MM", kraj "Nante").
-// Zato dijeli zapis s GRADEVINSKI_RAW umjesto duplog popisa od 1368 redaka.
+// globalni avto.net katalog kao građevinski (avto.net obje forme servira iz
+// istog kataloga; tekstualna verzija koju je slao bila je odrezana na 616 od
+// 1367 — skok "Imants → MM", kraj na "Nante"; puni popis izvučen iz 39 slika).
+// Dijeli zapis s GRADEVINSKI_RAW umjesto duplog popisa od 1368 redaka.
 const POLJOPRIVREDNI_RAW: CarMake[] = GRADEVINSKI_RAW;
 export const MEHANIZACIJA_POLJOPRIVREDNI_MAKES: CarMake[] = [
   ...sortHr(POLJOPRIVREDNI_RAW.filter((m) => m.slug !== "ostalo")),
