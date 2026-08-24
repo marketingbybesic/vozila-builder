@@ -52,6 +52,11 @@ log("utovarivaci→gradevinski", await sql`update listings set subcategory='grad
 log("traktori→poljoprivredni", await sql`update listings set subcategory='poljoprivredni-strojevi' where category='mehanizacija' and subcategory='traktori' returning id`);
 log("viljuskari→poljoprivredni (Kubota traktori)", await sql`update listings set subcategory='poljoprivredni-strojevi' where category='mehanizacija' and subcategory='viljuskari' returning id`);
 
+// E-romobil (e-skuter): Karlov popis 22.08. nema NIU → po avto.net paritetu
+// ("znamke ni na seznamu") marka ide na "Ostalo", a brend se čuva u modelu.
+log("e-skuter NIU model+brend", await sql`update listings set model='NIU ' || model where subcategory='e-skuter' and make in ('Niu','NIU') and model not like 'NIU %' returning id`);
+log("e-skuter NIU→Ostalo", await sql`update listings set make='Ostalo' where subcategory='e-skuter' and make in ('Niu','NIU') returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
