@@ -43,6 +43,9 @@ const DOSTAVNA_RAW: CarMake[] = [
   M("iveco", "Iveco", "Italija", ["Daily", "eDaily"]),
   M("kia", "KIA", "Južna Koreja"),
   M("land-rover", "Land Rover", "Velika Britanija"),
+  // Karlo 22.08.2026: Ligier (mala električna dostavna vozila) falio je na
+  // popisu dostavnih — jedina razlika prema njegovoj listi od 52 marke.
+  M("ligier", "Ligier", "Francuska"),
   M("man", "MAN", "Njemačka", ["TGE"]),
   M("maxus", "Maxus", "Kina"),
   M("mazda", "Mazda", "Japan"),
