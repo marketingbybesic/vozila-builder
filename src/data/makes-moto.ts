@@ -284,6 +284,8 @@ export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
   if (subcategory === "motorne-sanke") return [];
   // Karlo 22.08.2026: E-romobil (slug e-skuter) ima vlastiti popis — ravno.
   if (subcategory === "e-skuter") return [];
+  // Karlo 22.08.2026: E-bicikl vlastiti popis — ravno.
+  if (subcategory === "e-bicikl") return [];
   return subcategory === "skuter" ? POPULAR_SKUTER_MAKE_SLUGS : POPULAR_MOTO_MAKE_SLUGS;
 }
 
@@ -391,3 +393,57 @@ const EROMOBIL_MAKES_RAW: CarMake[] = [
   M("ostalo", "Ostalo", "—", []),
 ];
 export const EROMOBIL_MAKES: CarMake[] = EROMOBIL_MAKES_RAW;
+
+/**
+ * E-bicikl — Karlova lista 22.08.2026, vlastiti popis (ne dijeli MOTO_MAKES).
+ * Redoslijed TOČNO njegov; "Ostalo" zadnji po pravilu "uvijek Ostalo zadnje".
+ * Cube/Ducati/Fantic/Giant/Husqvarna/KTM/Romet/Volta/Yamaha dijele zapis s
+ * glavnim popisom. "Gasgas"/"MS Energy" ovdje su BICIKLISTIČKE marke i imaju
+ * vlastiti slug (`gasgas-ebike`, `ms-energy-ebike`) da se ne pobrkaju s moto
+ * "GasGas" i e-romobil "MS ENERGY" — različit proizvod, isto ime.
+ */
+const EBICIKL_MAKES_RAW: CarMake[] = [
+  M("ado", "ADO", "", []),
+  M("bergamont", "Bergamont", "Njemačka", []),
+  M("bmc", "BMC", "Švicarska", []),
+  M("bottecchia", "Bottecchia", "Italija", []),
+  M("canyon", "Canyon", "Njemačka", []),
+  M("corratec", "Corratec", "Njemačka", []),
+  M("crussis", "Crussis", "Češka", []),
+  motoRef("cube"),
+  motoRef("ducati"),
+  M("duotts", "Duotts", "", []),
+  M("e-bike", "E-Bike", "", []),
+  M("e-kolo", "E-Kolo", "", []),
+  M("engwe", "Engwe", "Kina", []),
+  M("eovolt", "Eovolt", "Francuska", []),
+  motoRef("fantic"),
+  M("feddz", "FEDDZ", "Njemačka", []),
+  M("gasgas-ebike", "Gasgas", "Španjolska", []),
+  motoRef("giant"),
+  M("haibike", "Haibike", "Njemačka", []),
+  motoRef("husqvarna"),
+  motoRef("ktm"),
+  M("lapierre", "Lapierre", "Francuska", []),
+  M("leaderfox", "Leaderfox", "Češka", []),
+  M("manta", "Manta", "Poljska", []),
+  M("metroneer", "Metroneer", "", []),
+  M("ms-energy-ebike", "MS Energy", "Hrvatska", []),
+  M("olympia", "Olympia", "Italija", []),
+  M("orbea", "Orbea", "Španjolska", []),
+  M("prophete", "Prophete", "Njemačka", []),
+  M("raymon", "Raymon", "Njemačka", []),
+  motoRef("romet"),
+  M("rover-e-bikes", "Rover E-Bikes", "", []),
+  M("samebike", "Samebike", "Kina", []),
+  M("s-bikes", "S-Bikes", "", []),
+  M("scott", "Scott", "Švicarska", []),
+  M("specialized", "Specialized", "SAD", []),
+  M("torpado", "Torpado", "Italija", []),
+  motoRef("volta"),
+  M("wilier", "Wilier", "Italija", []),
+  motoRef("yamaha"),
+  M("yangor", "Yangor", "", []),
+  M("ostalo", "Ostalo", "—", []),
+];
+export const EBICIKL_MAKES: CarMake[] = EBICIKL_MAKES_RAW;

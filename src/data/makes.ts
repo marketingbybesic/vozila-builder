@@ -1229,6 +1229,13 @@ export const MAKES: CarMake[] = [
     country: "Kina",
     models: ["Nomad", "SR9", "T600"],
   },
+  // Karlo 22.08.2026: "Ostalo" ide na kraj SVAKOG popisa marki.
+  {
+    slug: "ostalo",
+    name: "Ostalo",
+    country: "—",
+    models: [],
+  },
 ];
 
 // ⚠️ Karlo 12.08.2026: točno njegovih 10 sa screenshota avto.neta, abecedno

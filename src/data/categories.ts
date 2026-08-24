@@ -1,6 +1,6 @@
 import type { CarMake } from "@/lib/types";
 import { MAKES as AUTO_MAKES } from "./makes";
-import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES, EROMOBIL_MAKES } from "./makes-moto";
+import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES, EROMOBIL_MAKES, EBICIKL_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
 import {
@@ -325,6 +325,8 @@ const MEHANIZACIJA_MAKES_STARTER = [
   "JCB", "Caterpillar", "Komatsu", "John Deere", "Case IH", "New Holland",
   "Massey Ferguson", "Kubota", "Bobcat", "Hitachi", "Volvo CE", "Liebherr",
   "Doosan", "Hyundai", "Manitou",
+  // Karlo 22.08.2026: "Ostalo" na kraj svakog popisa.
+  "Ostalo",
 ];
 const PROSTI_CAS_MAKES_STARTER = [
   "Hobby", "Knaus", "Adria", "Bürstner", "Carado", "Dethleffs", "Fendt",
@@ -332,6 +334,8 @@ const PROSTI_CAS_MAKES_STARTER = [
   // 22.08.2026: marke postojećih AKTIVNIH oglasa u bazi — bez njih su ti
   // oglasi bili NEDOHVATLJIVI kroz filtar marke (DB audit).
   "3DOG", "Atlas", "Beneteau", "Coleman", "Combi-Camp", "Cube", "Fiat", "Giant", "Jeanneau", "Mercedes-Benz", "Niu", "Outwell", "Reimo", "VanEssa", "Willerby", "Xiaomi",
+  // Karlo 22.08.2026: "Ostalo" na kraj svakog popisa.
+  "Ostalo",
 ];
 const DIJELOVI_MAKES_STARTER = [
   "Bosch", "Brembo", "Castrol", "Continental", "Goodyear", "Michelin",
@@ -339,6 +343,8 @@ const DIJELOVI_MAKES_STARTER = [
   // 22.08.2026: marke postojećih AKTIVNIH oglasa u bazi — bez njih su ti
   // oglasi bili NEDOHVATLJIVI kroz filtar marke (DB audit).
   "Akrapovič", "Alpine", "ATE", "BBS", "Borbet", "Bosal", "Caterpillar", "Hazet", "Hydac", "John Deere", "Knorr-Bremse", "Kverneland", "Linde", "Motul", "Nokian", "OZ", "Pioneer", "Shoei", "Thule", "Toyota", "Wabco",
+  // Karlo 22.08.2026: "Ostalo" na kraj svakog popisa.
+  "Ostalo",
 ];
 
 export const CATEGORIES: Category[] = [
@@ -485,6 +491,7 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;
   if (categorySlug === "moto" && subcategory === "motorne-sanke") return SANKE_MAKES;
   if (categorySlug === "moto" && subcategory === "e-skuter") return EROMOBIL_MAKES;
+  if (categorySlug === "moto" && subcategory === "e-bicikl") return EBICIKL_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;

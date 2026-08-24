@@ -130,6 +130,8 @@ export const ATV_MAKES: CarMake[] = [
   moto("xingyue"),
   moto("xmotos"),
   moto("yamaha"),
+  // Karlo 22.08.2026: "Ostalo" ide na kraj SVAKOG popisa marki.
+  N("ostalo", "Ostalo"),
 ];
 
 /**
