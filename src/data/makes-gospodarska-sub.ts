@@ -171,7 +171,7 @@ const PRIKOLICE_NAMES: string[] = [
   "Schwarzmuller", "Schwingenschlogel", "Setra/Kaesbohrer", "Sigg", "Silver Car", "Sluis", "Sommer", "Snedker", "Sorelpol", "Spitzer",
   "Stas", "Stema", "Stetzl", "Svan", "TA-NO", "Talson", "Tema", "Temared", "Thiel", "Thomas Trailers",
   "Tirsan", "Tomplan", "TPV", "Trailor", "Tranders", "Trigano", "Trouillet", "Umega", "UNI Track", "Unimog",
-  "Unsinn", "Vaia", "VanHool", "Vega Trailer", "Varig", "Vesta Trailers", "Vlemmix", "Vocol", "Volkan", "Wackenhut",
+  "Unsinn", "Vaia", "VanHool", "Vega Trailer", "Varig", "Vesta Trailers", "Vlemmix", "Vocol", "Wackenhut",
   "Wagner", "Wark", "Wecon", "Weimer", "Westfalia", "Widpol", "Wielton", "Wiola", "Wormann", "Woz",
   "WM Meyer", "Z-Trailer", "Zaccaria", "Zagroda", "Zandt Cargo", "Zaslaw", "Zingaro", "Zonta", "Zorzi", "ZVVZ",
 ];
