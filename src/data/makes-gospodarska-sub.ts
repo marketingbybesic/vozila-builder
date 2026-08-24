@@ -211,6 +211,11 @@ export const GOSPODARSKA_UTV_MAKES: CarMake[] = [
 
 // --- Avtobusi (avto.net nema vlastitu formu — kurirano, PRIJAVLJENO Karlu) -
 const AUTOBUSI_RAW: CarMake[] = [
+  // Karlo 22.08.2026: njegov popis autobusa — dodani AVTOBUS, BMC, FIAT;
+  // maknut Solaris (nije na popisu, 0 oglasa u bazi).
+  M("avtobus", "AVTOBUS", "—"),
+  M("bmc", "BMC", "Turska"),
+  M("fiat", "FIAT", "Italija"),
   M("ford", "Ford", "SAD"),
   M("iveco", "Iveco", "Italija", ["Crossway", "Urbanway"]),
   M("man", "MAN", "Njemačka", ["Lion's City", "Lion's Coach", "Lion's Regio"]),
@@ -220,7 +225,6 @@ const AUTOBUSI_RAW: CarMake[] = [
   M("renault", "Renault", "Francuska"),
   M("scania", "Scania", "Švedska", ["Irizar", "Touring", "Interlink"]),
   M("setra", "Setra", "Njemačka", ["S 415", "S 416", "S 417", "S 431", "S 515", "ComfortClass", "TopClass"]),
-  M("solaris", "Solaris", "Poljska", ["Urbino 8.9", "Urbino 12", "Urbino 18", "InterUrbino", "Trollino"]),
   M("tam", "TAM", "Slovenija"),
   M("temsa", "Temsa", "Turska"),
   M("vanhool", "VanHool", "Belgija"),
