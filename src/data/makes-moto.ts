@@ -14,6 +14,10 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("ajp", "AJP", "", ["GALP", "PR3 125", "PR3 240", "PR4 125", "PR4 200", "PR4 240", "PR5 250", "PR7", "SPR 125", "SPR 240", "SPR 250", "SPR 310", "SPR 510"]),
   M("ajs", "AJS", "", ["16M", "71 Desert Scrambler", "Bobber 125", "Cadwell 125", "CR3", "Crazy Naked 50", "CSR NKT1 125", "Daytona 125", "DD 50", "DD 125", "Digita", "Eco-3", "Eco 125", "Eos 125", "Eos 350", "Exactly 50", "Exactly 125", "Firefox 50", "Flight 125", "G6 Bigport", "Insetto", "JSM 50", "JSM 125", "Model 8", "Model 14", "Model 16", "Model 18", "Model 20", "Model 30", "Model 31", "Modena 50", "Modena 125", "NAC12", "R7", "Regal Raptor 50", "Regal Raptor 125", "Regal Raptor 250", "Regal Raptor 350", "Sorvio", "SPT 350", "Stellar 350", "Stormer", "Tempest", "TN 12", "TN25 250", "YX-R-125"]),
   M("akumoto", "Akumoto", "Kina", []),
+  // ⚠️ 22.08.2026: avto.net ima "Apollo" I "Apollo Motors" kao DVIJE marke —
+  // Karlov moped popis pokazuje "Apollo", a u glavnom moto popisu je falila
+  // (postojala je samo u ATV/minimoto listama). Modeli s bikez.com.
+  M("apollo", "Apollo", "", ["RFN Thunder 70", "RFN Thunder 125", "RFN Thunder 250"]),
   M("apollo-motors", "Apollo Motors", "", []),
   M("aprilia", "Aprilia", "Italija", ["Caponord 1200", "Dorsoduro 900", "Mana 850", "Pegaso 650", "RS 125", "RS 660", "RSV4", "Scarabeo 100", "Scarabeo 200", "Shiver 900", "SR 50", "SR GT 125", "SR GT 200", "SXR 50", "SXR 125", "Tuareg 660", "Tuono 125", "Tuono 660", "Tuono V4"]),
   M("asiawing", "Asiawing", "", []),
