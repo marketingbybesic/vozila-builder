@@ -329,10 +329,16 @@ const MEHANIZACIJA_MAKES_STARTER = [
 const PROSTI_CAS_MAKES_STARTER = [
   "Hobby", "Knaus", "Adria", "Bürstner", "Carado", "Dethleffs", "Fendt",
   "Hymer", "LMC", "Sun Living", "Quicksilver", "Bayliner", "Sea Ray", "Bavaria",
+  // 22.08.2026: marke postojećih AKTIVNIH oglasa u bazi — bez njih su ti
+  // oglasi bili NEDOHVATLJIVI kroz filtar marke (DB audit).
+  "3DOG", "Atlas", "Beneteau", "Coleman", "Combi-Camp", "Cube", "Fiat", "Giant", "Jeanneau", "Mercedes-Benz", "Niu", "Outwell", "Reimo", "VanEssa", "Willerby", "Xiaomi",
 ];
 const DIJELOVI_MAKES_STARTER = [
   "Bosch", "Brembo", "Castrol", "Continental", "Goodyear", "Michelin",
   "Bridgestone", "Pirelli", "Hella", "Mann-Filter", "NGK", "Sachs", "Valeo",
+  // 22.08.2026: marke postojećih AKTIVNIH oglasa u bazi — bez njih su ti
+  // oglasi bili NEDOHVATLJIVI kroz filtar marke (DB audit).
+  "Akrapovič", "Alpine", "ATE", "BBS", "Borbet", "Bosal", "Caterpillar", "Hazet", "Hydac", "John Deere", "Knorr-Bremse", "Kverneland", "Linde", "Motul", "Nokian", "OZ", "Pioneer", "Shoei", "Thule", "Toyota", "Wabco",
 ];
 
 export const CATEGORIES: Category[] = [
