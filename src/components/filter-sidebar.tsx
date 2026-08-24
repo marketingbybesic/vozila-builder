@@ -179,7 +179,14 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const body = (
     <div className="space-y-4">
       {subOpts.length > 0 && (
-        <SelectField label="Podkategorija" value={current.subcategory ?? ""} onChange={(v) => update({ subcategory: v || null })} options={subOpts} placeholder="Sve podkategorije" />
+        <SelectField label="Podkategorija" value={current.subcategory ?? ""} onChange={(v) => {
+          // ⚠️ Karlo 22.08.2026: nova podkategorija može imati DRUGI popis
+          // marki (minimoto/gokart/ATV/UTV…) — marka koje u njemu nema mora
+          // van iz URL-a, inače ostane nevidljiv filtar s 0 rezultata.
+          const list = makesForSub(category, v) ?? categoryDef?.makes ?? [];
+          const makeOstaje = !selectedMake || list.some((m) => m.slug === selectedMake);
+          update(makeOstaje ? { subcategory: v || null } : { subcategory: v || null, make: null, model: null });
+        }} options={subOpts} placeholder="Sve podkategorije" />
       )}
 
       {/* Stil (moto) / Tip vozila (kamioni) — ODMAH ispod Podkategorije */}

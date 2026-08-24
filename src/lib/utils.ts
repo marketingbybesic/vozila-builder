@@ -67,9 +67,11 @@ export function timeAgo(d: string | Date): string {
 export function slugify(s: string): string {
   return s
     .toLowerCase()
-    .replace(/č|ć/g, "c")
-    .replace(/š/g, "s")
-    .replace(/ž/g, "z")
+    // ⚠️ 22.08.2026: NFKD skida SVE dijakritike (ë/ö/ü/é…), ne samo hrvatske —
+    // "Citroën" je postajao "citro-n" pa filter marke (slugify(l.make) ===
+    // f.make) nikad nije našao te oglase. đ se ne dekomponira, ostaje ručno.
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/đ/g, "d")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");

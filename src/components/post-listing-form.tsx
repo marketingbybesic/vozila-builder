@@ -863,6 +863,12 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                     set("subcategory", v);
                     // promjena podkategorije poništava izbor 2. nivoa
                     setAttr("vrsta", undefined);
+                    // ⚠️ Karlo 22.08.2026: podkategorija mijenja i popis marki
+                    // (minimoto/gokart/ATV/UTV…) — odabrana marka koje u novom
+                    // popisu nema mora se očistiti, inače prodavač objavi oglas
+                    // s markom koju pretraga te podkategorije ne nudi.
+                    const list = makesForSub(s.category, v) ?? categoryDef?.makes ?? [];
+                    if (s.make && !list.some((m) => m.slug === s.make)) { set("make", ""); set("model", ""); }
                   }}
                 />
               </div>

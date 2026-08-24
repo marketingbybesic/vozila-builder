@@ -37,6 +37,10 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("can-am", "Can-Am", "", ["DS 70", "DS 90", "DS 250", "DS 450", "MX6 400", "Outlander 400", "Outlander 450", "Outlander 500", "Outlander 650", "Outlander 800", "Outlander 1000", "Renegade 500", "Renegade 800", "Renegade 1000", "Ryker 600", "Ryker 900", "Spyder F3", "Spyder Roadster", "Spyder RS", "Spyder RT", "Spyder ST", "TnT 250"]),
   M("cf-moto", "CF Moto", "Kina", ["150 NK", "300 NK", "400 NK", "450 SR", "650 MT", "650 NK", "700 CL-X", "800 MT", "CForce 450", "CForce 520", "CForce 625", "CForce 850", "CForce 1000", "UForce 600", "UForce 1000", "ZForce 800", "ZForce 950"]),
   M("cpi", "CPI", "", ["Aragon", "Formula", "GTR 50", "Hussar", "Oliver 50", "Popcorn", "SM 50", "Supercross", "Supermoto 50", "SX 50", "VGO"]),
+  // 22.08.2026: Giant/Cube (e-bicikl), Segway (e-skuter), Ski-Doo (motorne
+  // sanke) — na avto.net moto faceti su, a oglasi u bazi bili NEDOHVATLJIVI
+  // kroz filtar marke jer ih u popisu nije bilo.
+  M("cube", "Cube", "Njemačka", []),
   M("custom", "Custom", "", []),
   M("cyr", "CYR", "", []),
   M("cz", "ČZ", "", ["CZ 125", "CZ 175", "CZ 180", "CZ 250", "CZ 350"]),
@@ -64,6 +68,7 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("garelli", "Garelli", "", ["Ciclone", "Flexi", "GSP", "Mosquito", "Tiesse", "XO", "XR"]),
   M("gasgas", "GasGas", "Španjolska", ["EC 250", "EC 300", "ES 700", "MC 125", "MC 250", "MC 450", "SM 700", "TXT Racing"]),
   M("generic", "Generic", "", ["Code 125", "Code 150", "Code 200", "Cracker", "Epico", "Ideo", "Inox", "Jump", "Onyx", "Race", "Racy 50", "Racy 125", "Roc", "Sirion", "Soho", "Stream", "Toxic", "Trigger 50", "Trigger 125", "Urano", "Vendetta", "Vertigo", "Worx", "Xor 50", "Xor 125", "Zion"]),
+  M("giant", "Giant", "Tajvan", []),
   M("giantco", "Giantco", "", ["Archer", "Athena", "Bella", "Bronco", "Bud", "Cyclop", "Cyrus 50", "Cyrus 125", "Dolphin Twin 50", "Dolphin Twin 125", "e-Buddy", "e-Dolphin", "Eagle", "Falcon", "Filly 50", "Filly 125", "FVision 125", "G-10", "G-Apex", "g-Buddy", "Grand Venus", "Gunner", "GW", "Hunter City", "Hunter Sport", "HY125", "HY150", "Knight", "Lambros", "MPS", "Prinsess", "Raider", "Royale", "Spartan", "Sprint", "Stealth", "Swift", "Tomahawk", "Tornado", "Trooper", "Venus", "Warrior"]),
   M("gilera", "Gilera", "Italija", ["Fuoco 500", "GP 800", "Nexus 250", "Nexus 500", "Runner 50", "Runner 125", "Runner 200"]),
   M("goes", "Goes", "", ["50", "90", "350", "450", "520", "550", "G 50", "G 125", "G 300", "G 400", "G 450", "G 520", "G 625", "G 700", "Cobalt", "Iron"]),
@@ -157,11 +162,13 @@ const MOTO_MAKES_RAW: CarMake[] = [
   M("sarolea", "Sarolea", "", []),
   M("scooter", "SCOOTER", "", []),
   M("scz", "SCZ", "", []),
+  M("segway", "Segway", "Kina", []),
   M("sherco", "Sherco", "Francuska", ["SE 125", "SE 250", "SE 300", "SEF 250", "SEF 300", "SEF 450", "ST Trial"]),
   M("shineray", "Shineray", "", ["XY-125", "XY-250"]),
   M("siamoto", "SiaMoto", "", []),
   M("silence", "Silence", "", ["S01", "S02"]),
   M("skygo", "Skygo", "", ["Archer", "Blink 125", "Boss 150", "Duke", "Earl 150", "Hero", "King 150", "KP V150", "Prince 125", "Stallion 150-SM", "Wizard 125", "Wizard 175"]),
+  M("ski-doo", "Ski-Doo", "Kanada", []),
   M("skyteam", "Skyteam", "", ["Ace", "Aero", "Cobra", "Girino", "Le Mans", "PBR", "Skymax", "ST", "Supermoto", "T-Rex", "Trail Road", "V-Raptor"]),
   M("solex", "Solex", "Francuska", []),
   M("stallions", "Stallions", "", []),
