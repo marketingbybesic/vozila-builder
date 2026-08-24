@@ -1424,25 +1424,11 @@ export const MEHANIZACIJA_GRADEVINSKI_MAKES: CarMake[] = [
   ...GRADEVINSKI_RAW.filter((m) => m.slug === "ostalo"),
 ];
 
-// --- Poljoprivredni strojevi (avto.net nema odvojen popis — kurirano) ----
-const POLJOPRIVREDNI_RAW: CarMake[] = [
-  M("case-ih", "Case IH", "SAD"),
-  M("claas", "Claas", "Njemačka"),
-  M("deutz-fahr", "Deutz-Fahr", "Njemačka"),
-  M("fendt", "Fendt", "Njemačka"),
-  M("john-deere", "John Deere", "SAD"),
-  M("kubota", "Kubota", "Japan"),
-  M("kuhn", "Kuhn", "Francuska"),
-  M("landini", "Landini", "Italija"),
-  M("lindner", "Lindner", "Austrija"),
-  M("massey-ferguson", "Massey Ferguson", "SAD"),
-  M("new-holland", "New Holland", "Italija"),
-  M("same", "Same", "Italija"),
-  M("steyr", "Steyr", "Austrija"),
-  M("ursus", "Ursus", "Poljska"),
-  M("valtra", "Valtra", "Finska"),
-  M("ostalo", "Ostalo", "—"),
-];
+// --- Poljoprivredni strojevi — Karlo 22.08.2026. Njegov popis je ISTI
+// globalni avto.net katalog kao građevinski (poslao ga dvaput; tekstualna
+// verzija bila odrezana na 616 od 1367 — skok "Imants → MM", kraj "Nante").
+// Zato dijeli zapis s GRADEVINSKI_RAW umjesto duplog popisa od 1368 redaka.
+const POLJOPRIVREDNI_RAW: CarMake[] = GRADEVINSKI_RAW;
 export const MEHANIZACIJA_POLJOPRIVREDNI_MAKES: CarMake[] = [
   ...sortHr(POLJOPRIVREDNI_RAW.filter((m) => m.slug !== "ostalo")),
   ...POLJOPRIVREDNI_RAW.filter((m) => m.slug === "ostalo"),
