@@ -1,6 +1,6 @@
 import type { CarMake } from "@/lib/types";
 import { MAKES as AUTO_MAKES } from "./makes";
-import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES } from "./makes-moto";
+import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
 import {
@@ -483,6 +483,7 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
   if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
   if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;
+  if (categorySlug === "moto" && subcategory === "motorne-sanke") return SANKE_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;

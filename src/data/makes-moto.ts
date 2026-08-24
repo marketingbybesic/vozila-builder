@@ -280,6 +280,8 @@ export function popularMotoSlugsFor(subcategory?: string): readonly string[] {
   // Karlo 22.08.2026: minimoto/go-kart imaju vlastite popise (vidi ispod) —
   // ravno abecedno kao moped/ATV, bez grupe "Najpopularnije".
   if (subcategory === "minimoto" || subcategory === "gokart") return [];
+  // Karlo 22.08.2026: motorne sanke — vlastiti popis, ravno bez grupe.
+  if (subcategory === "motorne-sanke") return [];
   return subcategory === "skuter" || subcategory === "e-skuter"
     ? POPULAR_SKUTER_MAKE_SLUGS
     : POPULAR_MOTO_MAKE_SLUGS;
@@ -331,3 +333,26 @@ const GOKART_MAKES_RAW: CarMake[] = [
   M("ostalo", "Ostalo", "—", []),
 ];
 export const GOKART_MAKES: CarMake[] = GOKART_MAKES_RAW;
+
+/**
+ * Motorne sanke — Karlova lista 22.08.2026, vlastiti popis (ne dijeli MOTO_MAKES).
+ * Redoslijed TOČNO njegov; "Ostalo" na kraju po njegovom pravilu "uvijek Ostalo
+ * zadnje" (ovaj popis ga izričito ne navodi — izneseno Dinu). Polaris/Ski-Doo/
+ * Yamaha dijele zapis s glavnim popisom (isti slug + modeli).
+ */
+const motoRef = (slug: string): CarMake => {
+  const m = MOTO_MAKES_RAW.find((x) => x.slug === slug);
+  if (!m) throw new Error(`makes-moto: marka "${slug}" ne postoji u MOTO_MAKES_RAW`);
+  return m;
+};
+const SANKE_MAKES_RAW: CarMake[] = [
+  M("arctic-cat", "Arctic Cat", "SAD", []),
+  M("bombardier", "Bombardier", "Kanada", []),
+  M("lynx", "Lynx", "Finska", []),
+  M("motorne-sani", "Motorne sani", "", []),
+  motoRef("polaris"),
+  motoRef("ski-doo"),
+  motoRef("yamaha"),
+  M("ostalo", "Ostalo", "—", []),
+];
+export const SANKE_MAKES: CarMake[] = SANKE_MAKES_RAW;
