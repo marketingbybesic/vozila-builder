@@ -38,6 +38,12 @@ log("Brenderup auto→prikolice", await sql`update listings set category='gospod
 // ostaje ("Malaguti Minicross…"), mijenja se samo filtarska marka.
 log("minimoto Malaguti/KTM→Ostalo", await sql`update listings set make='Ostalo' where subcategory='minimoto' and make in ('Malaguti','KTM') returning id`);
 
+// Kartica renderira "marka model" — nakon prebacivanja na "Ostalo" brend mora
+// u MODEL (kako bi i pravi prodavač napisao), inače kartica piše samo "Ostalo Max".
+log("gokart model +Rotax", await sql`update listings set model='Rotax Max' where subcategory='gokart' and make='Ostalo' and model='Max' returning id`);
+log("minimoto model +Malaguti", await sql`update listings set model='Malaguti Minicross' where subcategory='minimoto' and make='Ostalo' and model='Minicross' returning id`);
+log("minimoto model +KTM", await sql`update listings set model='KTM SX' where subcategory='minimoto' and make='Ostalo' and model='SX' returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
