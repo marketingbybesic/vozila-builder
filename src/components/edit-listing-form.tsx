@@ -14,6 +14,7 @@ import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, DRIVES, COLORS, CONDITIONS,
   type Listing,
 } from "@/lib/types";
+import { getCategory, makesForSub } from "@/data/categories";
 
 /**
  * Karlo 09.08. (st. 1): uređivanje mora nuditi i rubrike "Stanje vozila",
@@ -145,6 +146,17 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
     setS((p) => ({ ...p, [k]: v }));
   };
 
+  // Popis marki za (pod)kategoriju OVOG oglasa (minimoto/gokart/ATV/UTV… imaju
+  // vlastite liste). Vrijednosti su IMENA (baza sprema ime, ne slug), a
+  // postojeća vrijednost izvan popisa ostaje kao prva opcija.
+  const makeOpts = useMemo(() => {
+    const list = makesForSub(listing.category, listing.subcategory ?? undefined)
+      ?? getCategory(listing.category)?.makes ?? [];
+    const extra = s.make && !list.some((m) => m.name === s.make)
+      ? [{ value: s.make, label: s.make }] : [];
+    return [...extra, ...list.map((m) => ({ value: m.name, label: m.name }))];
+  }, [listing.category, listing.subcategory, s.make]);
+
   // Grad ovisi o županiji — isti obrazac kao u objavi.
   const cityOptions = (HR_LOCATIONS.find((l) => l.county === s.county)?.cities ?? [])
     .map((c) => ({ value: c, label: c }));
@@ -243,7 +255,16 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
       <section className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-flat)] p-5 space-y-4">
         <h2 className="font-display text-xl">Osnovno</h2>
         <div className="grid sm:grid-cols-2 gap-4">
-          <TextField label="Marka" value={s.make} onChange={(v) => set("make", v)} />
+          {/* ⚠️ Karlo 22.08.2026: Marka je bila SLOBODAN TEKST — prodavač
+              upiše bilo što i oglas postane nedohvatljiv kroz filtar marke.
+              Sad dropdown iz popisa te (pod)kategorije, isti kao objava.
+              Postojeća vrijednost izvan popisa ostaje kao prva opcija da se
+              stari oglas ne izgubi spremanjem. */}
+          {makeOpts.length > 0 ? (
+            <SelectField label="Marka" value={s.make} onChange={(v) => set("make", v)} options={makeOpts} placeholder="Odaberi marku" />
+          ) : (
+            <TextField label="Marka" value={s.make} onChange={(v) => set("make", v)} />
+          )}
           <TextField label="Model" value={s.model} onChange={(v) => set("model", v)} />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
