@@ -81,6 +81,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // ── Hardkodirani (tipizirani) filteri zajednički svim vozilima ──
   const [subcategory, setSubcategory] = useState(g("subcategory"));
   // Podkategorija iz URL-a = kontekst stranice (ne korisnikov chip filter).
+  // ⚠️ Karlo 22.08.2026: popisi MARKI i MODELA prate `subcategory` (odabir u
+  // formi — minimoto/gokart/atv imaju vlastite liste), a `contextSubcategory`
+  // ostaje za scope/chipove; prije je puna moto lista stajala dok korisnik u
+  // naprednoj bira Minimoto.
   const contextSubcategory = g("subcategory");
   const [make, setMake] = useState(g("make"));
   const [model, setModel] = useState(g("model"));
@@ -135,28 +139,28 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // pala u plosnatu granu i grupe se ne bi vidjele.
     // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
     // popise marki s avto.neta — override ispred popisa kategorije.
-    const list = makesForSub(category, contextSubcategory)
+    const list = makesForSub(category, subcategory)
       ?? categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
     if (!category || category === "auto") return makeOptionsGrouped(list);
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
     // razlicite od motocikala → biraj po podkategoriji.
-    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(contextSubcategory));
+    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
-    // `contextSubcategory` u ovisnostima klijentska navigacija na drugu
+    // podkategorije u ovisnostima klijentska navigacija na drugu
     // podkategoriju zadrži krivu grupu popularnih marki.
-  }, [category, categoryDef, contextSubcategory]);
+  }, [category, categoryDef, subcategory]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {
     if (!make) return [];
     // ⚠️ Karlo 12.08.2026: zadnja stavka uvijek "Modela nema na listi".
     return modelOptionsFor(
-      (makesForSub(category, contextSubcategory) ?? makesDbFor(category))
+      (makesForSub(category, subcategory) ?? makesDbFor(category))
         .find((m) => m.slug === make)?.models ?? []
     );
-  }, [make, category, contextSubcategory]);
+  }, [make, category, subcategory]);
 
   const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));
 
@@ -600,7 +604,14 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           <SelectField
             label="Podkategorija"
             value={subcategory}
-            onChange={setSubcategory}
+            onChange={(v) => {
+              setSubcategory(v);
+              // Nova podkategorija može imati DRUGI popis marki (minimoto,
+              // go-kart, ATV…) — marka koje u njemu nema mora van, inače
+              // ostane nevidljiv filtar koji pretrazi vraća 0 rezultata.
+              const list = makesForSub(category, v) ?? categoryDef?.makes ?? [];
+              if (make && !list.some((m) => m.slug === make)) { setMake(""); setModel(""); }
+            }}
             options={categoryDef.subcategories
               .map((s) => ({ value: s.slug, label: s.name }))}
             placeholder="Sve podkategorije"
