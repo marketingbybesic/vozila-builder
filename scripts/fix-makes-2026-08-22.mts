@@ -24,7 +24,7 @@ const dsn = env.match(/^DATABASE_URL="?([^"\n]+)"?/m)?.[1]?.trim();
 if (!dsn) throw new Error("DATABASE_URL nije u .env.local");
 const sql = postgres(dsn, { max: 1, ssl: "require", prepare: false });
 
-const log = (label: string, rows: unknown[]) => console.log(`${label}: ${rows.length} redaka`);
+const log = (label: string, rows: { length: number }) => console.log(`${label}: ${rows.length} redaka`);
 
 log("CFMoto→CF Moto", await sql`update listings set make='CF Moto' where make='CFMoto' and subcategory='atv-utv' returning id`);
 log("Mercedes→Mercedes-Benz", await sql`update listings set make='Mercedes-Benz' where make='Mercedes' and category='auto' returning id`);
