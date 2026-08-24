@@ -79,7 +79,10 @@ const MOTO_SUBS: Subcategory[] = [
   // (enum drift) i razbilo `scope` u category-filters.ts.
   { slug: "e-skuter", name: "E-romobil" },
   { slug: "e-bicikl", name: "E-bicikl" },
-  { slug: "e-moto", name: "E-moto" },
+  // ⚠️ Karlo 22.08.2026: podkategorija "E-moto" MAKNUTA na njegov zahtjev.
+  // Postojeći električni motocikli prebačeni u "motocikl" (DB skripta
+  // fix-makes-2026-08-22.mts). Scope zapisi u category-filters.ts zadržani
+  // bezopasno — ne referenciraju podkategoriju koja se više ne nudi.
   { slug: "najam", name: "Ponude za najam" },
   { slug: "moto-ostalo", name: "Ostalo" },
 ];

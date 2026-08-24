@@ -57,6 +57,10 @@ log("viljuskari→poljoprivredni (Kubota traktori)", await sql`update listings s
 log("e-skuter NIU model+brend", await sql`update listings set model='NIU ' || model where subcategory='e-skuter' and make in ('Niu','NIU') and model not like 'NIU %' returning id`);
 log("e-skuter NIU→Ostalo", await sql`update listings set make='Ostalo' where subcategory='e-skuter' and make in ('Niu','NIU') returning id`);
 
+// Karlo 22.08.2026: podkategorija "E-moto" ukinuta → postojeći električni
+// motocikli (LiveWire, Zero SR/F) idu u "motocikl", inače ostanu bez rubrike.
+log("e-moto→motocikl", await sql`update listings set subcategory='motocikl' where subcategory='e-moto' returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
