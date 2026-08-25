@@ -1,7 +1,7 @@
 // Slobodno vrijeme — marke PO PODKATEGORIJI (Karlo 25.08.2026).
-// Vlastite popise imaju "kamperi", "kamp-prikolice" i "mobilne-kucice"; ostale
-// (plovila, kamping oprema, moduli za kamper…) dijele starter popis kategorije
-// dok Karlo ne pošalje njihove liste.
+// Vlastite popise imaju "kamperi", "kamp-prikolice", "mobilne-kucice" i
+// "moduli-za-kamper"; ostale (plovila, kamping oprema, šatorske prikolice…)
+// dijele starter popis kategorije dok Karlo ne pošalje njihove liste.
 import type { CarMake } from "@/lib/types";
 
 const M = (slug: string, name: string, country: string, models: string[] = []): CarMake => ({
@@ -366,4 +366,20 @@ const MOBILNE_KUCICE_RAW: CarMake[] = [
 export const PROSTI_CAS_MOBILNE_KUCICE_MAKES: CarMake[] = [
   ...sortHr(MOBILNE_KUCICE_RAW.filter((m) => m.slug !== "ostalo")),
   ...MOBILNE_KUCICE_RAW.filter((m) => m.slug === "ostalo"),
+];
+
+/** Moduli za kamper — Karlov avto.net popis (6 marki + Ostalo na kraju). */
+const MODULI_ZA_KAMPER_RAW: CarMake[] = [
+  M("adventurer", "Adventurer", "—"),
+  M("camper", "Camper", "—"),
+  M("herman-rvs", "Herman RVs", "—"),
+  M("nadgradnja", "Nadgradnja", "—"),
+  M("tischer", "Tischer", "—"),
+  M("vanexxt", "Vanexxt", "—"),
+  M("ostalo", "Ostalo", "—"),
+];
+
+export const PROSTI_CAS_MODULI_MAKES: CarMake[] = [
+  ...sortHr(MODULI_ZA_KAMPER_RAW.filter((m) => m.slug !== "ostalo")),
+  ...MODULI_ZA_KAMPER_RAW.filter((m) => m.slug === "ostalo"),
 ];

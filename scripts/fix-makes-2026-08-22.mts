@@ -71,6 +71,11 @@ log("kamperi Fiat→Ostalo", await sql`update listings set make='Ostalo' where s
 log("mob.kucice model+brend", await sql`update listings set model = make || ' ' || model where subcategory='mobilne-kucice' and make in ('Atlas','Willerby') and model not like (make || ' %') returning id`);
 log("mob.kucice →Ostalo", await sql`update listings set make='Ostalo' where subcategory='mobilne-kucice' and make in ('Atlas','Willerby') returning id`);
 
+// Moduli za kamper (Karlo 25.08.): Reimo i VanEssa nisu na popisu (Vanexxt je
+// druga marka) → "Ostalo", brend u modelu.
+log("moduli model+brend", await sql`update listings set model = make || ' ' || model where subcategory='moduli-za-kamper' and make in ('Reimo','VanEssa') and model not like (make || ' %') returning id`);
+log("moduli →Ostalo", await sql`update listings set make='Ostalo' where subcategory='moduli-za-kamper' and make in ('Reimo','VanEssa') returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
