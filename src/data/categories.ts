@@ -523,6 +523,7 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "prosti-cas" && subcategory === "krovni-satori") return PROSTI_CAS_KROVNI_SATORI_MAKES;
   // Karlo 25.08.2026: E-romobil u Slobodnom vremenu = ista rubrika kao u Motu.
   if (categorySlug === "prosti-cas" && subcategory === "e-skuteri") return EROMOBIL_MAKES;
+  if (categorySlug === "prosti-cas" && subcategory === "e-bicikli") return EBICIKL_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;

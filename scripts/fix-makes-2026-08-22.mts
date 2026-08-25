@@ -86,6 +86,11 @@ log("satorske →Ostalo", await sql`update listings set make='Ostalo' where subc
 log("pc e-skuteri NIU model+brend", await sql`update listings set model = 'NIU ' || model where subcategory='e-skuteri' and make in ('Niu','NIU') and model not like 'NIU %' returning id`);
 log("pc e-skuteri NIU→Ostalo", await sql`update listings set make='Ostalo' where subcategory='e-skuteri' and make in ('Niu','NIU') returning id`);
 
+// E-bicikli u Slobodnom vremenu (Karlo 25.08.): rubrika izjednačena s
+// moto/e-bicikl → Adria (proizvođač kampera) nije na tom popisu → "Ostalo".
+log("pc e-bicikli Adria model+brend", await sql`update listings set model = 'Adria ' || model where subcategory='e-bicikli' and make='Adria' and model not like 'Adria %' returning id`);
+log("pc e-bicikli Adria→Ostalo", await sql`update listings set make='Ostalo' where subcategory='e-bicikli' and make='Adria' returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
