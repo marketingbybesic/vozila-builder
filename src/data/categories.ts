@@ -3,7 +3,7 @@ import { MAKES as AUTO_MAKES } from "./makes";
 import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES, EROMOBIL_MAKES, EBICIKL_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
-import { PROSTI_CAS_KAMPERI_MAKES } from "./makes-prosti-cas";
+import { PROSTI_CAS_KAMPERI_MAKES, PROSTI_CAS_KAMP_PRIKOLICE_MAKES } from "./makes-prosti-cas";
 import {
   GOSPODARSKA_DOSTAVNA_MAKES,
   GOSPODARSKA_KAMIONI_MAKES,
@@ -497,6 +497,7 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "moto" && subcategory === "e-skuter") return EROMOBIL_MAKES;
   if (categorySlug === "moto" && subcategory === "e-bicikl") return EBICIKL_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "kamperi") return PROSTI_CAS_KAMPERI_MAKES;
+  if (categorySlug === "prosti-cas" && subcategory === "kamp-prikolice") return PROSTI_CAS_KAMP_PRIKOLICE_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;
