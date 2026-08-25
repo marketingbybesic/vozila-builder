@@ -401,3 +401,52 @@ export const PROSTI_CAS_SATORSKE_MAKES: CarMake[] = [
   ...sortHr(SATORSKE_PRIKOLICE_RAW.filter((m) => m.slug !== "ostalo")),
   ...SATORSKE_PRIKOLICE_RAW.filter((m) => m.slug === "ostalo"),
 ];
+
+/** Krovni šatori — Karlov popis (38 marki + Ostalo na kraju). Nova rubrika
+ *  25.08.2026, postavljena 1:1 kao šatorske prikolice. */
+const KROVNI_SATORI_RAW: CarMake[] = [
+  M("23zero", "23Zero", "—"),
+  M("3dog", "3DOG", "—"),
+  M("airpass", "Airpass", "—"),
+  M("alu-cab", "Alu-Cab", "—"),
+  M("arb", "ARB", "—"),
+  M("autocamp", "Autocamp", "—"),
+  M("autohome", "Autohome", "—"),
+  M("basoglu", "Basoglu", "—"),
+  M("bimobil", "Bimobil", "—"),
+  M("blucamp", "Blucamp", "—"),
+  M("bundutec", "Bundutec", "—"),
+  M("bush-company", "Bush Company", "—"),
+  M("cvt-cascadia-vehicle-tents", "CVT (Cascadia Vehicle Tents)", "—"),
+  M("campwerk", "Campwerk", "—"),
+  M("darche", "Darche", "—"),
+  M("dometic", "Dometic", "—"),
+  M("dtbd-outdoor", "DTBD Outdoor", "—"),
+  M("front-runner", "Front Runner", "—"),
+  M("ikamper", "iKamper", "—"),
+  M("james-baroud", "James Baroud", "—"),
+  M("latitude", "Latitude", "—"),
+  M("maggiolina", "Maggiolina", "—"),
+  M("ovs-overland-vehicle-systems", "OVS (Overland Vehicle Systems)", "—"),
+  M("quick-pitch", "Quick Pitch", "—"),
+  M("roam-adventure-co", "ROAM Adventure Co.", "—"),
+  M("roofbunk", "RoofBunk", "—"),
+  M("roofnest", "Roofnest", "—"),
+  M("skypod", "SkyPod", "—"),
+  M("smittybilt", "Smittybilt", "—"),
+  M("tentbox", "TentBox", "—"),
+  M("tepui-thule-tepui", "Tepui (Thule Tepui)", "—"),
+  M("thule", "Thule", "—"),
+  M("topoak", "Topoak", "—"),
+  M("tuff-stuff", "Tuff Stuff", "—"),
+  M("vickywood", "Vickywood", "—"),
+  M("wild-land", "Wild Land", "—"),
+  M("x-cover", "X-Cover", "—"),
+  M("yakima", "Yakima", "—"),
+  M("ostalo", "Ostalo", "—"),
+];
+
+export const PROSTI_CAS_KROVNI_SATORI_MAKES: CarMake[] = [
+  ...sortHr(KROVNI_SATORI_RAW.filter((m) => m.slug !== "ostalo")),
+  ...KROVNI_SATORI_RAW.filter((m) => m.slug === "ostalo"),
+];
