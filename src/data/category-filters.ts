@@ -1333,8 +1333,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     steps: [3, 4, 5, 6, 7, 8, 9, 10] },
   { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1,
     storage: "attr", group: "Dimenzije i upotrebljivost",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila",
-            "e-bicikli", "e-skuteri", "kamping-oprema"] },
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "kamping-oprema"] },
   // KAMPERI: "Širina" zamijenjena "Brojem sjedala" (Karlov zahtjev).
   { key: "seats", label: "Broj sjedala", type: "range", storage: "attr",
     group: "Dimenzije i upotrebljivost", scope: ["kamperi"],
@@ -1364,13 +1363,13 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 
   // Motor kamper — samo kamperi/mobilne (domenska analiza)
   { key: "km", label: "Kilometri", type: "range", unit: "km", min: 0, max: 500000, step: 5000, storage: "column", group: "Motor",
-    scope: ["kamperi", "mobilne-kucice"] },
+    scope: ["kamperi", "mobilne-kucice", "e-skuteri"] },
   { key: "fuel", label: "Gorivo", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice"],
     options: ["Dizel","Benzin"].map(v) },
-  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice"],
+  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice", "e-skuteri"],
     options: [v("Ručni"), v("Automatski")] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 300, step: 5, storage: "column", group: "Motor",
-    scope: ["kamperi", "mobilne-kucice"] },
+    scope: ["kamperi", "mobilne-kucice", "e-skuteri"] },
 
   // Motor plovila — samo plovila (domenska analiza)
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
@@ -1392,7 +1391,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
   { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 2000, step: 25, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
   { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 200, step: 5, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
-  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
+  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
   { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
   { key: "wheelSizeInch", label: "Promjer kotača", type: "select", storage: "attr", group: "Električna", scope: ["e-bicikli"],
     options: [16,20,24,26,27.5,28,29].map((n) => ({ value: String(n), label: `${n}"` })) },
@@ -1449,6 +1448,65 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // kamper i kamp prikolica. Mobilna kućica, modul, šatorska prikolica,
   // plovilo, bicikl i kamping oprema nemaju ni šasiju ni tehnički.
   ...documentFields(["kamperi", "kamp-prikolice"]),
+
+  // Polja "Stanje vozila" (dijeljena lista) — samo za E-romobil, isti obrazac
+  // kao UTV u gospodarskoj (`SELLER_STATE_FIELDS.map(... scope: ["utv"])`).
+  ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-skuteri"] })),
+  // ⚠️ Karlo 25.08.2026: E-romobil u Slobodnom vremenu mora imati IDENTIČNA
+  // polja kao moto/e-skuter — ova su preslikana iz MOTO_FIELDS, scope samo
+  // "e-skuteri" da ne procure na kampere/plovila.
+  { key: "motoCategory", label: "Stil", type: "multi", storage: "attr", group: "Vrsta",
+    scope: ["e-skuteri"],
+    options: [
+      v("Sport"), v("Chopper"), v("Tourer"),
+      { value: "naked", label: "Naked bike" },
+      v("Enduro"), v("Supermoto"), v("Trial"), v("Cross"),
+      v("Trokolica"), v("Trike"),
+    ] },
+  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 1500, step: 50, storage: "column", group: "Motor", scope: ["e-skuteri"] },
+  { key: "cylinders", label: "Cilindri", type: "select", storage: "attr", group: "Motor",
+    options: [1,2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })), scope: ["e-skuteri"] },
+  { key: "stroke", label: "Takt", type: "select", storage: "attr", group: "Motor",
+    options: [
+      { value: "2T", label: "2-taktni" },
+      { value: "4T", label: "4-taktni" },
+      { value: "ev", label: "Električni" },
+    ], scope: ["e-skuteri"] },
+  { key: "drivetrain", label: "Prijenos", type: "select", storage: "attr", group: "Motor",
+    options: [
+      { value: "lanac", label: "Lanac" },
+      { value: "kardan", label: "Kardan" },
+      { value: "remen", label: "Remen" },
+      { value: "direktan", label: "Direktan" },
+    ], scope: ["e-skuteri"] },
+  { key: "maxSpeedEv", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 150, step: 5,
+    storage: "attr", group: "Električna", scope: ["e-skuteri"] },
+  { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
+    options: ["Crna","Bijela","Crvena","Plava","Zelena","Žuta","Narančasta","Siva","Srebrna"].map(v), scope: ["e-skuteri"] },
+  { key: "motoOptions", label: "Dodatne opcije", type: "multi", storage: "attr", group: "Dodatne opcije",
+    options: [
+      { value: "abs", label: "ABS" },
+      { value: "el-ovjes", label: "Električno podesiv ovjes" },
+      { value: "tempomat", label: "Tempomat" },
+      { value: "navigacija", label: "Navigacija" },
+      { value: "led-svjetla", label: "LED svjetla" },
+      { value: "grijane-rucke", label: "Grijane ručke" },
+      { value: "vjetrobran", label: "Vjetrobran" },
+      { value: "kofer", label: "Bočni kuferi" },
+      { value: "quickshifter", label: "Quickshifter" },
+      { value: "zamjena", label: "Moguća zamjena" },
+    ], scope: ["e-skuteri"] },
+  { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["e-skuteri"] },
+  // E-romobil koristi moto nazive polja (Pogon / Prikaz u kvaru / Prikaz
+  // oštećenih) — rubrika mora izgledati identično kao u Motu.
+  { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor", scope: ["e-skuteri"],
+    options: ["Dizel","Benzin"].map(v) },
+  { key: "hideDamaged", label: "Prikaz oštećenih", type: "select", storage: "attr", searchOnly: true,
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["e-skuteri"] },
+  { key: "hideBroken", label: "Prikaz u kvaru", type: "select", storage: "attr", searchOnly: true,
+    group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["e-skuteri"] },
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────

@@ -80,6 +80,12 @@ log("moduli →Ostalo", await sql`update listings set make='Ostalo' where subcat
 log("satorske model+brend", await sql`update listings set model = make || ' ' || model where subcategory='satorske-prikolice' and make in ('3DOG','Combi-Camp') and model not like (make || ' %') returning id`);
 log("satorske →Ostalo", await sql`update listings set make='Ostalo' where subcategory='satorske-prikolice' and make in ('3DOG','Combi-Camp') returning id`);
 
+// E-romobil u Slobodnom vremenu (Karlo 25.08.): rubrika preimenovana iz
+// "E-skuteri" i izjednačena s moto/e-skuter → NIU nije na tom popisu, isto
+// kao u Motu → "Ostalo", brend u modelu.
+log("pc e-skuteri NIU model+brend", await sql`update listings set model = 'NIU ' || model where subcategory='e-skuteri' and make in ('Niu','NIU') and model not like 'NIU %' returning id`);
+log("pc e-skuteri NIU→Ostalo", await sql`update listings set make='Ostalo' where subcategory='e-skuteri' and make in ('Niu','NIU') returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;

@@ -119,7 +119,10 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
   { slug: "krovni-satori", name: "Krovni šatori" },
   { slug: "plovila", name: "Plovila" },
   { slug: "e-bicikli", name: "E-bicikli" },
-  { slug: "e-skuteri", name: "E-skuteri" },
+  // ⚠️ Karlo 25.08.2026: preimenovano "E-skuteri" → "E-romobil"; rubrika mora
+  // biti IDENTIČNA onoj u Motu (moto/e-skuter) — ista polja, iste marke, isti
+  // Model. SLUG ostaje "e-skuteri" (postojeći oglasi i linkovi).
+  { slug: "e-skuteri", name: "E-romobil" },
   // Karlo 30.07: "Kamping oprema" → "Oprema za kampere i kamping" + 2. nivo.
   // Jedina rubrika u SLOBODNOM VREMENU s djecom (ostale su ravne) — drill-down
   // radi isto kao u DIJELOVIMA (`subChildHref` → `a.vrsta=<slug>`).
@@ -518,6 +521,8 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "prosti-cas" && subcategory === "moduli-za-kamper") return PROSTI_CAS_MODULI_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "satorske-prikolice") return PROSTI_CAS_SATORSKE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "krovni-satori") return PROSTI_CAS_KROVNI_SATORI_MAKES;
+  // Karlo 25.08.2026: E-romobil u Slobodnom vremenu = ista rubrika kao u Motu.
+  if (categorySlug === "prosti-cas" && subcategory === "e-skuteri") return EROMOBIL_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "utv") return UTV_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "dostavna") return GOSPODARSKA_DOSTAVNA_MAKES;
   if (categorySlug === "gospodarska" && subcategory === "kamioni") return GOSPODARSKA_KAMIONI_MAKES;
