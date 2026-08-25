@@ -14,7 +14,7 @@ import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, DRIVES, COLORS, CONDITIONS,
   type Listing,
 } from "@/lib/types";
-import { getCategory, makesForSub } from "@/data/categories";
+import { getCategory, makesForSub, showsModelField } from "@/data/categories";
 
 /**
  * Karlo 09.08. (st. 1): uređivanje mora nuditi i rubrike "Stanje vozila",
@@ -265,7 +265,9 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
           ) : (
             <TextField label="Marka" value={s.make} onChange={(v) => set("make", v)} />
           )}
-          <TextField label="Model" value={s.model} onChange={(v) => set("model", v)} />
+          {showsModelField(listing.category, listing.subcategory ?? undefined) && (
+            <TextField label="Model" value={s.model} onChange={(v) => set("model", v)} />
+          )}
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <TextField label="Izvedba" optional value={s.variant} onChange={(v) => set("variant", v)} />

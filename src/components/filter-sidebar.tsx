@@ -13,7 +13,7 @@ import {
 } from "@/lib/types";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
-import { getCategory, makesDbFor, makesForSub } from "@/data/categories";
+import { getCategory, makesDbFor, makesForSub, showsModelField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
@@ -222,7 +222,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       </div>
 
       <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
-      {modelOptions.length > 0 && (
+      {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && (
         <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
       )}
 

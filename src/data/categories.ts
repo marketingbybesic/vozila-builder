@@ -489,6 +489,16 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  * uzet današnji facet-presjek, prijavljeno Karlu kao best-effort.
  * Minimoto/gokart imaju Karlove vlastite popise (22.08.2026).
  */
+/**
+ * ⚠️ Karlo 25.08.2026: kod KAMPERA i KAMP PRIKOLICA polje "Model" se NE
+ * prikazuje — kod tih vozila model nije podatak po kojem se pretražuje
+ * (naziv izvedbe ide u opis). Vrijedi za sve tri forme + uređivanje.
+ */
+export function showsModelField(categorySlug: string, subcategory?: string): boolean {
+  if (categorySlug === "prosti-cas" && (subcategory === "kamperi" || subcategory === "kamp-prikolice")) return false;
+  return true;
+}
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
   if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
