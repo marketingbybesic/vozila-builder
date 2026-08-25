@@ -373,7 +373,7 @@ const MODULI_ZA_KAMPER_RAW: CarMake[] = [
   M("adventurer", "Adventurer", "—"),
   M("camper", "Camper", "—"),
   M("herman-rvs", "Herman RVs", "—"),
-  M("nadgradnja", "Nadgradnja", "—"),
+  M("nadogradnja", "Nadogradnja", "—"),
   M("tischer", "Tischer", "—"),
   M("vanexxt", "Vanexxt", "—"),
   M("ostalo", "Ostalo", "—"),
