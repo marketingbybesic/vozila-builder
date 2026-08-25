@@ -61,6 +61,11 @@ log("e-skuter NIU→Ostalo", await sql`update listings set make='Ostalo' where s
 // motocikli (LiveWire, Zero SR/F) idu u "motocikl", inače ostanu bez rubrike.
 log("e-moto→motocikl", await sql`update listings set subcategory='motocikl' where subcategory='e-moto' returning id`);
 
+// Kamperi (Karlo 25.08.): njegov popis nema Fiat (bazna vozila Ducato) → po
+// avto.net paritetu marka "Ostalo", brend sačuvan u modelu.
+log("kamperi Fiat model+brend", await sql`update listings set model='Fiat ' || model where subcategory='kamperi' and make='Fiat' and model not like 'Fiat %' returning id`);
+log("kamperi Fiat→Ostalo", await sql`update listings set make='Ostalo' where subcategory='kamperi' and make='Fiat' returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
