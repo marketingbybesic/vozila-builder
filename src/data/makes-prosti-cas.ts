@@ -1,7 +1,7 @@
 // Slobodno vrijeme — marke PO PODKATEGORIJI (Karlo 25.08.2026).
 // Vlastite popise imaju "kamperi", "kamp-prikolice", "mobilne-kucice" i
-// "moduli-za-kamper"; ostale (plovila, kamping oprema, šatorske prikolice…)
-// dijele starter popis kategorije dok Karlo ne pošalje njihove liste.
+// "moduli-za-kamper" i "satorske-prikolice"; ostale (plovila, kamping oprema,
+// e-bicikli…) dijele starter popis kategorije dok Karlo ne pošalje njihove liste.
 import type { CarMake } from "@/lib/types";
 
 const M = (slug: string, name: string, country: string, models: string[] = []): CarMake => ({
@@ -382,4 +382,22 @@ const MODULI_ZA_KAMPER_RAW: CarMake[] = [
 export const PROSTI_CAS_MODULI_MAKES: CarMake[] = [
   ...sortHr(MODULI_ZA_KAMPER_RAW.filter((m) => m.slug !== "ostalo")),
   ...MODULI_ZA_KAMPER_RAW.filter((m) => m.slug === "ostalo"),
+];
+
+/** Šatorske prikolice — Karlov avto.net popis (8 marki + Ostalo na kraju). */
+const SATORSKE_PRIKOLICE_RAW: CarMake[] = [
+  M("alpenkreuzer", "Alpenkreuzer", "—"),
+  M("brako", "Brako", "—"),
+  M("camp-let", "Camp-let", "—"),
+  M("comanche", "Comanche", "—"),
+  M("raclet", "Raclet", "—"),
+  M("stema", "Stema", "—"),
+  M("satorska-prikolica", "Šatorska prikolica", "—"),
+  M("trigano", "Trigano", "—"),
+  M("ostalo", "Ostalo", "—"),
+];
+
+export const PROSTI_CAS_SATORSKE_MAKES: CarMake[] = [
+  ...sortHr(SATORSKE_PRIKOLICE_RAW.filter((m) => m.slug !== "ostalo")),
+  ...SATORSKE_PRIKOLICE_RAW.filter((m) => m.slug === "ostalo"),
 ];

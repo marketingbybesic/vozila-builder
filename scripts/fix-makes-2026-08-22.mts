@@ -76,6 +76,10 @@ log("mob.kucice →Ostalo", await sql`update listings set make='Ostalo' where su
 log("moduli model+brend", await sql`update listings set model = make || ' ' || model where subcategory='moduli-za-kamper' and make in ('Reimo','VanEssa') and model not like (make || ' %') returning id`);
 log("moduli →Ostalo", await sql`update listings set make='Ostalo' where subcategory='moduli-za-kamper' and make in ('Reimo','VanEssa') returning id`);
 
+// Šatorske prikolice (Karlo 25.08.): 3DOG i Combi-Camp nisu na popisu → "Ostalo".
+log("satorske model+brend", await sql`update listings set model = make || ' ' || model where subcategory='satorske-prikolice' and make in ('3DOG','Combi-Camp') and model not like (make || ' %') returning id`);
+log("satorske →Ostalo", await sql`update listings set make='Ostalo' where subcategory='satorske-prikolice' and make in ('3DOG','Combi-Camp') returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
