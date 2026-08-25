@@ -1309,7 +1309,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "teretni-kamper", label: "Kamper na teretnom vozilu" },
       { value: "ostalo", label: "Ostalo" },
     ] },
-  { key: "eBikeType", label: "Tip e-bicikla", type: "select", storage: "attr", group: "Vrsta", scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "prosti-cas-ostalo", "najam"],
+  { key: "eBikeType", label: "Tip e-bicikla", type: "select", storage: "attr", group: "Vrsta", scope: ["e-bicikli"],
     options: [
       { value: "city", label: "Gradski" },
       { value: "mtb", label: "MTB" },
@@ -1391,9 +1391,9 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
   { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 2000, step: 25, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
   { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 200, step: 5, storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
-  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "prosti-cas-ostalo", "najam"] },
+  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
   { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
-  { key: "wheelSizeInch", label: "Promjer kotača", type: "select", storage: "attr", group: "Električna", scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "prosti-cas-ostalo", "najam"],
+  { key: "wheelSizeInch", label: "Promjer kotača", type: "select", storage: "attr", group: "Električna", scope: ["e-bicikli"],
     options: [16,20,24,26,27.5,28,29].map((n) => ({ value: String(n), label: `${n}"` })) },
 
   // Udobnost (domenska analiza)
