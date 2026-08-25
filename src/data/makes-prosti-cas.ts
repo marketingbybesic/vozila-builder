@@ -1,7 +1,7 @@
 // Slobodno vrijeme — marke PO PODKATEGORIJI (Karlo 25.08.2026).
-// Vlastite popise imaju "kamperi" i "kamp-prikolice"; ostale (plovila, mobilne
-// kućice, kamping oprema…) dijele starter popis kategorije dok Karlo ne pošalje
-// njihove liste.
+// Vlastite popise imaju "kamperi", "kamp-prikolice" i "mobilne-kucice"; ostale
+// (plovila, kamping oprema, moduli za kamper…) dijele starter popis kategorije
+// dok Karlo ne pošalje njihove liste.
 import type { CarMake } from "@/lib/types";
 
 const M = (slug: string, name: string, country: string, models: string[] = []): CarMake => ({
@@ -339,4 +339,31 @@ const KAMP_PRIKOLICE_RAW: CarMake[] = [
 export const PROSTI_CAS_KAMP_PRIKOLICE_MAKES: CarMake[] = [
   ...sortHr(KAMP_PRIKOLICE_RAW.filter((m) => m.slug !== "ostalo")),
   ...KAMP_PRIKOLICE_RAW.filter((m) => m.slug === "ostalo"),
+];
+
+/** Mobilne kućice — Karlov avto.net popis (17 marki + Ostalo na kraju). */
+const MOBILNE_KUCICE_RAW: CarMake[] = [
+  M("bratusa-homes", "Bratusa Homes", "—"),
+  M("gt-mobil", "GT Mobil", "—"),
+  M("hona", "Hona", "—"),
+  M("hosekra", "Hosekra", "—"),
+  M("irm", "IRM", "—"),
+  M("kvadra", "Kvadra", "—"),
+  M("luksor", "Luksor", "—"),
+  M("lux-mobil", "Lux Mobil", "—"),
+  M("migs", "MIGS", "—"),
+  M("mobile-house", "Mobile House", "—"),
+  M("mobilna-hisica", "Mobilna hišica", "—"),
+  M("polymobil", "Polymobil", "—"),
+  M("quadra", "Quadra", "—"),
+  M("rem", "REM", "—"),
+  M("seadeluxe", "SeaDeluxe", "—"),
+  M("shellbox", "Shellbox", "—"),
+  M("sun-roller", "Sun Roller", "—"),
+  M("ostalo", "Ostalo", "—"),
+];
+
+export const PROSTI_CAS_MOBILNE_KUCICE_MAKES: CarMake[] = [
+  ...sortHr(MOBILNE_KUCICE_RAW.filter((m) => m.slug !== "ostalo")),
+  ...MOBILNE_KUCICE_RAW.filter((m) => m.slug === "ostalo"),
 ];

@@ -66,6 +66,11 @@ log("e-moto→motocikl", await sql`update listings set subcategory='motocikl' wh
 log("kamperi Fiat model+brend", await sql`update listings set model='Fiat ' || model where subcategory='kamperi' and make='Fiat' and model not like 'Fiat %' returning id`);
 log("kamperi Fiat→Ostalo", await sql`update listings set make='Ostalo' where subcategory='kamperi' and make='Fiat' returning id`);
 
+// Mobilne kućice (Karlo 25.08.): Atlas i Willerby nisu na njegovom popisu →
+// marka "Ostalo", brend sačuvan u modelu.
+log("mob.kucice model+brend", await sql`update listings set model = make || ' ' || model where subcategory='mobilne-kucice' and make in ('Atlas','Willerby') and model not like (make || ' %') returning id`);
+log("mob.kucice →Ostalo", await sql`update listings set make='Ostalo' where subcategory='mobilne-kucice' and make in ('Atlas','Willerby') returning id`);
+
 const b = await sql`select id, category, subcategory from listings where make='Brenderup' and subcategory is null`;
 for (const row of b) {
   await sql`update listings set category='gospodarska', subcategory='prikolice' where id=${row.id}`;
