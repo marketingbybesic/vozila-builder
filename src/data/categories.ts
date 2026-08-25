@@ -139,6 +139,10 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
       { slug: "kamping-oprema-ostalo", name: "Ostalo" },
     ],
   },
+  // Karlo 25.08.2026: "Ponude za najam" i u Slobodnom vremenu — ista rubrika
+  // kao u Moto/Gospodarska/Mehanizacija (vlastiti oglasi, polja kao mobilne
+  // kućice jer je to najbliža rubrika u kategoriji).
+  { slug: "najam", name: "Ponude za najam" },
   { slug: "prosti-cas-ostalo", name: "Ostalo" },
 ];
 
@@ -504,7 +508,7 @@ export function makesDbFor(categorySlug: string): CarMake[] {
 export function showsModelField(categorySlug: string, subcategory?: string): boolean {
   if (categorySlug === "prosti-cas" && (subcategory === "kamperi" || subcategory === "kamp-prikolice" || subcategory === "mobilne-kucice" ||
       subcategory === "moduli-za-kamper" || subcategory === "satorske-prikolice" ||
-      subcategory === "krovni-satori")) return false;
+      subcategory === "krovni-satori" || subcategory === "najam")) return false;
   return true;
 }
 
@@ -518,6 +522,9 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "prosti-cas" && subcategory === "kamperi") return PROSTI_CAS_KAMPERI_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "kamp-prikolice") return PROSTI_CAS_KAMP_PRIKOLICE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "mobilne-kucice") return PROSTI_CAS_MOBILNE_KUCICE_MAKES;
+  // Karlo 25.08.2026: "Ponude za najam" u Slobodnom vremenu = iste postavke
+  // kao mobilne kućice (marke, polja, bez Modela).
+  if (categorySlug === "prosti-cas" && subcategory === "najam") return PROSTI_CAS_MOBILNE_KUCICE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "moduli-za-kamper") return PROSTI_CAS_MODULI_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "satorske-prikolice") return PROSTI_CAS_SATORSKE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "krovni-satori") return PROSTI_CAS_KROVNI_SATORI_MAKES;
