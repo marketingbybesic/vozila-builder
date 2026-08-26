@@ -507,7 +507,7 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  */
 /**
  * ⚠️ Karlo 26.08.2026: kod KAMIONA, AUTOBUSA, TERETNIH PRIKOLICA,
- * POLJOPRIVREDNIH STROJEVA, VILIČARA, ŠUMARSKIH i KOMUNALNIH STROJEVA model se
+ * POLJOPRIVREDNIH STROJEVA, VILIČARA i SVIH STROJEVA MEHANIZACIJE model se
  * UPISUJE slobodno (nadogradnje,
  * varijante i tipovi šasije su previše raznoliki za popis), a prazno polje se
  * u pretrazi čita kao "svi modeli". Popis modela u `makes-gospodarska-sub.ts`
@@ -517,10 +517,9 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   if (categorySlug === "gospodarska") {
     return subcategory === "kamioni" || subcategory === "autobusi" || subcategory === "prikolice";
   }
-  if (categorySlug === "mehanizacija") {
-    return subcategory === "poljoprivredni-strojevi" || subcategory === "vilicari" ||
-      subcategory === "sumarski-strojevi" || subcategory === "komunalni-strojevi";
-  }
+  // Karlo 26.08.2026: nakon građevinskih, SVE rubrike mehanizacije imaju
+  // slobodan upis — jednostavnije od nabrajanja svih pet.
+  if (categorySlug === "mehanizacija") return true;
   return false;
 }
 
