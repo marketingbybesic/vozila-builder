@@ -506,8 +506,8 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  * (naziv izvedbe ide u opis). Vrijedi za sve tri forme + uređivanje.
  */
 /**
- * ⚠️ Karlo 26.08.2026: kod KAMIONA, AUTOBUSA, TERETNIH PRIKOLICA i
- * POLJOPRIVREDNIH STROJEVA model se
+ * ⚠️ Karlo 26.08.2026: kod KAMIONA, AUTOBUSA, TERETNIH PRIKOLICA,
+ * POLJOPRIVREDNIH STROJEVA i VILIČARA model se
  * UPISUJE slobodno (nadogradnje,
  * varijante i tipovi šasije su previše raznoliki za popis), a prazno polje se
  * u pretrazi čita kao "svi modeli". Popis modela u `makes-gospodarska-sub.ts`
@@ -518,7 +518,7 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
     return subcategory === "kamioni" || subcategory === "autobusi" || subcategory === "prikolice";
   }
   if (categorySlug === "mehanizacija") {
-    return subcategory === "poljoprivredni-strojevi";
+    return subcategory === "poljoprivredni-strojevi" || subcategory === "vilicari";
   }
   return false;
 }
