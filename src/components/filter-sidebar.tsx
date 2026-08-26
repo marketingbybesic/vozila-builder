@@ -223,7 +223,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             `storage:"attr"`, pa ga `parseFilters` nikad nije uhvatio (nije ni u
             RESERVED_PARAMS ni `a.`-prefiksiran) → korisnik filtrira, ništa se ne mijenja.
             Attr polja MORAJU ići kroz `a.` prefiks. */}
-        <MultiSelect label="Tip ponude" values={arr("a.offerType").length ? arr("a.offerType") : arr("offerType")} onChange={(v) => setMulti("a.offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+        {/* ⚠️ Karlo 26.08.2026: ručni filtar — poštuje scope polja. */}
+        {filterDef.fields.some((f) => f.key === "offerType" && (!f.scope?.length || f.scope.includes(current.subcategory ?? ""))) && (
+          <MultiSelect label="Tip ponude" values={arr("a.offerType").length ? arr("a.offerType") : arr("offerType")} onChange={(v) => setMulti("a.offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+        )}
         <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
       </div>
 

@@ -625,8 +625,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         {vrstaGroup && renderDynGroup(vrstaGroup)}
         {/* Tip ponude + Stanje vozila ODMAH ispod Podkategorije */}
         <div className="grid sm:grid-cols-2 gap-3">
-          <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
-            options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+          {/* ⚠️ Karlo 26.08.2026: "Tip ponude" je RUČNI MultiSelect (izvan sheme),
+              pa mora sam poštovati `scope` — inače ostane vidljiv i ondje gdje je
+              polje maknuto (mobilne kućice, moduli za kamper). Isto kao Garancija. */}
+          {filterDef.fields.some((f) => f.key === "offerType" && (!f.scope?.length || f.scope.includes(subcategory))) && (
+            <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
+              options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
+          )}
           <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
             options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
         </div>
