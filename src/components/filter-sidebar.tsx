@@ -27,6 +27,8 @@ const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 2500
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1990 + 1 }, (_, i) => YEAR_NOW - i);
 
+const SVI_MODELI = "Svi modeli";
+
 const toOpts = (arr: readonly string[]): Opt[] => arr.map((v) => ({ value: v, label: v }));
 
 type Props = {
@@ -49,6 +51,8 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const [panelOpen, setPanelOpen] = useState(false);
   /** Karlo 13.08.2026 (st. 2): je li bočni stupac proširen na SVE filtere. */
   const [sviFilteri, setSviFilteri] = useState(false);
+  /** Karlo 26.08.2026: je li Model polje fokusirano (tada je prazno za upis). */
+  const [modelFocus, setModelFocus] = useState(false);
 
   /**
    * ⚠️ Karlo 13.08.2026 (st. 1): mobilni filtar nije pokazivao KOLIKO je
@@ -224,7 +228,16 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
       {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
       {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (
-        <TextField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} placeholder="Svi modeli" />
+        <TextField
+          label="Model"
+          /* ⚠️ Karlo 26.08.2026: prije klika u polju mora PISATI "Svi modeli"
+             (prava vrijednost, ne sivi placeholder). Na fokus se prazni da
+             korisnik odmah tipka, a na blur se vraća ako ništa nije upisano. */
+          value={modelFocus ? (current.model ?? "") : (current.model || SVI_MODELI)}
+          onChange={(v) => update({ model: v && v !== SVI_MODELI ? v : null })}
+          onFocus={() => setModelFocus(true)}
+          onBlur={() => setModelFocus(false)}
+        />
       )}
       {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && !freeTextModelField(category, current.subcategory ?? "") && (
         <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />

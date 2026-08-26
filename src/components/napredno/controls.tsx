@@ -528,14 +528,17 @@ export function TogglePill({
 }
 
 export function TextField({
-  label, required, optional, value, onChange, placeholder,
-}: { label?: string; required?: boolean; optional?: boolean; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  label, required, optional, value, onChange, placeholder, onFocus, onBlur,
+}: { label?: string; required?: boolean; optional?: boolean; value: string; onChange: (v: string) => void;
+     placeholder?: string; onFocus?: () => void; onBlur?: () => void }) {
   return (
     <label className="block">
       {label && <Label required={required} optional={optional}>{label}</Label>}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
         type="text"
         placeholder={placeholder}
         className={fieldBase}

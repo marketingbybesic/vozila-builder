@@ -42,6 +42,7 @@ const MOTO_ENGINE_STEPS = [50, 125, 250, 350, 500, 750, 1000, 1500];
 const MOTO_POWER_STEPS = [7.5, 15, 22, 30, 37, 56, 75, 93, 112];
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i);
+const SVI_MODELI = "Svi modeli";
 
 type AttrValue = string | string[] | boolean | undefined;
 
@@ -125,6 +126,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     return o;
   });
   const [showMore, setShowMore] = useState(false);
+  /** Karlo 26.08.2026: fokus na Model polju (kamioni/autobusi — slobodan upis). */
+  const [modelFocus, setModelFocus] = useState(false);
 
   const isAuto = category === "auto";
   const isMoto = category === "moto";
@@ -633,7 +636,16 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           {!showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
-            <TextField label="Model" value={model} onChange={setModel} placeholder={make ? "npr. Golf, A4, X3..." : "Svi modeli"} />
+            <TextField
+              label="Model"
+              /* ⚠️ Karlo 26.08.2026: kod kamiona/autobusa u polju PIŠE "Svi
+                 modeli" dok se ne klikne (prava vrijednost, ne placeholder). */
+              value={freeTextModelField(category, subcategory) && !modelFocus && !model ? SVI_MODELI : model}
+              onChange={(v) => setModel(v === SVI_MODELI ? "" : v)}
+              onFocus={() => setModelFocus(true)}
+              onBlur={() => setModelFocus(false)}
+              placeholder={make ? "npr. Golf, A4, X3..." : SVI_MODELI}
+            />
           )}
         </div>
         {isAuto && (
