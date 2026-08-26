@@ -1425,7 +1425,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // Ostalo (domenska analiza)
   // Karlo 30.07: "Tip ponude" i "Garancija" izbrisani iz kampera i kamp prikolica.
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"],
+    scope: ["satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"],
     options: [v("prodaja"), v("najam")] },
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
     options: [
