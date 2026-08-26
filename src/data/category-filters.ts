@@ -1363,13 +1363,13 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 
   // Motor kamper — samo kamperi/mobilne (domenska analiza)
   { key: "km", label: "Kilometri", type: "range", unit: "km", min: 0, max: 500000, step: 5000, storage: "column", group: "Motor",
-    scope: ["kamperi", "mobilne-kucice", "e-skuteri", "e-bicikli", "najam"] },
-  { key: "fuel", label: "Gorivo", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice", "najam"],
+    scope: ["kamperi", "e-skuteri", "e-bicikli", "najam"] },
+  { key: "fuel", label: "Gorivo", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "najam"],
     options: ["Dizel","Benzin"].map(v) },
-  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "mobilne-kucice", "e-skuteri", "e-bicikli", "najam"],
+  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "e-skuteri", "e-bicikli", "najam"],
     options: [v("Ručni"), v("Automatski")] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 300, step: 5, storage: "column", group: "Motor",
-    scope: ["kamperi", "mobilne-kucice", "e-skuteri", "e-bicikli", "najam"] },
+    scope: ["kamperi", "e-skuteri", "e-bicikli", "najam"] },
 
   // Motor plovila — samo plovila (domenska analiza)
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
@@ -1431,11 +1431,13 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     options: [
       { value: "servisna", label: "Servisna evidencija" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
-    ] },
+    ],
+    // ⚠️ Karlo 26.08.2026: Vlasništvo se NE prikazuje kod mobilnih kućica.
+    scope: ["kamperi", "kamp-prikolice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
   // ⚠️ Grupa "Ostalo" (ne "Povijest") — PROSTI_CAS nema rubriku Povijest, pa bi
   // je ovo polje samo za sebe stvorilo.
   { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo" },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"] },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
   { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
