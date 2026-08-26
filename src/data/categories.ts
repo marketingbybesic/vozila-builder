@@ -527,6 +527,11 @@ export function showsModelField(categorySlug: string, subcategory?: string): boo
   if (categorySlug === "prosti-cas" && (subcategory === "kamperi" || subcategory === "kamp-prikolice" || subcategory === "mobilne-kucice" ||
       subcategory === "moduli-za-kamper" || subcategory === "satorske-prikolice" ||
       subcategory === "krovni-satori" || subcategory === "najam")) return false;
+  // ⚠️ Karlo 26.08.2026: E-romobil nema izbornik Modela — u Motu (slug
+  // `e-skuter`) i u Slobodnom vremenu (`e-skuteri`), jer rubrika mora biti
+  // identična na obje lokacije.
+  if (categorySlug === "moto" && subcategory === "e-skuter") return false;
+  if (categorySlug === "prosti-cas" && subcategory === "e-skuteri") return false;
   return true;
 }
 
