@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -629,7 +629,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
-          {!showsModelField(category, subcategory) ? null : modelOptions.length > 0 ? (
+          {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
+          {!showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField label="Model" value={model} onChange={setModel} placeholder={make ? "npr. Golf, A4, X3..." : "Svi modeli"} />

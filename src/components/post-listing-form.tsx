@@ -24,7 +24,7 @@ import {
   COLORS,
   CONDITIONS,
 } from "@/lib/types";
-import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField } from "@/data/categories";
+import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField } from "@/data/categories";
 import { MODEL_NOT_LISTED, modelOptionsFor } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -902,7 +902,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 placeholder="Odaberi marku"
                 options={makeOptions}
               />
-              {!showsModelField(s.category, s.subcategory) ? null : modelOptions.length > 0 ? (
+              {/* ⚠️ Karlo 26.08.2026: kamioni — prodavač upisuje model slobodno. */}
+              {!showsModelField(s.category, s.subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(s.category, s.subcategory)) ? (
                 <div className="space-y-2">
                   <SelectField
                     label="Model"

@@ -505,6 +505,16 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  * prikazuje — kod tih vozila model nije podatak po kojem se pretražuje
  * (naziv izvedbe ide u opis). Vrijedi za sve tri forme + uređivanje.
  */
+/**
+ * ⚠️ Karlo 26.08.2026: kod KAMIONA model se UPISUJE slobodno (nadogradnje,
+ * varijante i tipovi šasije su previše raznoliki za popis), a prazno polje se
+ * u pretrazi čita kao "svi modeli". Popis modela u `makes-gospodarska-sub.ts`
+ * OSTAJE (koristi ga prikaz oglasa), samo se ne nudi kao padajući izbornik.
+ */
+export function freeTextModelField(categorySlug: string, subcategory?: string): boolean {
+  return categorySlug === "gospodarska" && subcategory === "kamioni";
+}
+
 export function showsModelField(categorySlug: string, subcategory?: string): boolean {
   if (categorySlug === "prosti-cas" && (subcategory === "kamperi" || subcategory === "kamp-prikolice" || subcategory === "mobilne-kucice" ||
       subcategory === "moduli-za-kamper" || subcategory === "satorske-prikolice" ||

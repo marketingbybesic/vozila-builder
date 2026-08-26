@@ -13,11 +13,11 @@ import {
 } from "@/lib/types";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
-import { getCategory, makesDbFor, makesForSub, showsModelField } from "@/data/categories";
+import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
-  MultiSelect, SelectField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
+  MultiSelect, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { FilterPanel } from "@/components/napredno/filter-panel";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -222,7 +222,11 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       </div>
 
       <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
-      {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && (
+      {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
+      {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (
+        <TextField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} placeholder="Svi modeli" />
+      )}
+      {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && !freeTextModelField(category, current.subcategory ?? "") && (
         <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
       )}
 
