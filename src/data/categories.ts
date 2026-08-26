@@ -507,7 +507,7 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  */
 /**
  * ⚠️ Karlo 26.08.2026: kod KAMIONA, AUTOBUSA, TERETNIH PRIKOLICA,
- * POLJOPRIVREDNIH STROJEVA, VILIČARA i ŠUMARSKIH STROJEVA model se
+ * POLJOPRIVREDNIH STROJEVA, VILIČARA, ŠUMARSKIH i KOMUNALNIH STROJEVA model se
  * UPISUJE slobodno (nadogradnje,
  * varijante i tipovi šasije su previše raznoliki za popis), a prazno polje se
  * u pretrazi čita kao "svi modeli". Popis modela u `makes-gospodarska-sub.ts`
@@ -519,7 +519,7 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   }
   if (categorySlug === "mehanizacija") {
     return subcategory === "poljoprivredni-strojevi" || subcategory === "vilicari" ||
-      subcategory === "sumarski-strojevi";
+      subcategory === "sumarski-strojevi" || subcategory === "komunalni-strojevi";
   }
   return false;
 }
