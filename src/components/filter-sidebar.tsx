@@ -6,7 +6,7 @@
  * Live: svaka promjena odmah ažurira URL (scroll:false).
  */
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, COLORS, CONDITIONS, SELLER_TYPES,
@@ -53,6 +53,8 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const [sviFilteri, setSviFilteri] = useState(false);
   /** Karlo 26.08.2026: je li Model polje fokusirano (tada je prazno za upis). */
   const [modelFocus, setModelFocus] = useState(false);
+  const [modelDraft, setModelDraft] = useState("");
+  const modelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * ⚠️ Karlo 13.08.2026 (st. 1): mobilni filtar nije pokazivao KOLIKO je
@@ -230,13 +232,23 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (
         <TextField
           label="Model"
-          /* ⚠️ Karlo 26.08.2026: prije klika u polju mora PISATI "Svi modeli"
-             (prava vrijednost, ne sivi placeholder). Na fokus se prazni da
-             korisnik odmah tipka, a na blur se vraća ako ništa nije upisano. */
-          value={modelFocus ? (current.model ?? "") : (current.model || SVI_MODELI)}
-          onChange={(v) => update({ model: v && v !== SVI_MODELI ? v : null })}
-          onFocus={() => setModelFocus(true)}
-          onBlur={() => setModelFocus(false)}
+          /* ⚠️ Karlo 26.08.2026: prije klika u polju PIŠE "Svi modeli" (prava
+             vrijednost, ne sivi placeholder); na fokus se isprazni za upis.
+             ⚠️ Tipkanje ide u LOKALNO stanje, a URL se ažurira tek 400 ms
+             nakon zadnjeg znaka — `update()` radi router.push, pa bi upis po
+             znaku remountao polje i gubio slova (uhvaćeno: "FH16" → "6"). */
+          value={modelFocus ? modelDraft : (current.model || SVI_MODELI)}
+          onChange={(v) => {
+            setModelDraft(v);
+            if (modelTimer.current) clearTimeout(modelTimer.current);
+            modelTimer.current = setTimeout(() => update({ model: v.trim() || null }), 400);
+          }}
+          onFocus={() => { setModelDraft(current.model ?? ""); setModelFocus(true); }}
+          onBlur={() => {
+            if (modelTimer.current) clearTimeout(modelTimer.current);
+            update({ model: modelDraft.trim() || null });
+            setModelFocus(false);
+          }}
         />
       )}
       {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && !freeTextModelField(category, current.subcategory ?? "") && (
