@@ -781,6 +781,14 @@ const MOTO_FIELDS: FilterField[] = [
   // "Garancija" je bila duplikat gornjeg osnovnog panela (TogglePill), a
   // "Oldtimer" je premješten u rubriku "Dodatne opcije".
   // Karlo 27.07: iz grupe "Ostalo" izbačeni "Tip ponude" i "Na zalihi".
+  // ⚠️ Karlo 26.08.2026 (screenshot 23:47 "Fali tip ponude iznad stanje vozila"):
+  // VRAĆEN, ali SAMO za E-romobil — u ostatku Mota ostaje izbačen po uputi od
+  // 27.07. Renderira ga ručni MultiSelect na vrhu napredne forme (iznad "Stanje
+  // vozila"); iz sheme se ne crta (`dynamicFields` izuzima offerType), pa ovaj
+  // zapis služi kao uvjet vidljivosti, kao i u prosti-cas rubrikama.
+  { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
+    scope: ["e-skuter"],
+    options: [v("prodaja"), v("najam")] },
   { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije",
     scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"] },
 
