@@ -653,7 +653,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         )}
         <div className="grid sm:grid-cols-2 gap-3">
           <TogglePill on={showWithoutPrice} onClick={() => setShowWithoutPrice((s) => !s)} label="Prikaži oglase bez cijene" />
-          <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
+          {/* ⚠️ Karlo 26.08.2026: mobilne kućice nemaju Garanciju — gumb je ručni
+              (izvan sheme), pa ga se mora ovdje uvjetovati, inače ostane vidljiv
+              iako je polje maknuto iz `PROSTI_CAS_FIELDS`. */}
+          {filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
+            <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
+          )}
         </div>
       </Panel>
 
