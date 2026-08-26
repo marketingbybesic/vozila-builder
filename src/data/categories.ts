@@ -532,6 +532,9 @@ export function showsModelField(categorySlug: string, subcategory?: string): boo
   // identična na obje lokacije.
   if (categorySlug === "moto" && subcategory === "e-skuter") return false;
   if (categorySlug === "prosti-cas" && subcategory === "e-skuteri") return false;
+  // ⚠️ Karlo 26.08.2026 (st. 15): isto i za E-bicikl, na obje lokacije.
+  if (categorySlug === "moto" && subcategory === "e-bicikl") return false;
+  if (categorySlug === "prosti-cas" && subcategory === "e-bicikli") return false;
   return true;
 }
 

@@ -693,31 +693,31 @@ const MOTO_FIELDS: FilterField[] = [
 
   // Karlo 27.07: obujam do 1500 cm³, snaga do 112 kW (ljestvice u MOTO_ENGINE_STEPS /
   // MOTO_POWER_STEPS ispod — Od/Do izbornik koristi njih, ne linearni step).
-  // ⚠️ Karlo 26.08.2026: E-romobil (moto/e-skuter) NEMA rubriku Motor,
-  // Stil ni Dodatne opcije. Polja su bila bez `scope` (= svugdje u Motu),
-  // pa se e-skuter izuzima nabrajanjem OSTALIH podkategorija.
+  // ⚠️ Karlo 26.08.2026: E-romobil (`e-skuter`) i E-bicikl (`e-bicikl`) NEMAJU
+  // rubrike Motor ni Dodatne opcije (E-romobil ni Stil). Polja su bila bez
+  // `scope` (= svugdje u Motu), pa se obje izuzimaju nabrajanjem OSTALIH.
   { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 1500, step: 50, storage: "column", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"] },
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 112, step: 1, storage: "column", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"] },
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"] },
   { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [v("Benzin"), v("Električni")] },
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [v("Ručni"), v("Automatski")] },
   { key: "cylinders", label: "Cilindri", type: "select", storage: "attr", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [1,2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })) },
   { key: "stroke", label: "Takt", type: "select", storage: "attr", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [
       { value: "2T", label: "2-taktni" },
       { value: "4T", label: "4-taktni" },
       { value: "ev", label: "Električni" },
     ] },
   { key: "drivetrain", label: "Prijenos", type: "select", storage: "attr", group: "Motor",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [
       { value: "lanac", label: "Lanac" },
       { value: "kardan", label: "Kardan" },
@@ -752,7 +752,7 @@ const MOTO_FIELDS: FilterField[] = [
   // "DODATNE OPCIJE" — ujednačeno s nazivom rubrike.
   { key: "motoOptions", label: "Dodatne opcije", type: "multi", storage: "attr", group: "Dodatne opcije",
     // ⚠️ Karlo 26.08.2026: rubrika Dodatne opcije maknuta iz E-romobila.
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"],
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"],
     options: [
       { value: "abs", label: "ABS" },
       { value: "el-ovjes", label: "Električno podesiv ovjes" },
@@ -782,7 +782,7 @@ const MOTO_FIELDS: FilterField[] = [
   // "Oldtimer" je premješten u rubriku "Dodatne opcije".
   // Karlo 27.07: iz grupe "Ostalo" izbačeni "Tip ponude" i "Na zalihi".
   { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije",
-    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-bicikl", "e-moto", "najam", "moto-ostalo"] },
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"] },
 
   // Karlo 30.07: nova rubrika "Stanje vozila" (motocikl/skuter/ATV — sve podkat.).
   ...VEHICLE_STATE_FIELDS,
@@ -1377,19 +1377,20 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 
   // Motor kamper — samo kamperi/mobilne (domenska analiza)
   { key: "km", label: "Kilometri", type: "range", unit: "km", min: 0, max: 500000, step: 5000, storage: "column", group: "Motor",
-    scope: ["kamperi", "e-bicikli", "najam"] },
-  // ⚠️ Karlo 26.08.2026: E-romobil nema rubriku Motor, ali Kilometri ostaju —
-  // u Motu su na vrhu (COMMON_KM, bez grupe), pa je ovdje ista, negrupirana kopija.
+    scope: ["kamperi", "najam"] },
+  // ⚠️ Karlo 26.08.2026: E-romobil i E-bicikl nemaju rubriku Motor, ali Kilometri
+  // ostaju — u Motu su na vrhu (COMMON_KM, bez grupe), pa je ovdje ista,
+  // negrupirana kopija.
   { key: "km", label: "Kilometri", type: "range", unit: "km", min: 0, max: 500000, step: 5000, storage: "column",
-    scope: ["e-skuteri"] },
+    scope: ["e-skuteri", "e-bicikli"] },
   { key: "fuel", label: "Gorivo", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "najam"],
     options: ["Dizel","Benzin"].map(v) },
   // ⚠️ Karlo 26.08.2026: "e-skuteri" maknut — E-romobil nema rubriku Motor.
-  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "e-bicikli", "najam"],
+  { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor", scope: ["kamperi", "najam"],
     options: [v("Ručni"), v("Automatski")] },
   // ⚠️ Karlo 26.08.2026: "e-skuteri" maknut — E-romobil nema rubriku Motor.
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 300, step: 5, storage: "column", group: "Motor",
-    scope: ["kamperi", "e-bicikli", "najam"] },
+    scope: ["kamperi", "najam"] },
 
   // Motor plovila — samo plovila (domenska analiza)
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
@@ -1479,40 +1480,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // "e-skuteri" da ne procure na kampere/plovila.
   // ⚠️ Karlo 26.08.2026: Stil maknut iz E-romobila (isto kao u Motu) — polje je
   // bilo isključivo za "e-skuteri", pa je uklonjeno u cijelosti.
-  { key: "engineCc", label: "Obujam motora", type: "range", unit: "cm³", min: 0, max: 1500, step: 50, storage: "column", group: "Motor", scope: ["e-bicikli"] },
-  { key: "cylinders", label: "Cilindri", type: "select", storage: "attr", group: "Motor",
-    options: [1,2,3,4,5,6].map((n) => ({ value: String(n), label: `${n}` })), scope: ["e-bicikli"] },
-  { key: "stroke", label: "Takt", type: "select", storage: "attr", group: "Motor",
-    options: [
-      { value: "2T", label: "2-taktni" },
-      { value: "4T", label: "4-taktni" },
-      { value: "ev", label: "Električni" },
-    ], scope: ["e-bicikli"] },
-  { key: "drivetrain", label: "Prijenos", type: "select", storage: "attr", group: "Motor",
-    options: [
-      { value: "lanac", label: "Lanac" },
-      { value: "kardan", label: "Kardan" },
-      { value: "remen", label: "Remen" },
-      { value: "direktan", label: "Direktan" },
-    ], scope: ["e-bicikli"] },
   { key: "maxSpeedEv", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 150, step: 5,
     storage: "attr", group: "Električna", scope: ["e-skuteri", "e-bicikli"] },
   { key: "color", label: "Boja", type: "multi", storage: "column", group: "Boja",
     options: ["Crna","Bijela","Crvena","Plava","Zelena","Žuta","Narančasta","Siva","Srebrna"].map(v), scope: ["e-skuteri", "e-bicikli"] },
-  { key: "motoOptions", label: "Dodatne opcije", type: "multi", storage: "attr", group: "Dodatne opcije",
-    options: [
-      { value: "abs", label: "ABS" },
-      { value: "el-ovjes", label: "Električno podesiv ovjes" },
-      { value: "tempomat", label: "Tempomat" },
-      { value: "navigacija", label: "Navigacija" },
-      { value: "led-svjetla", label: "LED svjetla" },
-      { value: "grijane-rucke", label: "Grijane ručke" },
-      { value: "vjetrobran", label: "Vjetrobran" },
-      { value: "kofer", label: "Bočni kuferi" },
-      { value: "quickshifter", label: "Quickshifter" },
-      { value: "zamjena", label: "Moguća zamjena" },
-    ], scope: ["e-bicikli"] },
-  { key: "oldtimer", label: "Oldtimer", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["e-bicikli"] },
   // E-romobil koristi moto nazive polja (Prikaz u kvaru / Prikaz oštećenih) —
   // rubrika mora izgledati identično kao u Motu.
   // ⚠️ Karlo 26.08.2026: Pogon maknut — E-romobil nema rubriku Motor.
@@ -1526,13 +1497,9 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // ⚠️ Karlo 25.08.2026: E-bicikli u Slobodnom vremenu = ISTA rubrika kao
   // moto/e-bicikl (dvije lokacije, isti sadržaj). Polja preslikana iz
   // MOTO_FIELDS sa scope samo "e-bicikli".
-  
+  // ⚠️ Karlo 26.08.2026 (st. 15): rubrike Motor i Dodatne opcije maknute s OBJE
+  // lokacije, pa su preslikana polja uklonjena — ostaju samo ova ispod.
   ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-bicikli"] })),
-  // E-bicikli: moto nazivi polja + kilometraža (rubrika mora biti ista kao
-  // moto/e-bicikl).
-  { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor", scope: ["e-bicikli"],
-    options: ["Dizel","Benzin"].map(v) },
-  
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
