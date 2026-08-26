@@ -1425,7 +1425,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // Ostalo (domenska analiza)
   // Karlo 30.07: "Tip ponude" i "Garancija" izbrisani iz kampera i kamp prikolica.
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    scope: ["kamperi", "mobilne-kucice", "kamp-prikolice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "najam", "prosti-cas-ostalo"],
+    scope: ["kamperi", "mobilne-kucice", "kamp-prikolice", "moduli-za-kamper", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "najam", "prosti-cas-ostalo"],
     options: [v("prodaja"), v("najam")] },
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
     options: [
@@ -1433,11 +1433,11 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ],
     // ⚠️ Karlo 26.08.2026: Vlasništvo se NE prikazuje kod mobilnih kućica.
-    scope: ["kamperi", "kamp-prikolice", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
+    scope: ["kamperi", "kamp-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
   // ⚠️ Grupa "Ostalo" (ne "Povijest") — PROSTI_CAS nema rubriku Povijest, pa bi
   // je ovo polje samo za sebe stvorilo.
   { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo" },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"] },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["krovni-satori", "plovila", "kamping-oprema", "najam"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
   { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
