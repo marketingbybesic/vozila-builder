@@ -182,6 +182,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       // gornji osnovni panel već ima ručni TogglePill (isti a.warranty URL
       // ključ), pa se polje pojavljivalo dvaput. Samo prikaz; objava netaknuta.
       if (f.key === "warranty") return false;
+      // ⚠️ Karlo 26.08.2026 (screenshot 22:25): "Tip ponude" se pojavljivao
+      // DVAPUT — gore ručni MultiSelect ispod podkategorije + isti filtar iz
+      // sheme u rubrici "Ostalo". Donji (shemski) se ne renderira; gornji radi
+      // preko istog `a.offerType` ključa, pa filtriranje ostaje netaknuto.
+      if (f.key === "offerType") return false;
       if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
       if (f.searchable === false) return false;
       if (f.scope && f.scope.length > 0) {
