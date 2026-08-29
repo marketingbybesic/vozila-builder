@@ -690,6 +690,17 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "golf-car", label: "Golf car" },
       v("Trikolica"), v("Trike"),
     ] },
+  // ⚠️ Karlo 29.08.2026: "Tip e-bicikla" dodan u E-bicikl (Moto) — renderira se
+  // ODMAH ispod Podkategorije, isti mehanizam kao Stil (grupa "Vrsta").
+  // Identičan zapis kao prosti-cas/e-bicikli, da obje lokacije ostanu iste.
+  { key: "eBikeType", label: "Tip e-bicikla", type: "select", storage: "attr", group: "Vrsta", scope: ["e-bicikl"],
+    options: [
+      { value: "city", label: "Gradski" },
+      { value: "mtb", label: "MTB" },
+      { value: "trekking", label: "Trekking" },
+      { value: "cargo", label: "Cargo" },
+      { value: "sklopivi", label: "Sklopivi" },
+    ] },
 
   // Karlo 27.07: obujam do 1500 cm³, snaga do 112 kW (ljestvice u MOTO_ENGINE_STEPS /
   // MOTO_POWER_STEPS ispod — Od/Do izbornik koristi njih, ne linearni step).
