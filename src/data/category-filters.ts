@@ -1322,6 +1322,23 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // ostaje samo za podkategorije koje nemaju vlastiti "Tip".
   ...vrstaFromChildren("prosti-cas"),
 
+  // ⚠️ Karlo 29.08.2026 (st.18): "Predmet najma" — novi izbornik ISPOD
+  // Podkategorije za "Ponude za najam" (isti mehanizam kao "Stil"/"Tip
+  // e-bicikla" — grupa "Vrsta" renderira se tu automatski u sve 3 forme).
+  { key: "rentalItemType", label: "Predmet najma", type: "select", storage: "attr", group: "Vrsta",
+    scope: ["najam"],
+    options: [
+      { value: "kamperi", label: "Kamperi" },
+      { value: "kamp-prikolice", label: "Kamp prikolice" },
+      { value: "mobilne-kucice", label: "Mobilne kućice" },
+      { value: "moduli-za-kamper", label: "Moduli za kamper" },
+      { value: "satorske-prikolice", label: "Šatorske prikolice" },
+      { value: "krovni-satori", label: "Krovni šatori" },
+      { value: "e-bicikli", label: "E-bicikli" },
+      { value: "e-romobil", label: "E-romobil" },
+      { value: "ostalo", label: "Ostalo" },
+    ] },
+
   // Tip — po subkategoriji (domenska analiza)
   { key: "boatType", label: "Tip plovila", type: "multi", storage: "attr", group: "Vrsta", scope: ["plovila"],
     options: [
