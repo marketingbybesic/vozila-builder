@@ -1429,19 +1429,23 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "boatRegistered", label: "Registriran / upisan", type: "toggle", storage: "attr", group: "Motor", scope: ["plovila"] },
 
   // E-bicikli / e-skuteri (domenska analiza)
-  { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  // ⚠️ Karlo 29.08.2026 (st.17): E-bicikl izjednačen s Motom — do 20000 W, korak 100 (bilo 5000/50).
   // ⚠️ Karlo 29.08.2026 (st.16): E-romobil izjednačen s Motom — do 20000 W, korak 100.
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100, storage: "attr", group: "Električna", scope: ["e-skuteri"] },
-  { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 2000, step: 25, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  // ⚠️ Karlo 29.08.2026 (st.17): E-bicikl izjednačen s Motom — do 5000 Wh, korak 50 (bilo 2000/25).
   // ⚠️ Karlo 29.08.2026 (st.16): E-romobil izjednačen s Motom — do 5000 Wh, korak 50.
   { key: "batteryCapacityWh", label: "Kapacitet baterije", type: "range", unit: "Wh", min: 0, max: 5000, step: 50, storage: "attr", group: "Električna", scope: ["e-skuteri"] },
-  { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 200, step: 5, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 300, step: 5, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  // ⚠️ Karlo 29.08.2026 (st.17): E-bicikl izjednačen s Motom — do 300 km (bilo 200).
   // ⚠️ Karlo 29.08.2026 (st.16): E-romobil izjednačen s Motom — do 300 km.
   { key: "rangeKm", label: "Doseg", type: "range", unit: "km", min: 0, max: 300, step: 5, storage: "attr", group: "Električna", scope: ["e-skuteri"] },
-  { key: "maxSpeedKmh", label: "Maks. brzina", type: "range", unit: "km/h", min: 0, max: 80, step: 1, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
+  // ⚠️ Karlo 29.08.2026 (st.17): "maxSpeedKmh" (Maks. brzina do 80 km/h) UKLONJEN —
+  // duplirao je "maxSpeedEv" niže u nizu (isti naziv, Moto ima samo jedno polje).
   { key: "foldable", label: "Sklopivo", type: "toggle", storage: "attr", group: "Električna", scope: ["e-bicikli", "e-skuteri"] },
-  { key: "wheelSizeInch", label: "Promjer kotača", type: "select", storage: "attr", group: "Električna", scope: ["e-bicikli"],
-    options: [16,20,24,26,27.5,28,29].map((n) => ({ value: String(n), label: `${n}"` })) },
+  // ⚠️ Karlo 29.08.2026 (st.17): "wheelSizeInch" (Promjer kotača) IZBRISAN u
+  // cijelosti — Moto ga nikad nije imao, Karlo ga eksplicitno maknuo s oba mjesta.
 
   // Udobnost (domenska analiza)
   { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema", "najam"] },
@@ -1480,23 +1484,23 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ],
     // ⚠️ Karlo 26.08.2026: Vlasništvo se NE prikazuje kod mobilnih kućica.
-    scope: ["kamperi", "kamp-prikolice", "plovila", "e-bicikli", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
-  // ⚠️ Karlo 29.08.2026 (st.16): E-romobil izjednačen s Motom — iste 3 opcije
-  // i grupa "Povijest" (Moto tu rubriku ima, prosti-cas inače ne).
+    scope: ["kamperi", "kamp-prikolice", "plovila", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
+  // ⚠️ Karlo 29.08.2026 (st.16/17): E-romobil i E-bicikl izjednačeni s Motom —
+  // iste 3 opcije i grupa "Povijest" (Moto tu rubriku ima, prosti-cas inače ne).
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
     options: [
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
       { value: "garazirano", label: "Garažirano" },
     ],
-    scope: ["e-skuteri"] },
+    scope: ["e-skuteri", "e-bicikli"] },
   // ⚠️ Grupa "Ostalo" (ne "Povijest") — PROSTI_CAS nema rubriku Povijest, pa bi
   // je ovo polje samo za sebe stvorilo. Karlo 29.08.2026 (st.16): E-romobil
   // izuzet iz ovog popisa — izjednačen s Motom (grupa "Povijest") u zapisu ispod.
   { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo",
     scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice",
-      "krovni-satori", "plovila", "e-bicikli", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
-  { ...NUM_OWNERS_FIELD, shared: false, group: "Povijest", scope: ["e-skuteri"] },
+      "krovni-satori", "plovila", "kamping-oprema", "najam", "prosti-cas-ostalo"] },
+  { ...NUM_OWNERS_FIELD, shared: false, group: "Povijest", scope: ["e-skuteri", "e-bicikli"] },
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["plovila", "kamping-oprema", "najam"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
   { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,
