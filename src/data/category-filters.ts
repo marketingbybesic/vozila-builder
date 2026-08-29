@@ -1348,14 +1348,15 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     ] },
 
   // Tip — po subkategoriji (domenska analiza)
+  // ⚠️ Karlo 29.08.2026 (st.22): lista svedena na točno ovih 5 — Gliser,
+  // Kabinski, Jahta i Radni brod maknuti.
   { key: "boatType", label: "Tip plovila", type: "multi", storage: "attr", group: "Vrsta", scope: ["plovila"],
     options: [
-      { value: "gliser", label: "Gliser" },
-      { value: "jedrilica", label: "Jedrilica" },
-      { value: "gumenjak", label: "Gumenjak" },
-      { value: "kabinski", label: "Kabinski" },
-      { value: "jahta", label: "Jahta" },
-      { value: "radni", label: "Radni brod" },
+      { value: "motorni", label: "Motorni" },
+      { value: "jedrilice", label: "Jedrilice" },
+      { value: "gumenjaci", label: "Gumenjaci" },
+      { value: "jetski", label: "Jetski" },
+      { value: "vanbrodski-motori", label: "Vanbrodski motori" },
     ] },
   // Karlo 30.07: "Raspored kampera" → "Tip kampera", proširena lista.
   { key: "camperLayout", label: "Tip kampera", type: "multi", storage: "attr", group: "Vrsta", scope: ["kamperi"],
