@@ -434,7 +434,9 @@ export const ADVANCED_SUBCATEGORIES: Record<string, string[]> = {
   // Moto/ATV otvarao ispravno. To je bio JEDINI uzrok razlike.
   gospodarska: ["dostavna", "kamioni", "prikolice", "utv"],
   mehanizacija: ["gradevinski-strojevi", "poljoprivredni-strojevi", "vilicari"],
-  "prosti-cas": ["kamperi", "kamp-prikolice"],
+  // ⚠️ Karlo 29.08.2026 (st.21): "plovila" dodan — klik je vodio ravno na
+  // /oglasi umjesto na naprednu pretragu.
+  "prosti-cas": ["kamperi", "kamp-prikolice", "plovila"],
   dijelovi: [],
 };
 
