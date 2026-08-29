@@ -3,6 +3,9 @@
 // "moduli-za-kamper" i "satorske-prikolice"; ostale (plovila, kamping oprema,
 // e-bicikli…) dijele starter popis kategorije dok Karlo ne pošalje njihove liste.
 import type { CarMake } from "@/lib/types";
+// Karlo 29.08.2026 (st.19): "Ponude za najam" treba SVE marke od 8 rubrika
+// spojene na jedno mjesto — uvezene odavde radi PROSTI_CAS_NAJAM_MAKES niže.
+import { EROMOBIL_MAKES, EBICIKL_MAKES } from "./makes-moto";
 
 const M = (slug: string, name: string, country: string, models: string[] = []): CarMake => ({
   slug, name, country, models,
@@ -449,4 +452,34 @@ const KROVNI_SATORI_RAW: CarMake[] = [
 export const PROSTI_CAS_KROVNI_SATORI_MAKES: CarMake[] = [
   ...sortHr(KROVNI_SATORI_RAW.filter((m) => m.slug !== "ostalo")),
   ...KROVNI_SATORI_RAW.filter((m) => m.slug === "ostalo"),
+];
+
+/**
+ * Ponude za najam — Karlo 29.08.2026: SVE marke od 8 rubrika (kamperi, kamp
+ * prikolice, mobilne kućice, moduli za kamper, šatorske prikolice, krovni
+ * šatori, e-bicikli, e-romobil) spojene na jedno mjesto, bez duplikata.
+ * Kod istog sluga u dvije liste zadržava se PRVI nailazak (redoslijed gore).
+ */
+const NAJAM_SOURCE_LISTS: CarMake[][] = [
+  PROSTI_CAS_KAMPERI_MAKES,
+  PROSTI_CAS_KAMP_PRIKOLICE_MAKES,
+  PROSTI_CAS_MOBILNE_KUCICE_MAKES,
+  PROSTI_CAS_MODULI_MAKES,
+  PROSTI_CAS_SATORSKE_MAKES,
+  PROSTI_CAS_KROVNI_SATORI_MAKES,
+  EBICIKL_MAKES,
+  EROMOBIL_MAKES,
+];
+const NAJAM_MERGED: CarMake[] = [];
+const najamSeen = new Set<string>();
+for (const list of NAJAM_SOURCE_LISTS) {
+  for (const m of list) {
+    if (m.slug === "ostalo" || najamSeen.has(m.slug)) continue;
+    najamSeen.add(m.slug);
+    NAJAM_MERGED.push(m);
+  }
+}
+export const PROSTI_CAS_NAJAM_MAKES: CarMake[] = [
+  ...sortHr(NAJAM_MERGED),
+  M("ostalo", "Ostalo", "—"),
 ];

@@ -3,7 +3,7 @@ import { MAKES as AUTO_MAKES } from "./makes";
 import { MOTO_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES, EROMOBIL_MAKES, EBICIKL_MAKES } from "./makes-moto";
 import { GOSPODARSKA_MAKES } from "./makes-gospodarska";
 import { ATV_MAKES, UTV_MAKES } from "./makes-atv";
-import { PROSTI_CAS_KAMPERI_MAKES, PROSTI_CAS_KAMP_PRIKOLICE_MAKES, PROSTI_CAS_MOBILNE_KUCICE_MAKES, PROSTI_CAS_MODULI_MAKES, PROSTI_CAS_SATORSKE_MAKES, PROSTI_CAS_KROVNI_SATORI_MAKES } from "./makes-prosti-cas";
+import { PROSTI_CAS_KAMPERI_MAKES, PROSTI_CAS_KAMP_PRIKOLICE_MAKES, PROSTI_CAS_MOBILNE_KUCICE_MAKES, PROSTI_CAS_MODULI_MAKES, PROSTI_CAS_SATORSKE_MAKES, PROSTI_CAS_KROVNI_SATORI_MAKES, PROSTI_CAS_NAJAM_MAKES } from "./makes-prosti-cas";
 import {
   GOSPODARSKA_DOSTAVNA_MAKES,
   GOSPODARSKA_KAMIONI_MAKES,
@@ -548,9 +548,11 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "prosti-cas" && subcategory === "kamperi") return PROSTI_CAS_KAMPERI_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "kamp-prikolice") return PROSTI_CAS_KAMP_PRIKOLICE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "mobilne-kucice") return PROSTI_CAS_MOBILNE_KUCICE_MAKES;
-  // Karlo 25.08.2026: "Ponude za najam" u Slobodnom vremenu = iste postavke
-  // kao mobilne kućice (marke, polja, bez Modela).
-  if (categorySlug === "prosti-cas" && subcategory === "najam") return PROSTI_CAS_MOBILNE_KUCICE_MAKES;
+  // ⚠️ Karlo 29.08.2026 (st.19): "Ponude za najam" u Slobodnom vremenu — marke
+  // su spoj svih 8 rubrika (kamperi/kamp prikolice/mobilne kućice/moduli za
+  // kamper/šatorske prikolice/krovni šatori/e-bicikli/e-romobil), ne samo
+  // mobilnih kućica kao prije. Polja i "bez Modela" ostaju nepromijenjeni.
+  if (categorySlug === "prosti-cas" && subcategory === "najam") return PROSTI_CAS_NAJAM_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "moduli-za-kamper") return PROSTI_CAS_MODULI_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "satorske-prikolice") return PROSTI_CAS_SATORSKE_MAKES;
   if (categorySlug === "prosti-cas" && subcategory === "krovni-satori") return PROSTI_CAS_KROVNI_SATORI_MAKES;
