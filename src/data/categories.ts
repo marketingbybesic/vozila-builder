@@ -522,7 +522,21 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // Karlo 26.08.2026: nakon građevinskih, SVE rubrike mehanizacije imaju
   // slobodan upis — jednostavnije od nabrajanja svih pet.
   if (categorySlug === "mehanizacija") return true;
+  // ⚠️ Karlo 30.08.2026 (st.23): PLOVILA — klijent sam upisuje marku i model,
+  // bez ponuđenih limitiranih popisa (previše proizvođača/varijanti da bi
+  // fiksni popis pokrio sve).
+  if (categorySlug === "prosti-cas" && subcategory === "plovila") return true;
   return false;
+}
+
+/**
+ * ⚠️ Karlo 30.08.2026 (st.23): PLOVILA — Marka je slobodan upis, ne padajući
+ * izbornik iz fiksnog popisa. Isti obrazac kao freeTextModelField, ali za
+ * Marku (do sada nijedna rubrika nije tražila slobodnu marku — sve ostale
+ * i dalje biraju iz popisa da oglas ostane dohvatljiv kroz filtar marke).
+ */
+export function freeTextMakeField(categorySlug: string, subcategory?: string): boolean {
+  return categorySlug === "prosti-cas" && subcategory === "plovila";
 }
 
 export function showsModelField(categorySlug: string, subcategory?: string): boolean {

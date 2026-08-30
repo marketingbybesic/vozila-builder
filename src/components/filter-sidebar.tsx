@@ -13,7 +13,7 @@ import {
 } from "@/lib/types";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
-import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField } from "@/data/categories";
+import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
@@ -28,6 +28,7 @@ const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1990 + 1 }, (_, i) => YEAR_NOW - i);
 
 const SVI_MODELI = "Svi modeli";
+const SVE_MARKE = "Sve marke";
 
 const toOpts = (arr: readonly string[]): Opt[] => arr.map((v) => ({ value: v, label: v }));
 
@@ -55,6 +56,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const [modelFocus, setModelFocus] = useState(false);
   const [modelDraft, setModelDraft] = useState("");
   const modelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Karlo 30.08.2026 (st.23): isti obrazac za Marka (plovila — slobodan upis). */
+  const [makeFocus, setMakeFocus] = useState(false);
+  const [makeDraft, setMakeDraft] = useState("");
+  const makeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * ⚠️ Karlo 13.08.2026 (st. 1): mobilni filtar nije pokazivao KOLIKO je
@@ -241,7 +246,28 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
       </div>
 
-      <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
+      {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
+          ponuđenog fiksnog popisa. Isti debounce obrazac kao Model (upis po
+          znaku bi remountao polje i gubio slova — vidi komentar niže). */}
+      {freeTextMakeField(category, current.subcategory ?? "") ? (
+        <TextField
+          label="Marka"
+          value={makeFocus ? makeDraft : (current.make || SVE_MARKE)}
+          onChange={(v) => {
+            setMakeDraft(v);
+            if (makeTimer.current) clearTimeout(makeTimer.current);
+            makeTimer.current = setTimeout(() => update({ make: v.trim() || null, model: null }), 400);
+          }}
+          onFocus={() => { setMakeDraft(current.make ?? ""); setMakeFocus(true); }}
+          onBlur={() => {
+            if (makeTimer.current) clearTimeout(makeTimer.current);
+            update({ make: makeDraft.trim() || null, model: null });
+            setMakeFocus(false);
+          }}
+        />
+      ) : (
+        <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
+      )}
       {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
       {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (
         <TextField

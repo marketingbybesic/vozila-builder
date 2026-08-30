@@ -216,7 +216,11 @@ export function applyFilters(
     }
     if (f.category && l.category !== f.category) return false;
     if (f.subcategory && l.subcategory !== f.subcategory) return false;
-    if (f.make && slugify(l.make) !== f.make) return false;
+    // ⚠️ Karlo 30.08.2026 (st.23): `f.make` sad može doći iz slobodnog upisa
+    // (Plovila) umjesto dropdowna — slugify na OBJE strane drži usporedbu
+    // ispravnom bez obzira na velika slova/dijakritike u upisanom tekstu.
+    // Idempotentno za postojeće dropdown vrijednosti (već su slugovi).
+    if (f.make && slugify(l.make) !== slugify(f.make)) return false;
     // ⚠️ Karlo 12.08.2026: "Modela nema na listi" u PRETRAZI znači "oglasi čiji
     // model nije među poznatima za tu marku" — doslovna usporedba bi tražila
     // ključ `__other__` i uvijek vraćala 0 rezultata (mrtav filtar).

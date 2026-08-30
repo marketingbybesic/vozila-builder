@@ -14,7 +14,7 @@ import {
   FUEL_TYPES, TRANSMISSIONS, BODY_TYPES, DRIVES, COLORS, CONDITIONS,
   type Listing,
 } from "@/lib/types";
-import { getCategory, makesForSub, showsModelField } from "@/data/categories";
+import { getCategory, makesForSub, showsModelField, freeTextMakeField } from "@/data/categories";
 
 /**
  * Karlo 09.08. (st. 1): uređivanje mora nuditi i rubrike "Stanje vozila",
@@ -268,8 +268,14 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
               upiše bilo što i oglas postane nedohvatljiv kroz filtar marke.
               Sad dropdown iz popisa te (pod)kategorije, isti kao objava.
               Postojeća vrijednost izvan popisa ostaje kao prva opcija da se
-              stari oglas ne izgubi spremanjem. */}
-          {makeOpts.length > 0 ? (
+              stari oglas ne izgubi spremanjem.
+              ⚠️ Karlo 30.08.2026 (st.23): PLOVILA je izuzetak — Marka opet
+              slobodan upis. Sad je to sigurno jer filter.ts (lib/filter.ts)
+              slugificira OBJE strane usporedbe, pa slobodno upisan tekst
+              ipak pronađe oglas (uzrok 22.08. bloka je riješen). */}
+          {freeTextMakeField(listing.category, listing.subcategory ?? undefined) ? (
+            <TextField label="Marka" value={s.make} onChange={(v) => set("make", v)} />
+          ) : makeOpts.length > 0 ? (
             <SelectField label="Marka" value={s.make} onChange={(v) => set("make", v)} options={makeOpts} placeholder="Odaberi marku" />
           ) : (
             <TextField label="Marka" value={s.make} onChange={(v) => set("make", v)} />

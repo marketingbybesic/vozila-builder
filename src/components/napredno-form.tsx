@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -43,6 +43,9 @@ const MOTO_POWER_STEPS = [7.5, 15, 22, 30, 37, 56, 75, 93, 112];
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1900 + 1 }, (_, i) => YEAR_NOW - i);
 const SVI_MODELI = "Svi modeli";
+// ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, isti obrazac
+// kao SVI_MODELI za free-text Model (kamioni/mehanizacija).
+const SVE_MARKE = "Sve marke";
 
 type AttrValue = string | string[] | boolean | undefined;
 
@@ -128,6 +131,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const [showMore, setShowMore] = useState(false);
   /** Karlo 26.08.2026: fokus na Model polju (kamioni/autobusi — slobodan upis). */
   const [modelFocus, setModelFocus] = useState(false);
+  /** Karlo 30.08.2026 (st.23): fokus na Marka polju (plovila — slobodan upis). */
+  const [makeFocus, setMakeFocus] = useState(false);
 
   const isAuto = category === "auto";
   const isMoto = category === "moto";
@@ -655,7 +660,20 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
+          {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
+              ponuđenog fiksnog popisa (isti obrazac kao free-text Model). */}
+          {freeTextMakeField(category, subcategory) ? (
+            <TextField
+              label="Marka"
+              value={!makeFocus && !make ? SVE_MARKE : make}
+              onChange={(v) => { const nv = v === SVE_MARKE ? "" : v; setMake(nv); setModel(""); }}
+              onFocus={() => setMakeFocus(true)}
+              onBlur={() => setMakeFocus(false)}
+              placeholder="npr. Jeanneau, Bavaria..."
+            />
+          ) : (
+            <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
+          )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
           {!showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
