@@ -17,7 +17,7 @@ import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelFie
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
-  MultiSelect, PillMultiSelect, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
+  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { FilterPanel } from "@/components/napredno/filter-panel";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -206,6 +206,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             values={arr(`a.${f.key}`)}
             onChange={(v) => setMulti(`a.${f.key}`, v)}
             options={f.options ?? []}
+            iconFor={(v) => BOAT_TYPE_ICON[v]}
           />
         ) : f.type === "multi" ? (
           <MultiSelect

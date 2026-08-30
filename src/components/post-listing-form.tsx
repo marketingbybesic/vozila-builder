@@ -30,7 +30,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  SelectField, MultiSelect, PillMultiSelect, NumberField, BodyTypePicker, MonthYearField,
+  SelectField, MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, NumberField, BodyTypePicker, MonthYearField,
   ColorPicker, CategoryCards, SubcategoryButtons, TogglePill, TextField, type Opt,
 } from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
@@ -751,6 +751,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
           values={multiValues}
           onChange={(v) => setAttr(f.key, v)}
           options={f.options ?? []}
+          iconFor={(v) => BOAT_TYPE_ICON[v]}
         />
       );
     }

@@ -27,7 +27,7 @@ import {
   Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
 import {
-  MultiSelect, PillMultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
+  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
   BodyTypePicker, CategoryTabs, type Opt,
 } from "@/components/napredno/controls";
 import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
@@ -503,6 +503,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           values={(attrs[f.key] as string[] | undefined) ?? []}
           onChange={(v) => setAttr(f.key, v)}
           options={f.options ?? []}
+          iconFor={(v) => BOAT_TYPE_ICON[v]}
         />
       );
     }

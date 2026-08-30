@@ -9,7 +9,7 @@
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
-  Tractor, Bike, Box, Disc3, type LucideIcon,
+  Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan, type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
@@ -17,6 +17,19 @@ import { AUTO_BODY_ICON } from "./body-icons";
  *  "Najpopularnije marke" / "Sve marke"). Renderira se kao nekliktabilna
  *  natuknica iznad opcije. Bez njega se sve ponaša kao i prije. */
 export type Opt = { value: string; label: string; header?: string };
+
+/**
+ * Karlo 30.08.2026: ikona po opciji za "Tip plovila" (PillMultiSelect).
+ * Lucide nema doslovnu ikonu za jetski/vanbrodski motor — najbliži vizualni
+ * ekvivalent (brzina / propeler), isto kao AUTO_BODY_ICON za karoserije.
+ */
+export const BOAT_TYPE_ICON: Record<string, LucideIcon> = {
+  motorni: Ship,
+  jedrilice: Sailboat,
+  gumenjaci: Waves,
+  jetski: Gauge,
+  "vanbrodski-motori": Fan,
+};
 
 /** Ikona može biti lucide ili naša SVG silueta — obje primaju `className`. */
 type IconComp = React.ComponentType<{ className?: string }>;
@@ -447,10 +460,12 @@ export function ColorPicker({
  * multiselect popise gdje se opcije žele vidjeti bez otvaranja.
  */
 export function PillMultiSelect({
-  label, required, optional, values, onChange, options,
+  label, required, optional, values, onChange, options, iconFor,
 }: {
   label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void;
   options: Opt[];
+  /** Karlo 30.08.2026: ikona po vrijednosti (npr. Tip plovila) — opcionalno. */
+  iconFor?: (value: string) => LucideIcon | undefined;
 }) {
   const toggle = (v: string) =>
     onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
@@ -464,6 +479,7 @@ export function PillMultiSelect({
       <div className="flex flex-col gap-1.5">
         {options.map((o) => {
           const active = values.includes(o.value);
+          const Icon = iconFor?.(o.value);
           return (
             <button
               key={o.value}
@@ -488,6 +504,9 @@ export function PillMultiSelect({
               >
                 {active && <Check className="size-3 text-white" strokeWidth={3} />}
               </span>
+              {Icon && (
+                <Icon className={"size-4 shrink-0 " + (active ? "text-[var(--color-accent-dark)]" : "text-[var(--color-ink-soft)]")} />
+              )}
               <span className="truncate text-[var(--color-ink)]">{o.label}</span>
             </button>
           );

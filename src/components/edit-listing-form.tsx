@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SelectField, NumberField, TextField, MultiSelect, PillMultiSelect, TogglePill } from "@/components/napredno/controls";
+import { SelectField, NumberField, TextField, MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, TogglePill } from "@/components/napredno/controls";
 import { Textarea } from "@/components/ui/input";
 import { updateListingAction, setListingStatusAction } from "@/actions/listings";
 import { getFilterDefs, type FilterField } from "@/data/category-filters";
@@ -247,7 +247,8 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
     if (f.key === "boatType") {
       return (
         <PillMultiSelect key={f.key} label={f.label} values={values}
-          onChange={(vs) => setAttr(f.key, vs)} options={f.options ?? []} />
+          onChange={(vs) => setAttr(f.key, vs)} options={f.options ?? []}
+          iconFor={(v) => BOAT_TYPE_ICON[v]} />
       );
     }
     return (
