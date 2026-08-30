@@ -1451,6 +1451,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "bez-motora", label: "Bez motora" },
     ] },
   { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"] },
+  // ⚠️ Karlo 30.08.2026 (st.24): "Snaga motora (kW)" — odvojen izbornik od
+  // HP-a iznad, podatak već postoji u bazi (power_kw kolona, isti stupac kao
+  // kod auta/kamperi) samo dosad nije bio ponuđen kao filtar za plovila.
+  { key: "powerKw", label: "Snaga motora (kW)", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor", scope: ["plovila"] },
   { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"] },
   { key: "hullMaterial", label: "Materijal trupa", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
     options: ["GRP","Aluminij","Drvo","Čelik","PVC"].map(v) },
