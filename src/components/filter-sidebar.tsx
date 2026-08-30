@@ -17,7 +17,7 @@ import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelFie
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
 import {
-  MultiSelect, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
+  MultiSelect, PillMultiSelect, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { FilterPanel } from "@/components/napredno/filter-panel";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -197,7 +197,17 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
 
       {/* Stil (moto) / Tip vozila (kamioni) — ODMAH ispod Podkategorije */}
       {vrstaFields.map((f) =>
-        f.type === "multi" ? (
+        // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih
+        // 5 opcija odmah vidljivo), ne padajući izbornik iza klika.
+        f.key === "boatType" ? (
+          <PillMultiSelect
+            key={f.key}
+            label={f.label}
+            values={arr(`a.${f.key}`)}
+            onChange={(v) => setMulti(`a.${f.key}`, v)}
+            options={f.options ?? []}
+          />
+        ) : f.type === "multi" ? (
           <MultiSelect
             key={f.key}
             label={f.label}

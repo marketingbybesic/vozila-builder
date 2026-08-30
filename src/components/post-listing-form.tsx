@@ -30,7 +30,7 @@ import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
-  SelectField, MultiSelect, NumberField, BodyTypePicker, MonthYearField,
+  SelectField, MultiSelect, PillMultiSelect, NumberField, BodyTypePicker, MonthYearField,
   ColorPicker, CategoryCards, SubcategoryButtons, TogglePill, TextField, type Opt,
 } from "@/components/napredno/controls";
 import { formatPrice, formatKm } from "@/lib/utils";
@@ -740,6 +740,20 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       : rawMulti != null && rawMulti !== ""
         ? [String(rawMulti)]
         : [];
+    // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih 5
+    // opcija odmah vidljivo), ne padajući izbornik iza klika.
+    if (f.key === "boatType") {
+      return (
+        <PillMultiSelect
+          key={f.key}
+          label={f.label}
+          required={req}
+          values={multiValues}
+          onChange={(v) => setAttr(f.key, v)}
+          options={f.options ?? []}
+        />
+      );
+    }
     return (
       <MultiSelect
         key={f.key}

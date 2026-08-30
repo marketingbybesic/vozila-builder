@@ -440,6 +440,59 @@ export function ColorPicker({
   );
 }
 
+/**
+ * Karlo 30.08.2026 (st.22a): "Tip plovila" mora biti nacrtan kao izbor
+ * (sve opcije odmah vidljive), ne padajući izbornik iza klika. Isti obrazac
+ * kao ColorPicker (grid pilova), samo bez swatcha — za kratke tekstualne
+ * multiselect popise gdje se opcije žele vidjeti bez otvaranja.
+ */
+export function PillMultiSelect({
+  label, required, optional, values, onChange, options,
+}: {
+  label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void;
+  options: Opt[];
+}) {
+  const toggle = (v: string) =>
+    onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  return (
+    <div>
+      {label && <Label required={required} optional={optional}>{label}</Label>}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        {options.map((o) => {
+          const active = values.includes(o.value);
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => toggle(o.value)}
+              aria-pressed={active}
+              className={
+                "flex items-center gap-2 px-3 h-11 rounded-xl border text-sm text-left transition-all " +
+                (active
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8 font-medium"
+                  : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+              }
+            >
+              <span
+                className={
+                  "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
+                  (active
+                    ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
+                    : "bg-[var(--color-accent)]/15")
+                }
+                style={active ? undefined : { borderColor: "color-mix(in oklab, var(--color-accent) 45%, transparent)" }}
+              >
+                {active && <Check className="size-3 text-white" strokeWidth={3} />}
+              </span>
+              <span className="truncate text-[var(--color-ink)]">{o.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Range as two compact selects (od / do) sharing a row. */
 export function RangeSelect({
   label, required, optional, unit, minValue, maxValue, onMin, onMax, steps, fmt, maxOnly,

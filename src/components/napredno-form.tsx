@@ -27,7 +27,7 @@ import {
   Wrench, CircleDot, Droplets, Scale, FileText,
 } from "lucide-react";
 import {
-  MultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
+  MultiSelect, PillMultiSelect, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
   BodyTypePicker, CategoryTabs, type Opt,
 } from "@/components/napredno/controls";
 import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
@@ -490,6 +490,19 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           value={(attrs[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
           placeholder={f.label}
+        />
+      );
+    }
+    // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih 5
+    // opcija odmah vidljivo), ne padajući izbornik iza klika.
+    if (f.key === "boatType") {
+      return (
+        <PillMultiSelect
+          key={f.key}
+          label={f.label}
+          values={(attrs[f.key] as string[] | undefined) ?? []}
+          onChange={(v) => setAttr(f.key, v)}
+          options={f.options ?? []}
         />
       );
     }

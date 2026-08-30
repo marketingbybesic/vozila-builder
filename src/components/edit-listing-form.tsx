@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SelectField, NumberField, TextField, MultiSelect, TogglePill } from "@/components/napredno/controls";
+import { SelectField, NumberField, TextField, MultiSelect, PillMultiSelect, TogglePill } from "@/components/napredno/controls";
 import { Textarea } from "@/components/ui/input";
 import { updateListingAction, setListingStatusAction } from "@/actions/listings";
 import { getFilterDefs, type FilterField } from "@/data/category-filters";
@@ -242,6 +242,14 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
     // upisan drugdje kao string srušio bi .map u MultiSelectu).
     const raw = attrs[f.key];
     const values = Array.isArray(raw) ? (raw as string[]) : raw != null && raw !== "" ? [String(raw)] : [];
+    // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih 5
+    // opcija odmah vidljivo), ne padajući izbornik iza klika.
+    if (f.key === "boatType") {
+      return (
+        <PillMultiSelect key={f.key} label={f.label} values={values}
+          onChange={(vs) => setAttr(f.key, vs)} options={f.options ?? []} />
+      );
+    }
     return (
       <MultiSelect key={f.key} label={f.label} values={values}
         onChange={(vs) => setAttr(f.key, vs)} options={f.options ?? []} placeholder="Odaberi" />
