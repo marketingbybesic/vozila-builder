@@ -457,7 +457,11 @@ export function PillMultiSelect({
   return (
     <div>
       {label && <Label required={required} optional={optional}>{label}</Label>}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+      {/* Karlo st. 22a: koristi se i u uskom sidebaru (280px kolona) i u
+          punoj naprednoj formi — grid-cols-2 tamo odsijeca dulje nazive
+          ("Vanbrodski motori"), pa je popis JEDNOSTUPAC (kratke liste,
+          5-ak stavki, nema razloga za dvostupčani grid). */}
+      <div className="flex flex-col gap-1.5">
         {options.map((o) => {
           const active = values.includes(o.value);
           return (
