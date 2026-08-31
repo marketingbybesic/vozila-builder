@@ -10,7 +10,8 @@ import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
   Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan,
-  Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets, type LucideIcon,
+  Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets,
+  House, Layers, Tent, TentTree, Zap, Backpack, CalendarDays, type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
@@ -896,11 +897,15 @@ export function SubcategoryButtons({
   );
 }
 
-/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS (Dijelovi i oprema — SubcategoryIconGrid). */
-const DIJELOVI_SUB_ICON: Record<string, LucideIcon> = {
+/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS i PROSTI_CAS_SUBS
+ * (SubcategoryIconGrid — Dijelovi i oprema, Slobodno vrijeme). */
+const SUB_ICON: Record<string, LucideIcon> = {
   wrench: Wrench, package: Package, speaker: Speaker, bike: Bike, truck: Truck,
   cone: Cone, wheat: Wheat, forklift: Forklift, settings2: Settings2,
   circledot: CircleDot, droplets: Droplets, box: Box,
+  caravan: Caravan, container: Container, house: House, layers: Layers,
+  tent: Tent, tenttree: TentTree, ship: Ship, zap: Zap, backpack: Backpack,
+  calendardays: CalendarDays,
 };
 
 /**
@@ -921,7 +926,7 @@ export function SubcategoryIconGrid({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       {options.map((o) => {
         const active = o.value === value;
-        const Icon = (o.icon && DIJELOVI_SUB_ICON[o.icon]) || Box;
+        const Icon = (o.icon && SUB_ICON[o.icon]) || Box;
         return (
           <button
             key={o.value}

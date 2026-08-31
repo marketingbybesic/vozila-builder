@@ -113,30 +113,31 @@ const MEHANIZACIJA_SUBS: Subcategory[] = [
 ];
 
 const PROSTI_CAS_SUBS: Subcategory[] = [
-  { slug: "kamperi", name: "Kamperi" },
-  { slug: "kamp-prikolice", name: "Kamp prikolice" },
-  { slug: "mobilne-kucice", name: "Mobilne kućice" },
-  { slug: "moduli-za-kamper", name: "Moduli za kamper" },
-  { slug: "satorske-prikolice", name: "Šatorske prikolice" },
+  { slug: "kamperi", name: "Kamperi", icon: "caravan" },
+  { slug: "kamp-prikolice", name: "Kamp prikolice", icon: "container" },
+  { slug: "mobilne-kucice", name: "Mobilne kućice", icon: "house" },
+  { slug: "moduli-za-kamper", name: "Moduli za kamper", icon: "layers" },
+  { slug: "satorske-prikolice", name: "Šatorske prikolice", icon: "tent" },
   // Karlo 25.08.2026: nova rubrika, postavljena 1:1 kao šatorske prikolice
   // (ista polja u shemi, vlastiti popis marki, bez polja "Model").
-  { slug: "krovni-satori", name: "Krovni šatori" },
+  { slug: "krovni-satori", name: "Krovni šatori", icon: "tenttree" },
   // ⚠️ Karlo 31.08.2026: "Plovila" vraćeno — st.25 (30.08.) ga je maknuo iz
   // pretrage/podkategorija, Karlo odmah zatražio povratak ("vrati kako je
   // bilo"). Ništa nije trebalo obnavljati — schema/marke/makesForSub i 22
   // aktivna oglasa nikad nisu ni bili dirani, samo ovaj zapis.
-  { slug: "plovila", name: "Plovila" },
-  { slug: "e-bicikli", name: "E-bicikli" },
+  { slug: "plovila", name: "Plovila", icon: "ship" },
+  { slug: "e-bicikli", name: "E-bicikli", icon: "bike" },
   // ⚠️ Karlo 25.08.2026: preimenovano "E-skuteri" → "E-romobil"; rubrika mora
   // biti IDENTIČNA onoj u Motu (moto/e-skuter) — ista polja, iste marke, isti
   // Model. SLUG ostaje "e-skuteri" (postojeći oglasi i linkovi).
-  { slug: "e-skuteri", name: "E-romobil" },
+  { slug: "e-skuteri", name: "E-romobil", icon: "zap" },
   // Karlo 30.07: "Kamping oprema" → "Oprema za kampere i kamping" + 2. nivo.
   // Jedina rubrika u SLOBODNOM VREMENU s djecom (ostale su ravne) — drill-down
   // radi isto kao u DIJELOVIMA (`subChildHref` → `a.vrsta=<slug>`).
   {
     slug: "kamping-oprema",
     name: "Oprema za kampere i kamping",
+    icon: "backpack",
     children: [
       { slug: "kamper-dijelovi-nadogradnje", name: "Dijelovi i nadogradnje za kampere" },
       { slug: "kamper-grijanje-plin", name: "Grijanje, hlađenje i plin" },
@@ -150,8 +151,8 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
   // Karlo 25.08.2026: "Ponude za najam" i u Slobodnom vremenu — ista rubrika
   // kao u Moto/Gospodarska/Mehanizacija (vlastiti oglasi, polja kao mobilne
   // kućice jer je to najbliža rubrika u kategoriji).
-  { slug: "najam", name: "Ponude za najam" },
-  { slug: "prosti-cas-ostalo", name: "Ostalo" },
+  { slug: "najam", name: "Ponude za najam", icon: "calendardays" },
+  { slug: "prosti-cas-ostalo", name: "Ostalo", icon: "box" },
 ];
 
 // DIJELOVI I OPREMA — 2-nivoa struktura (avto.net "Rezervni deli in oprema").

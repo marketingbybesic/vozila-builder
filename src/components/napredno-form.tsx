@@ -146,12 +146,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
   const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
-  /** Karlo 31.08.2026 (st. novi): Dijelovi i oprema — kad kategorija je
-   * odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti odabir
-   * podkategorije (ništa drugo). Nema "Sve podkategorije" — mora se
+  /** Karlo 31.08.2026: Dijelovi i oprema I Slobodno vrijeme — kad je
+   * kategorija odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti
+   * odabir podkategorije (ništa drugo). Nema "Sve podkategorije" — mora se
    * izabrati jedna prije nego se otvori ostatak forme. */
-  const isDijelovi = category === "dijelovi";
-  const needsDijeloviSubPick = isDijelovi && !subcategory;
+  const usesSubPickGrid = category === "dijelovi" || category === "prosti-cas";
+  const needsSubPick = usesSubPickGrid && !subcategory;
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -640,13 +640,14 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
       )}
 
-      {/* ⚠️ Karlo 31.08.2026: Dijelovi i oprema — dok podkategorija nije
-          odabrana, prikaži SAMO slikoviti odabir (ništa drugo iz forme).
-          Nema "Sve podkategorije" — jedna se MORA izabrati. Tek nakon
-          odabira otvara se ostatak forme, kao i za sve druge kategorije. */}
-      {needsDijeloviSubPick && categoryDef && (
+      {/* ⚠️ Karlo 31.08.2026: Dijelovi i oprema I Slobodno vrijeme — dok
+          podkategorija nije odabrana, prikaži SAMO slikoviti odabir (ništa
+          drugo iz forme). Nema "Sve podkategorije" — jedna se MORA izabrati.
+          Tek nakon odabira otvara se ostatak forme, kao i za sve druge
+          kategorije. */}
+      {needsSubPick && categoryDef && (
         <Panel>
-          <SectionHead icon={Wrench} title="Podkategorija" />
+          <SectionHead icon={ListFilter} title="Podkategorija" />
           <SubcategoryIconGrid
             options={categoryDef.subcategories.map((s) => ({ value: s.slug, label: s.name, icon: s.icon }))}
             value={subcategory}
@@ -659,7 +660,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </Panel>
       )}
 
-      {!needsDijeloviSubPick && (
+      {!needsSubPick && (
       <>
       {/* Chips pregled aktivnih filtera */}
       {activeChips.length > 0 && (
@@ -856,7 +857,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
       {/* ── Sticky CTA — skriven dok Dijelovi čeka odabir podkategorije
           (nema smisla "Prikaži N" bez podkategorije za tu kategoriju). ── */}
-      {!needsDijeloviSubPick && (
+      {!needsSubPick && (
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--color-line)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-3">
           {totalActive > 0 && (
