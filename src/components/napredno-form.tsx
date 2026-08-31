@@ -154,6 +154,16 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const usesSubPickGrid =
     category === "dijelovi" || category === "prosti-cas" || category === "moto" || category === "gospodarska" || category === "mehanizacija";
   const needsSubPick = usesSubPickGrid && !subcategory;
+  /** Karlo 31.08.2026 (st.36): Slobodno vrijeme → Oprema za kampere i kamping
+   * ide JOŠ jednu razinu dublje — kad je podkategorija odabrana ali "Vrsta"
+   * (djeca kamping-oprema) JOŠ NIJE, prikaži SAMO slikoviti odabir Vrste
+   * (isti mehanizam kao needsSubPick, jednu razinu niže). Nema "Sve vrste" —
+   * mora se izabrati jedna prije nego se otvori ostatak forme. */
+  const vrstaValue = attrs.vrsta;
+  // `a.vrsta` iz URL-a (npr. drill-down link) stiže kao GOLI string kad nema
+  // zareza (vidi parsing gore), ne kao niz — provjera mora pokriti oba oblika.
+  const hasVrsta = Array.isArray(vrstaValue) ? vrstaValue.length > 0 : Boolean(vrstaValue);
+  const needsVrstaPick = isKampingOprema && !hasVrsta;
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -662,7 +672,22 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </Panel>
       )}
 
-      {!needsSubPick && (
+      {/* ⚠️ Karlo 31.08.2026 (st.36): Oprema za kampere i kamping — jednu
+          razinu ispod podkategorije, isti mehanizam za "Vrsta" (djeca
+          kamping-oprema). Nema "Sve vrste" — jedna se MORA izabrati prije
+          nego se otvori ostatak forme. */}
+      {!needsSubPick && needsVrstaPick && vrstaGroup && (
+        <Panel>
+          <SectionHead icon={ListFilter} title="Vrsta" />
+          <SubcategoryIconGrid
+            options={(vrstaGroup.fields[0]?.options ?? []).map((o) => ({ value: o.value, label: o.label, icon: o.icon }))}
+            value={Array.isArray(vrstaValue) ? (vrstaValue[0] ?? "") : (vrstaValue as string | undefined) ?? ""}
+            onChange={(v) => setAttr("vrsta", [v])}
+          />
+        </Panel>
+      )}
+
+      {!needsSubPick && !needsVrstaPick && (
       <>
       {/* Chips pregled aktivnih filtera */}
       {activeChips.length > 0 && (
@@ -691,8 +716,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           />
         )}
         {/* Karlo 27.07: "Stil" (moto) / "Tip vozila" (kamioni) ide ODMAH ispod
-            podkategorije — grupa "Vrsta" renderirana ovdje, ne dolje uz Boje. */}
-        {vrstaGroup && renderDynGroup(vrstaGroup)}
+            podkategorije — grupa "Vrsta" renderirana ovdje, ne dolje uz Boje.
+            ⚠️ Karlo 31.08.2026 (st.36): kamping-oprema svoju "Vrsta" već bira
+            kroz slikoviti gate iznad (needsVrstaPick) — ovdje bi se ponovila
+            kao multi-select checkbox lista, pa se za nju preskače. */}
+        {vrstaGroup && !isKampingOprema && renderDynGroup(vrstaGroup)}
         {/* Tip ponude + Stanje vozila ODMAH ispod Podkategorije */}
         <div className="grid sm:grid-cols-2 gap-3">
           {/* ⚠️ Karlo 26.08.2026: "Tip ponude" je RUČNI MultiSelect (izvan sheme),
@@ -858,8 +886,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       )}
 
       {/* ── Sticky CTA — skriven dok Dijelovi čeka odabir podkategorije
-          (nema smisla "Prikaži N" bez podkategorije za tu kategoriju). ── */}
-      {!needsSubPick && (
+          (nema smisla "Prikaži N" bez podkategorije za tu kategoriju), i
+          dok kamping-oprema čeka odabir Vrste (st.36). ── */}
+      {!needsSubPick && !needsVrstaPick && (
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--color-line)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-3">
           {totalActive > 0 && (

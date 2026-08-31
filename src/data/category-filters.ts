@@ -37,7 +37,7 @@ export type FilterFieldType =
    */
   | "monthyear";
 
-export type FilterOption = { value: string; label: string };
+export type FilterOption = { value: string; label: string; icon?: string };
 
 /**
  * Karlo 31.07: podrubrika "Vrsta" je u SLOBODNOM VREMENU i DIJELOVIMA ponavljala
@@ -65,7 +65,7 @@ function vrstaFromChildren(categorySlug: string): FilterField[] {
       storage: "attr" as const,
       group: "Vrsta",
       scope: [sub.slug],
-      options: (sub.children ?? []).map((ch) => ({ value: ch.slug, label: ch.name })),
+      options: (sub.children ?? []).map((ch) => ({ value: ch.slug, label: ch.name, icon: ch.icon })),
     }));
 }
 
