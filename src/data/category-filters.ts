@@ -1441,24 +1441,12 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     scope: ["kamperi"] },
 
   // Motor plovila — samo plovila (domenska analiza)
+  // ⚠️ Karlo 31.08.2026: "Tip motora", "Snaga motora (kW)", "Materijal trupa"
+  // i "Registriran / upisan" maknuti u cijelosti — Karlo eksplicitno tražio.
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
     options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "engineType", label: "Tip motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
-    options: [
-      { value: "vanbrodski", label: "Vanbrodski" },
-      { value: "unutarbrodski", label: "Unutarbrodski (inboard)" },
-      { value: "z-pogon", label: "Z-pogon (sterndrive)" },
-      { value: "bez-motora", label: "Bez motora" },
-    ] },
   { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"] },
-  // ⚠️ Karlo 30.08.2026 (st.24): "Snaga motora (kW)" — odvojen izbornik od
-  // HP-a iznad, podatak već postoji u bazi (power_kw kolona, isti stupac kao
-  // kod auta/kamperi) samo dosad nije bio ponuđen kao filtar za plovila.
-  { key: "powerKw", label: "Snaga motora (kW)", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor", scope: ["plovila"] },
   { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"] },
-  { key: "hullMaterial", label: "Materijal trupa", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
-    options: ["GRP","Aluminij","Drvo","Čelik","PVC"].map(v) },
-  { key: "boatRegistered", label: "Registriran / upisan", type: "toggle", storage: "attr", group: "Motor", scope: ["plovila"] },
 
   // E-bicikli / e-skuteri (domenska analiza)
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
@@ -1480,30 +1468,29 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // cijelosti — Moto ga nikad nije imao, Karlo ga eksplicitno maknuo s oba mjesta.
 
   // Udobnost (domenska analiza)
-  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
   { key: "heating", label: "Grijanje", type: "select", storage: "attr", group: "Udobnost",
-    scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"],
+    scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"],
     options: [
       { value: "plin", label: "Plinsko" },
       { value: "dizel", label: "Dizelsko" },
       { value: "truma", label: "Truma" },
       { value: "webasto", label: "Webasto" },
     ] },
-  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
-  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "plovila", "kamping-oprema"] },
+  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
   // Karlo 30.07: "Mover" uklonjen — cijela rubrika Udobnost izbačena iz kamp prikolica.
-
-  // Plovila — navigacija (domenska analiza)
-  { key: "boatGps", label: "GPS / ploter", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["plovila"] },
-  { key: "autopilot", label: "Autopilot", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["plovila"] },
-  { key: "windlass", label: "Sidreno vitlo", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["plovila"] },
+  // ⚠️ Karlo 31.08.2026: "plovila" maknut iz svih Udobnost zapisa (cijela
+  // rubrika izbačena iz Plovila). Rubrika "Dodatne opcije" (GPS/ploter,
+  // Autopilot, Sidreno vitlo) bila je plovila-ekskluzivna — obrisana u
+  // cijelosti umjesto suženja scopea.
 
   // Ostalo (domenska analiza)
   // Karlo 30.07: "Tip ponude" i "Garancija" izbrisani iz kampera i kamp prikolica.
