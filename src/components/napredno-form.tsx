@@ -552,7 +552,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   ) : null;
 
   const motorSection =
-    hasField("engineCc") || hasField("powerKw") || hasField("fuel") || hasField("bodyType") ? (
+    // ⚠️ Karlo 31.08.2026: Plovila je izgubio cijelu Motor rubriku kad je
+    // powerKw maknut (st.26) — panel se gasio na hasField("powerKw") i sl.,
+    // ne znajući da generička "Motor" polja (Broj motora, Snaga HP, Radni
+    // sati) i dalje postoje i idu u isti panel preko motorRest niže.
+    hasField("engineCc") || hasField("powerKw") || hasField("fuel") || hasField("bodyType") || motorRest.length > 0 ? (
       <Panel>
         <SectionHead icon={Gauge} title={hasField("bodyType") ? "Motor i karoserija" : "Motor"} />
         {isGospodarska && bodyPicker}
