@@ -137,6 +137,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const isAuto = category === "auto";
   const isMoto = category === "moto";
   const isGospodarska = category === "gospodarska";
+  /** Karlo 31.08.2026 (st.26/27): "Auto dijelovi" (Dijelovi i oprema) dobiva
+   * svoje posebno ponašanje na više mjesta (Za marku, Stanje predmeta,
+   * skrivena Godina) — jedan zastavica umjesto ponovljene provjere. */
+  const isAutoDijelovi = category === "dijelovi" && subcategory === "auto-dijelovi";
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -156,7 +160,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
-    if (category === "dijelovi" && subcategory === "auto-dijelovi") return makeOptionsGrouped(list);
+    if (isAutoDijelovi) return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
@@ -666,7 +670,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje vozila" →
               "Stanje predmeta" (Novo/Polovno/Obnovljeno umjesto Rabljeno/Novo).
               Svugdje drugdje ostaje nepromijenjeno. */}
-          {category === "dijelovi" && subcategory === "auto-dijelovi" ? (
+          {isAutoDijelovi ? (
             <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
               options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
           ) : (
@@ -691,7 +695,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku"
               // (pojašnjava da bira marku VOZILA kojem dio odgovara, ne
               // proizvođača dijela).
-              label={category === "dijelovi" && subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
+              label={isAutoDijelovi ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
@@ -729,16 +733,20 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
       {/* ── 2. CIJENA, GODINA (+ km samo ako kategorija koristi km) ── */}
       <Panel>
-        <SectionHead icon={Tag} title={hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
+        {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
+            nema godinu proizvodnje kao vozilo), pa naslov postaje "Cijena". */}
+        <SectionHead icon={Tag} title={isAutoDijelovi ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
-          <div>
-            <Label>Godina</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <SelectField value={yearMin} onChange={setYearMin} placeholder="Od" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
-              <SelectField value={yearMax} onChange={setYearMax} placeholder="Do" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+          {!isAutoDijelovi && (
+            <div>
+              <Label>Godina</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <SelectField value={yearMin} onChange={setYearMin} placeholder="Od" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+                <SelectField value={yearMax} onChange={setYearMax} placeholder="Do" options={YEARS.map((y) => ({ value: String(y), label: String(y) }))} />
+              </div>
             </div>
-          </div>
+          )}
           {hasField("km") && (
             <RangeSelect label="Kilometraža" unit="km" minValue={kmMin} maxValue={kmMax} onMin={setKmMin} onMax={setKmMax} steps={KM_STEPS} />
           )}

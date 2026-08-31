@@ -106,6 +106,9 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const category = current.category ?? "auto";
   const categoryDef = getCategory(category === "" ? "auto" : category);
   const selectedMake = current.make ?? "";
+  /** Karlo 31.08.2026 (st.26/27): isto kao napredno-form.tsx — jedna zastavica
+   * za "Auto dijelovi" umjesto ponovljene provjere na više mjesta. */
+  const isAutoDijelovi = category === "dijelovi" && current.subcategory === "auto-dijelovi";
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
     // popise marki s avto.neta — override ispred popisa kategorije.
@@ -121,7 +124,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(current.subcategory ?? ""));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis →
     // grupe kao auto, ne plosnata lista.
-    if (category === "dijelovi" && current.subcategory === "auto-dijelovi") return makeOptionsGrouped(list);
+    if (isAutoDijelovi) return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: `current.subcategory` MORA biti u ovisnostima — bez
     // toga promjena podkategorije u sidebaru (skuter→moped) zadrži staru grupu
@@ -248,7 +251,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         )}
         {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
             predmeta" (Novo/Polovno/Obnovljeno). Svugdje drugdje nepromijenjeno. */}
-        {category === "dijelovi" && current.subcategory === "auto-dijelovi" ? (
+        {isAutoDijelovi ? (
           <MultiSelect label="Stanje predmeta" values={arr("condition")} onChange={(v) => setMulti("condition", v)}
             options={toOpts(["Novo", "Polovno", "Obnovljeno"])} placeholder="Sve" />
         ) : (
@@ -278,7 +281,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       ) : (
         <SelectField
           // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
-          label={category === "dijelovi" && current.subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
+          label={isAutoDijelovi ? "Za marku" : "Marka"}
           value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
       )}
       {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
@@ -309,7 +312,11 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       )}
 
       <RangeSelect label="Cijena (€)" unit="€" minValue={current.priceMin ?? ""} maxValue={current.priceMax ?? ""} onMin={(v) => update({ priceMin: v || null })} onMax={(v) => update({ priceMax: v || null })} steps={PRICE_STEPS} />
-      <RangeSelect label="Godina" minValue={current.yearMin ?? ""} maxValue={current.yearMax ?? ""} onMin={(v) => update({ yearMin: v || null })} onMax={(v) => update({ yearMax: v || null })} steps={YEARS} fmt={(n) => String(n)} />
+      {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
+          nema godinu proizvodnje kao vozilo). */}
+      {!isAutoDijelovi && (
+        <RangeSelect label="Godina" minValue={current.yearMin ?? ""} maxValue={current.yearMax ?? ""} onMin={(v) => update({ yearMin: v || null })} onMax={(v) => update({ yearMax: v || null })} steps={YEARS} fmt={(n) => String(n)} />
+      )}
       {hasField("km") && (
         <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
       )}

@@ -1573,18 +1573,25 @@ const DIJELOVI_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
   ...vrstaFromChildren("dijelovi"),
+  // ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — Tip dijela, Stanje dijela,
+  // Kompatibilno s i Količina maknuti; ostatak Dijelova (gume, felge,
+  // multimedija, ulja...) zadržava sva 4 polja.
   { key: "partType", label: "Tip dijela", type: "select", storage: "attr", group: "Detalji",
+    scope: ["auto-dodatna-oprema", "multimedija", "moto-dijelovi", "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve", "za-vilicare", "servisna-oprema", "gume", "ulja-tekucine", "dijelovi-ostalo"],
     options: [
       v("Karoserija"), v("Motor"), v("Mjenjač"), v("Kočnice"),
       v("Ovjes"), v("Elektronika"), v("Interijer"), v("Vanjski"),
       v("Rasvjeta"), v("Ispuh"), v("Filteri"),
     ] },
   { key: "condition2", label: "Stanje dijela", type: "select", storage: "attr", group: "Detalji",
+    scope: ["auto-dodatna-oprema", "multimedija", "moto-dijelovi", "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve", "za-vilicare", "servisna-oprema", "gume", "ulja-tekucine", "dijelovi-ostalo"],
     options: [v("Novo"), v("Rabljeno"), { value: "obnovljeno", label: "Obnovljeno" }] },
-  { key: "compatibleWith", label: "Kompatibilno s (marka/model)", type: "text", storage: "attr", group: "Detalji" },
+  { key: "compatibleWith", label: "Kompatibilno s (marka/model)", type: "text", storage: "attr", group: "Detalji",
+    scope: ["auto-dodatna-oprema", "multimedija", "moto-dijelovi", "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve", "za-vilicare", "servisna-oprema", "gume", "ulja-tekucine", "dijelovi-ostalo"] },
   { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji" },
   { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji" },
   { key: "quantity", label: "Količina (kom)", type: "select", storage: "attr", group: "Detalji",
+    scope: ["auto-dodatna-oprema", "multimedija", "moto-dijelovi", "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve", "za-vilicare", "servisna-oprema", "gume", "ulja-tekucine", "dijelovi-ostalo"],
     options: [1,2,3,4,5].map((n) => ({ value: String(n), label: n === 5 ? "5+" : `${n}` })) },
 
   // Gume (tires) — scope gume
@@ -1660,7 +1667,12 @@ const DIJELOVI_FIELDS: FilterField[] = [
     ] },
 
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
-  { key: "shipping", label: "Dostava moguća", type: "toggle", storage: "attr", group: "Ostalo" },
+  // ⚠️ Karlo 31.08.2026 (st.27): "Dostava moguća" maknuta iz Auto dijelova;
+  // ostatak Dijelova zadržava.
+  { key: "shipping", label: "Dostava moguća", type: "toggle", storage: "attr", group: "Ostalo",
+    scope: ["auto-dodatna-oprema", "multimedija", "moto-dijelovi", "za-gospodarska",
+      "za-gradevinske-strojeve", "za-poljoprivredne-strojeve", "za-vilicare",
+      "servisna-oprema", "gume", "ulja-tekucine", "dijelovi-ostalo"] },
 ];
 
 export const FILTER_DEFS: Record<string, CategoryFilters> = {
