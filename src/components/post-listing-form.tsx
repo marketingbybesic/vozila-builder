@@ -277,6 +277,12 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(s.category), [s.category]);
 
   // Marka po kategoriji (kao napredno-form): categoryDef.makes.
+  /** Karlo 31.08.2026 (st.26/30): "Auto dijelovi" i "Oprema za kampere i
+   * kamping" dijele isto ponašanje (Za marku, Stanje predmeta). */
+  const usesPartsLayout =
+    (s.category === "dijelovi" && s.subcategory === "auto-dijelovi") ||
+    (s.category === "prosti-cas" && s.subcategory === "kamping-oprema");
+
   // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise
   // marki — prodavač ATV-a mora moći odabrati npr. Arctic Cat / John Deere,
   // kojih u moto popisu nema. `s.subcategory` MORA biti u ovisnostima.
@@ -922,7 +928,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               ) : (
                 <SelectField
                   // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
-                  label={s.category === "dijelovi" && s.subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
+                  label={usesPartsLayout ? "Za marku" : "Marka"}
                   value={s.make}
                   onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
                   placeholder="Odaberi marku"
@@ -1013,9 +1019,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
             </div>
             {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
                 predmeta" (Novo/Polovno/Obnovljeno umjesto CONDITIONS). */}
-            <Field label={s.category === "dijelovi" && s.subcategory === "auto-dijelovi" ? "Stanje predmeta" : "Stanje"}>
+            <Field label={usesPartsLayout ? "Stanje predmeta" : "Stanje"}>
               <div className="grid grid-cols-3 gap-2">
-                {(s.category === "dijelovi" && s.subcategory === "auto-dijelovi"
+                {(usesPartsLayout
                   ? (["Novo", "Polovno", "Obnovljeno"] as const)
                   : CONDITIONS
                 ).map((c) => (

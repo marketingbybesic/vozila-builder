@@ -595,5 +595,9 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   // popisa proizvođača dijelova (Bosch/Michelin...) koji ostaje svugdje
   // drugdje u Dijelovima (gume/felge/multimedija/ulja).
   if (categorySlug === "dijelovi" && subcategory === "auto-dijelovi") return AUTO_MAKES;
+  // ⚠️ Karlo 31.08.2026 (st.30): Slobodno vrijeme/Oprema za kampere i kamping
+  // dobiva IDENTIČNU pretragu kao Auto dijelovi — isti popis auto marki+modela
+  // za "Za marku" (samo Vrsta ostaje njena postojeća lista, netaknuta).
+  if (categorySlug === "prosti-cas" && subcategory === "kamping-oprema") return AUTO_MAKES;
   return null;
 }

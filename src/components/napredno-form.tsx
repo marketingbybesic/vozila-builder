@@ -141,6 +141,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * svoje posebno ponašanje na više mjesta (Za marku, Stanje predmeta,
    * skrivena Godina) — jedan zastavica umjesto ponovljene provjere. */
   const isAutoDijelovi = category === "dijelovi" && subcategory === "auto-dijelovi";
+  /** Karlo 31.08.2026 (st.30): "Oprema za kampere i kamping" (Slobodno
+   * vrijeme) dobiva IDENTIČNU pretragu kao Auto dijelovi (Za marku, Stanje
+   * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
+  const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
+  const usesPartsLayout = isAutoDijelovi || isKampingOprema;
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -160,7 +165,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
-    if (isAutoDijelovi) return makeOptionsGrouped(list);
+    if (usesPartsLayout) return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
@@ -670,7 +675,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje vozila" →
               "Stanje predmeta" (Novo/Polovno/Obnovljeno umjesto Rabljeno/Novo).
               Svugdje drugdje ostaje nepromijenjeno. */}
-          {isAutoDijelovi ? (
+          {usesPartsLayout ? (
             <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
               options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
           ) : (
@@ -695,7 +700,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku"
               // (pojašnjava da bira marku VOZILA kojem dio odgovara, ne
               // proizvođača dijela).
-              label={isAutoDijelovi ? "Za marku" : "Marka"}
+              label={usesPartsLayout ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
@@ -735,10 +740,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       <Panel>
         {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
             nema godinu proizvodnje kao vozilo), pa naslov postaje "Cijena". */}
-        <SectionHead icon={Tag} title={isAutoDijelovi ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
+        <SectionHead icon={Tag} title={usesPartsLayout ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
-          {!isAutoDijelovi && (
+          {!usesPartsLayout && (
             <div>
               <Label>Godina</Label>
               <div className="grid grid-cols-2 gap-2">

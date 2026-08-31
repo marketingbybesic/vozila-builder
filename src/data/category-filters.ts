@@ -1323,8 +1323,24 @@ const PROSTI_CAS_PRICE: FilterField = {
   scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice",
     "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "prosti-cas-ostalo"],
 };
+// ⚠️ Karlo 31.08.2026 (st.30): Oprema za kampere i kamping — identična
+// pretraga kao Auto dijelovi, pa nema Godinu (COMMON_YEAR bi je nudio
+// svugdje u prosti-cas bez ovog override-a).
+const PROSTI_CAS_YEAR: FilterField = {
+  ...COMMON_YEAR, shared: false,
+  scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice",
+    "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "najam", "prosti-cas-ostalo"],
+};
 const PROSTI_CAS_FIELDS: FilterField[] = [
-  PROSTI_CAS_PRICE, COMMON_YEAR, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
+  PROSTI_CAS_PRICE, PROSTI_CAS_YEAR, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
+
+  // ⚠️ Karlo 31.08.2026 (st.30): Oprema za kampere i kamping — identična
+  // pretraga kao Dijelovi i oprema/Auto dijelovi (Za marku s punim auto
+  // popisom, Stanje predmeta, OEM, Proizvođač dijela; bez Godine, Udobnosti,
+  // Tipa ponude, Vlasništva, Broja vlasnika, Dimenzija). SAMO Vrsta ostaje
+  // njena postojeća lista (vrstaFromChildren("prosti-cas")).
+  { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji", scope: ["kamping-oprema"] },
+  { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji", scope: ["kamping-oprema"] },
 
   // Karlo 30.07: podrubrika "Vrsta" duplirala je gornju Podkategoriju →
   // ostaje samo za podkategorije koje nemaju vlastiti "Tip".
@@ -1393,7 +1409,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     steps: [3, 4, 5, 6, 7, 8, 9, 10] },
   { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1,
     storage: "attr", group: "Dimenzije i upotrebljivost",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "kamping-oprema", "najam"] },
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"] },
   // KAMPERI: "Širina" zamijenjena "Brojem sjedala" (Karlov zahtjev).
   { key: "seats", label: "Broj sjedala", type: "range", storage: "attr",
     group: "Dimenzije i upotrebljivost", scope: ["kamperi"],
@@ -1468,24 +1484,24 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // cijelosti — Moto ga nikad nije imao, Karlo ga eksplicitno maknuo s oba mjesta.
 
   // Udobnost (domenska analiza)
-  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "wc", label: "WC", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "kitchen", label: "Kuhinja", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "shower", label: "Tuš", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "refrigerator", label: "Hladnjak", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "ac", label: "Klima", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
   { key: "heating", label: "Grijanje", type: "select", storage: "attr", group: "Udobnost",
-    scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"],
+    scope: ["mobilne-kucice", "satorske-prikolice"],
     options: [
       { value: "plin", label: "Plinsko" },
       { value: "dizel", label: "Dizelsko" },
       { value: "truma", label: "Truma" },
       { value: "webasto", label: "Webasto" },
     ] },
-  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
-  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice", "kamping-oprema"] },
+  { key: "solar", label: "Solarni panel", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "awning", label: "Markiza", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "tv", label: "TV", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "boiler", label: "Bojler", type: "toggle", storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
+  { key: "waterTankL", label: "Spremnik vode", type: "range", unit: "L", min: 0, max: 300, step: 10, storage: "attr", group: "Udobnost", scope: ["mobilne-kucice", "satorske-prikolice"] },
   // Karlo 30.07: "Mover" uklonjen — cijela rubrika Udobnost izbačena iz kamp prikolica.
   // ⚠️ Karlo 31.08.2026: "plovila" maknut iz svih Udobnost zapisa (cijela
   // rubrika izbačena iz Plovila). Rubrika "Dodatne opcije" (GPS/ploter,
@@ -1496,7 +1512,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // Karlo 30.07: "Tip ponude" i "Garancija" izbrisani iz kampera i kamp prikolica.
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Tip ponude izbačen iz Ponuda za najam.
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    scope: ["kamperi", "mobilne-kucice", "kamp-prikolice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "kamping-oprema", "prosti-cas-ostalo"],
+    scope: ["kamperi", "mobilne-kucice", "kamp-prikolice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "e-bicikli", "e-skuteri", "prosti-cas-ostalo"],
     options: [v("prodaja"), v("najam")] },
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Ostalo",
     options: [
@@ -1505,7 +1521,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     ],
     // ⚠️ Karlo 26.08.2026: Vlasništvo se NE prikazuje kod mobilnih kućica.
     // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Vlasništvo izbačen iz Ponuda za najam.
-    scope: ["kamperi", "kamp-prikolice", "plovila", "kamping-oprema", "prosti-cas-ostalo"] },
+    scope: ["kamperi", "kamp-prikolice", "plovila", "prosti-cas-ostalo"] },
   // ⚠️ Karlo 29.08.2026 (st.16/17): E-romobil i E-bicikl izjednačeni s Motom —
   // iste 3 opcije i grupa "Povijest" (Moto tu rubriku ima, prosti-cas inače ne).
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
@@ -1521,7 +1537,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Broj vlasnika izbačen iz Ponuda za najam.
   { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo",
     scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice",
-      "krovni-satori", "plovila", "kamping-oprema", "prosti-cas-ostalo"] },
+      "krovni-satori", "plovila", "prosti-cas-ostalo"] },
   { ...NUM_OWNERS_FIELD, shared: false, group: "Povijest", scope: ["e-skuteri", "e-bicikli"] },
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Garancija izbačena iz Ponuda za najam.
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["plovila", "kamping-oprema"] },
