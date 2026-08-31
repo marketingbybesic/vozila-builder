@@ -117,10 +117,11 @@ const PROSTI_CAS_SUBS: Subcategory[] = [
   // Karlo 25.08.2026: nova rubrika, postavljena 1:1 kao šatorske prikolice
   // (ista polja u shemi, vlastiti popis marki, bez polja "Model").
   { slug: "krovni-satori", name: "Krovni šatori" },
-  // ⚠️ Karlo 30.08.2026 (st.25): "Plovila" maknuto iz pretrage/podkategorija
-  // (izbačeno odavde — nav, "Podkategorija" izbornik u sve 3 forme). Podaci
-  // NISU dirani: 22 aktivna oglasa ostaju u bazi, shema/marke/makesForSub
-  // netaknuti (mrtav kod za nedostupnu podkategoriju, bezopasno).
+  // ⚠️ Karlo 31.08.2026: "Plovila" vraćeno — st.25 (30.08.) ga je maknuo iz
+  // pretrage/podkategorija, Karlo odmah zatražio povratak ("vrati kako je
+  // bilo"). Ništa nije trebalo obnavljati — schema/marke/makesForSub i 22
+  // aktivna oglasa nikad nisu ni bili dirani, samo ovaj zapis.
+  { slug: "plovila", name: "Plovila" },
   { slug: "e-bicikli", name: "E-bicikli" },
   // ⚠️ Karlo 25.08.2026: preimenovano "E-skuteri" → "E-romobil"; rubrika mora
   // biti IDENTIČNA onoj u Motu (moto/e-skuter) — ista polja, iste marke, isti
