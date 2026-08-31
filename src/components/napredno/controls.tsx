@@ -898,8 +898,8 @@ export function SubcategoryButtons({
   );
 }
 
-/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS, PROSTI_CAS_SUBS i MOTO_SUBS
- * (SubcategoryIconGrid — Dijelovi i oprema, Slobodno vrijeme, Moto). */
+/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS, PROSTI_CAS_SUBS, MOTO_SUBS i
+ * GOSPODARSKA_SUBS (SubcategoryIconGrid). */
 const SUB_ICON: Record<string, LucideIcon> = {
   wrench: Wrench, package: Package, speaker: Speaker, bike: Bike, truck: Truck,
   cone: Cone, wheat: Wheat, forklift: Forklift, settings2: Settings2,
@@ -909,6 +909,7 @@ const SUB_ICON: Record<string, LucideIcon> = {
   calendardays: CalendarDays,
   route: Route, gauge: Gauge, mountain: Mountain, rocket: Rocket,
   history: History, flag: Flag, mountainsnow: MountainSnow,
+  bus: Bus,
 };
 
 /**

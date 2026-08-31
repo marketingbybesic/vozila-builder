@@ -93,13 +93,13 @@ const MOTO_SUBS: Subcategory[] = [
 ];
 
 const GOSPODARSKA_SUBS: Subcategory[] = [
-  { slug: "dostavna", name: "Dostavna vozila" },
-  { slug: "kamioni", name: "Kamioni" },
-  { slug: "autobusi", name: "Autobusi" },
-  { slug: "prikolice", name: "Teretne prikolice" },
-  { slug: "utv", name: "UTV vozila" },
-  { slug: "najam", name: "Ponude za najam" },
-  { slug: "gospodarska-ostalo", name: "Ostalo" },
+  { slug: "dostavna", name: "Dostavna vozila", icon: "package" },
+  { slug: "kamioni", name: "Kamioni", icon: "truck" },
+  { slug: "autobusi", name: "Autobusi", icon: "bus" },
+  { slug: "prikolice", name: "Teretne prikolice", icon: "container" },
+  { slug: "utv", name: "UTV vozila", icon: "mountain" },
+  { slug: "najam", name: "Ponude za najam", icon: "calendardays" },
+  { slug: "gospodarska-ostalo", name: "Ostalo", icon: "box" },
 ];
 
 const MEHANIZACIJA_SUBS: Subcategory[] = [
