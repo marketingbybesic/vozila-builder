@@ -103,13 +103,13 @@ const GOSPODARSKA_SUBS: Subcategory[] = [
 ];
 
 const MEHANIZACIJA_SUBS: Subcategory[] = [
-  { slug: "poljoprivredni-strojevi", name: "Poljoprivredni strojevi" },
-  { slug: "vilicari", name: "Viličari" },
-  { slug: "sumarski-strojevi", name: "Šumarski strojevi" },
-  { slug: "komunalni-strojevi", name: "Komunalni strojevi" },
-  { slug: "gradevinski-strojevi", name: "Građevinski strojevi" },
-  { slug: "najam", name: "Ponude za najam" },
-  { slug: "mehanizacija-ostalo", name: "Ostalo" },
+  { slug: "poljoprivredni-strojevi", name: "Poljoprivredni strojevi", icon: "tractor" },
+  { slug: "vilicari", name: "Viličari", icon: "forklift" },
+  { slug: "sumarski-strojevi", name: "Šumarski strojevi", icon: "treepine" },
+  { slug: "komunalni-strojevi", name: "Komunalni strojevi", icon: "trash2" },
+  { slug: "gradevinski-strojevi", name: "Građevinski strojevi", icon: "cone" },
+  { slug: "najam", name: "Ponude za najam", icon: "calendardays" },
+  { slug: "mehanizacija-ostalo", name: "Ostalo", icon: "box" },
 ];
 
 const PROSTI_CAS_SUBS: Subcategory[] = [
