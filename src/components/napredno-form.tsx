@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import {
   MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
-  BodyTypePicker, CategoryTabs, type Opt,
+  BodyTypePicker, CategoryTabs, SubcategoryIconGrid, type Opt,
 } from "@/components/napredno/controls";
 import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
 import type { LucideIcon } from "lucide-react";
@@ -146,6 +146,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
   const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
+  /** Karlo 31.08.2026 (st. novi): Dijelovi i oprema — kad kategorija je
+   * odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti odabir
+   * podkategorije (ništa drugo). Nema "Sve podkategorije" — mora se
+   * izabrati jedna prije nego se otvori ostatak forme. */
+  const isDijelovi = category === "dijelovi";
+  const needsDijeloviSubPick = isDijelovi && !subcategory;
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -634,6 +640,27 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
       )}
 
+      {/* ⚠️ Karlo 31.08.2026: Dijelovi i oprema — dok podkategorija nije
+          odabrana, prikaži SAMO slikoviti odabir (ništa drugo iz forme).
+          Nema "Sve podkategorije" — jedna se MORA izabrati. Tek nakon
+          odabira otvara se ostatak forme, kao i za sve druge kategorije. */}
+      {needsDijeloviSubPick && categoryDef && (
+        <Panel>
+          <SectionHead icon={Wrench} title="Podkategorija" />
+          <SubcategoryIconGrid
+            options={categoryDef.subcategories.map((s) => ({ value: s.slug, label: s.name, icon: s.icon }))}
+            value={subcategory}
+            onChange={(v) => {
+              setSubcategory(v);
+              const list = makesForSub(category, v) ?? categoryDef?.makes ?? [];
+              if (make && !list.some((m) => m.slug === make)) { setMake(""); setModel(""); }
+            }}
+          />
+        </Panel>
+      )}
+
+      {!needsDijeloviSubPick && (
+      <>
       {/* Chips pregled aktivnih filtera */}
       {activeChips.length > 0 && (
         <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-accent)]/[0.04] p-3 sm:p-4">
@@ -824,8 +851,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             options={[{ value: "Privatni", label: "Privatni" }, { value: "Trgovac", label: "Trgovac" }]} placeholder="Svi" />
         </div>
       </Panel>
+      </>
+      )}
 
-      {/* ── Sticky CTA ── */}
+      {/* ── Sticky CTA — skriven dok Dijelovi čeka odabir podkategorije
+          (nema smisla "Prikaži N" bez podkategorije za tu kategoriju). ── */}
+      {!needsDijeloviSubPick && (
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--color-line)] bg-[var(--color-bg)]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-3">
           {totalActive > 0 && (
@@ -841,6 +872,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           </button>
         </div>
       </div>
+      )}
     </form>
   );
 }

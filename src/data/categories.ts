@@ -22,6 +22,10 @@ export type Subcategory = {
   slug: string;
   name: string; // Croatian
   children?: Subcategory[]; // 2. nivo (avto.net "Rezervni deli" logika, npr. dijelovi)
+  /** Karlo 31.08.2026: slikoviti odabir podkategorije za Dijelovi i oprema
+   * (SubcategoryIconGrid) — samo top-level DIJELOVI_SUBS ga imaju, ostale
+   * kategorije i dalje koriste izbornik bez ikone. */
+  icon?: string;
 };
 
 export type Category = {
@@ -156,6 +160,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "auto-dijelovi",
     name: "Auto dijelovi",
+    icon: "wrench",
     children: [
       { slug: "motor-dijelovi", name: "Motor, dijelovi motora i brtve" },
       { slug: "mjenjac-transmisija", name: "Mjenjač i prijenos" },
@@ -178,6 +183,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "auto-dodatna-oprema",
     name: "Auto dodatna oprema",
+    icon: "package",
     children: [
       { slug: "krovni-nosaci", name: "Krovni nosači, kutije i nosači bicikala" },
       { slug: "ratkape-oprema", name: "Ratkape" },
@@ -202,6 +208,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "multimedija",
     name: "Multimedija",
+    icon: "speaker",
     children: [
       { slug: "radio-navigacija", name: "Autoradio i navigacija" },
       { slug: "android-carplay", name: "Android / CarPlay uređaji" },
@@ -217,6 +224,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "moto-dijelovi",
     name: "Moto dijelovi i oprema",
+    icon: "bike",
     children: [
       { slug: "moto-motor", name: "Motor i mehanički dijelovi" },
       { slug: "moto-pogon", name: "Pogon (lanac, lančanici, remen i varijatori)" },
@@ -236,6 +244,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "za-gospodarska",
     name: "Za gospodarska vozila",
+    icon: "truck",
     children: [
       { slug: "za-kamione-dostavna", name: "Za kamione i dostavna vozila" },
       { slug: "za-teretne-prikolice", name: "Za teretne prikolice i poluprikolice" },
@@ -247,6 +256,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "za-gradevinske-strojeve",
     name: "Za građevinske strojeve",
+    icon: "cone",
     children: [
       { slug: "grad-hidraulika", name: "Hidraulika" },
       { slug: "grad-zlice-korpe", name: "Žlice, korpe i priključni alati" },
@@ -261,6 +271,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "za-poljoprivredne-strojeve",
     name: "Za poljoprivredne strojeve",
+    icon: "wheat",
     children: [
       { slug: "polj-traktori-kombajni", name: "Dijelovi za traktore i kombajne" },
       { slug: "polj-prikljucni", name: "Dijelovi za priključne strojeve" },
@@ -273,6 +284,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "za-vilicare",
     name: "Za viličare",
+    icon: "forklift",
     children: [
       { slug: "vil-vilice-kranovi", name: "Vilice, kranovi i priključni alati" },
       { slug: "vil-baterije-punjaci", name: "Baterije, punjači i napajanje" },
@@ -286,6 +298,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "servisna-oprema",
     name: "Servisna oprema",
+    icon: "settings2",
     children: [
       { slug: "dizalice-podizaci", name: "Dizalice i podizači" },
       { slug: "dijagnostika", name: "Dijagnostika i elektronika" },
@@ -303,6 +316,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
     // `felge` rubrike migriraju skriptom (vidi scripts/migrate-dijelovi.mts).
     slug: "gume",
     name: "Gume i felge",
+    icon: "circledot",
     children: [
       { slug: "ljetne-gume", name: "Ljetne gume" },
       { slug: "zimske-gume", name: "Zimske gume" },
@@ -322,6 +336,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
   {
     slug: "ulja-tekucine",
     name: "Ulja i tekućine",
+    icon: "droplets",
     children: [
       { slug: "motorna-ulja", name: "Motorna ulja" },
       { slug: "ulja-mjenjac", name: "Ulja za mjenjače i transmisiju" },
@@ -332,7 +347,7 @@ const DIJELOVI_SUBS: Subcategory[] = [
       { slug: "ulja-tekucine-ostalo", name: "Ostalo" },
     ],
   },
-  { slug: "dijelovi-ostalo", name: "Ostalo" },
+  { slug: "dijelovi-ostalo", name: "Ostalo", icon: "box" },
 ];
 
 // Starter brand sets for non-auto categories. Industry-standard makes;

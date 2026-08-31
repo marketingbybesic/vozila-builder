@@ -9,7 +9,8 @@
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
-  Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan, type LucideIcon,
+  Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan,
+  Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets, type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
@@ -888,6 +889,63 @@ export function SubcategoryButtons({
             }
           >
             {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS (Dijelovi i oprema — SubcategoryIconGrid). */
+const DIJELOVI_SUB_ICON: Record<string, LucideIcon> = {
+  wrench: Wrench, package: Package, speaker: Speaker, bike: Bike, truck: Truck,
+  cone: Cone, wheat: Wheat, forklift: Forklift, settings2: Settings2,
+  circledot: CircleDot, droplets: Droplets, box: Box,
+};
+
+/**
+ * Karlo 31.08.2026: slikoviti odabir podkategorije za Dijelovi i oprema —
+ * SVE opcije ispisane odjednom (ne padajući izbornik), ikona pored svake,
+ * bez "Sve podkategorije" (mora se izabrati jedna da bi se pretraga otvorila).
+ * Isti vizualni jezik kao PillMultiSelect (ikona + naziv, pun red), ali
+ * single-select i bez checkboxa.
+ */
+export function SubcategoryIconGrid({
+  options, value, onChange,
+}: {
+  options: { value: string; label: string; icon?: string }[];
+  value: string;
+  onChange: (slug: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {options.map((o) => {
+        const active = o.value === value;
+        const Icon = (o.icon && DIJELOVI_SUB_ICON[o.icon]) || Box;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            aria-pressed={active}
+            className={
+              "flex items-center gap-3 px-4 h-14 rounded-xl border text-left transition-all " +
+              (active
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/8"
+                : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
+            }
+          >
+            <span
+              className={
+                "grid place-items-center size-9 rounded-lg shrink-0 " +
+                (active ? "bg-[var(--color-accent)]/15 text-[var(--color-accent-dark)]" : "bg-[var(--color-line)]/40 text-[var(--color-ink-soft)]")
+              }
+            >
+              <Icon className="size-5" />
+            </span>
+            <span className={"text-sm font-medium " + (active ? "text-[var(--color-ink)]" : "text-[var(--color-ink-soft)]")}>
+              {o.label}
+            </span>
           </button>
         );
       })}
