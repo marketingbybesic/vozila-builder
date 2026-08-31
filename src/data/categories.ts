@@ -71,25 +71,25 @@ const AUTO_SUBS: Subcategory[] = [
 ];
 
 const MOTO_SUBS: Subcategory[] = [
-  { slug: "motocikl", name: "Motocikl" },
-  { slug: "skuter", name: "Skuter" },
-  { slug: "moped", name: "Moped" },
-  { slug: "atv-utv", name: "ATV / UTV" },
-  { slug: "minimoto", name: "Minimoto" },
-  { slug: "oldtimer", name: "Oldtimer" },
-  { slug: "gokart", name: "Go-kart" },
-  { slug: "motorne-sanke", name: "Motorne sanke" },
+  { slug: "motocikl", name: "Motocikl", icon: "route" },
+  { slug: "skuter", name: "Skuter", icon: "gauge" },
+  { slug: "moped", name: "Moped", icon: "circledot" },
+  { slug: "atv-utv", name: "ATV / UTV", icon: "mountain" },
+  { slug: "minimoto", name: "Minimoto", icon: "rocket" },
+  { slug: "oldtimer", name: "Oldtimer", icon: "history" },
+  { slug: "gokart", name: "Go-kart", icon: "flag" },
+  { slug: "motorne-sanke", name: "Motorne sanke", icon: "mountainsnow" },
   // ⚠️ Karlo 13.08.2026 (st. 3): naziv "E-skuter" → "E-romobil". SLUG ostaje
   // `e-skuter` — mijenjanje sluga bi izbacilo postojeće oglase iz filtera
   // (enum drift) i razbilo `scope` u category-filters.ts.
-  { slug: "e-skuter", name: "E-romobil" },
-  { slug: "e-bicikl", name: "E-bicikl" },
+  { slug: "e-skuter", name: "E-romobil", icon: "zap" },
+  { slug: "e-bicikl", name: "E-bicikl", icon: "bike" },
   // ⚠️ Karlo 22.08.2026: podkategorija "E-moto" MAKNUTA na njegov zahtjev.
   // Postojeći električni motocikli prebačeni u "motocikl" (DB skripta
   // fix-makes-2026-08-22.mts). Scope zapisi u category-filters.ts zadržani
   // bezopasno — ne referenciraju podkategoriju koja se više ne nudi.
-  { slug: "najam", name: "Ponude za najam" },
-  { slug: "moto-ostalo", name: "Ostalo" },
+  { slug: "najam", name: "Ponude za najam", icon: "calendardays" },
+  { slug: "moto-ostalo", name: "Ostalo", icon: "box" },
 ];
 
 const GOSPODARSKA_SUBS: Subcategory[] = [

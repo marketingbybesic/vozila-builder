@@ -146,11 +146,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
   const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
-  /** Karlo 31.08.2026: Dijelovi i oprema I Slobodno vrijeme — kad je
+  /** Karlo 31.08.2026: Dijelovi i oprema, Slobodno vrijeme I Moto — kad je
    * kategorija odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti
    * odabir podkategorije (ništa drugo). Nema "Sve podkategorije" — mora se
    * izabrati jedna prije nego se otvori ostatak forme. */
-  const usesSubPickGrid = category === "dijelovi" || category === "prosti-cas";
+  const usesSubPickGrid = category === "dijelovi" || category === "prosti-cas" || category === "moto";
   const needsSubPick = usesSubPickGrid && !subcategory;
 
   const makeOptions: Opt[] = useMemo(() => {

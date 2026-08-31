@@ -11,7 +11,8 @@ import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
   Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan,
   Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets,
-  House, Layers, Tent, TentTree, Zap, Backpack, CalendarDays, type LucideIcon,
+  House, Layers, Tent, TentTree, Zap, Backpack, CalendarDays,
+  Route, Mountain, Rocket, History, Flag, MountainSnow, type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
@@ -897,8 +898,8 @@ export function SubcategoryButtons({
   );
 }
 
-/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS i PROSTI_CAS_SUBS
- * (SubcategoryIconGrid — Dijelovi i oprema, Slobodno vrijeme). */
+/** Karlo 31.08.2026: ikone za DIJELOVI_SUBS, PROSTI_CAS_SUBS i MOTO_SUBS
+ * (SubcategoryIconGrid — Dijelovi i oprema, Slobodno vrijeme, Moto). */
 const SUB_ICON: Record<string, LucideIcon> = {
   wrench: Wrench, package: Package, speaker: Speaker, bike: Bike, truck: Truck,
   cone: Cone, wheat: Wheat, forklift: Forklift, settings2: Settings2,
@@ -906,6 +907,8 @@ const SUB_ICON: Record<string, LucideIcon> = {
   caravan: Caravan, container: Container, house: House, layers: Layers,
   tent: Tent, tenttree: TentTree, ship: Ship, zap: Zap, backpack: Backpack,
   calendardays: CalendarDays,
+  route: Route, gauge: Gauge, mountain: Mountain, rocket: Rocket,
+  history: History, flag: Flag, mountainsnow: MountainSnow,
 };
 
 /**
