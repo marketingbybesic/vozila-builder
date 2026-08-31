@@ -589,5 +589,11 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   if (categorySlug === "mehanizacija" && subcategory === "poljoprivredni-strojevi") return MEHANIZACIJA_POLJOPRIVREDNI_MAKES;
   if (categorySlug === "mehanizacija" && subcategory === "sumarski-strojevi") return MEHANIZACIJA_SUMARSKI_MAKES;
   if (categorySlug === "mehanizacija" && subcategory === "komunalni-strojevi") return MEHANIZACIJA_KOMUNALNI_MAKES;
+  // ⚠️ Karlo 31.08.2026 (st.26): Dijelovi i oprema/Auto dijelovi (svih 15
+  // vrsta, uklj. Motor/dijelovi motora i brtve) — "Marka" preimenovana u "Za
+  // marku" i puni popis auto marki+modela (isti kao Osobni auto), umjesto
+  // popisa proizvođača dijelova (Bosch/Michelin...) koji ostaje svugdje
+  // drugdje u Dijelovima (gume/felge/multimedija/ulja).
+  if (categorySlug === "dijelovi" && subcategory === "auto-dijelovi") return AUTO_MAKES;
   return null;
 }

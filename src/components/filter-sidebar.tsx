@@ -119,6 +119,9 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
     // razlicite od motocikala → biraj po podkategoriji.
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(current.subcategory ?? ""));
+    // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis →
+    // grupe kao auto, ne plosnata lista.
+    if (category === "dijelovi" && current.subcategory === "auto-dijelovi") return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: `current.subcategory` MORA biti u ovisnostima — bez
     // toga promjena podkategorije u sidebaru (skuter→moped) zadrži staru grupu
@@ -243,7 +246,14 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         {filterDef.fields.some((f) => f.key === "offerType" && (!f.scope?.length || f.scope.includes(current.subcategory ?? ""))) && (
           <MultiSelect label="Tip ponude" values={arr("a.offerType").length ? arr("a.offerType") : arr("offerType")} onChange={(v) => setMulti("a.offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
         )}
-        <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
+        {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
+            predmeta" (Novo/Polovno/Obnovljeno). Svugdje drugdje nepromijenjeno. */}
+        {category === "dijelovi" && current.subcategory === "auto-dijelovi" ? (
+          <MultiSelect label="Stanje predmeta" values={arr("condition")} onChange={(v) => setMulti("condition", v)}
+            options={toOpts(["Novo", "Polovno", "Obnovljeno"])} placeholder="Sve" />
+        ) : (
+          <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
+        )}
       </div>
 
       {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
@@ -266,7 +276,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           }}
         />
       ) : (
-        <SelectField label="Marka" value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
+        <SelectField
+          // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
+          label={category === "dijelovi" && current.subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
+          value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
       )}
       {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
       {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (

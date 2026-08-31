@@ -921,7 +921,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               ) : (
                 <SelectField
-                  label="Marka"
+                  // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
+                  label={s.category === "dijelovi" && s.subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
                   value={s.make}
                   onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
                   placeholder="Odaberi marku"
@@ -1010,9 +1011,14 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               )}
             </div>
-            <Field label="Stanje">
+            {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
+                predmeta" (Novo/Polovno/Obnovljeno umjesto CONDITIONS). */}
+            <Field label={s.category === "dijelovi" && s.subcategory === "auto-dijelovi" ? "Stanje predmeta" : "Stanje"}>
               <div className="grid grid-cols-3 gap-2">
-                {CONDITIONS.map((c) => (
+                {(s.category === "dijelovi" && s.subcategory === "auto-dijelovi"
+                  ? (["Novo", "Polovno", "Obnovljeno"] as const)
+                  : CONDITIONS
+                ).map((c) => (
                   <button
                     type="button"
                     key={c}

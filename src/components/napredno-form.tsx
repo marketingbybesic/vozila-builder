@@ -154,6 +154,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
     // razlicite od motocikala → biraj po podkategoriji.
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
+    // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
+    // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
+    if (category === "dijelovi" && subcategory === "auto-dijelovi") return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
@@ -660,8 +663,16 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             <MultiSelect label="Tip ponude" values={offerType} onChange={setOfferType}
               options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
           )}
-          <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
-            options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
+          {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje vozila" →
+              "Stanje predmeta" (Novo/Polovno/Obnovljeno umjesto Rabljeno/Novo).
+              Svugdje drugdje ostaje nepromijenjeno. */}
+          {category === "dijelovi" && subcategory === "auto-dijelovi" ? (
+            <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
+              options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
+          ) : (
+            <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
+              options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
+          )}
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
@@ -676,7 +687,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               placeholder="npr. Jeanneau, Bavaria..."
             />
           ) : (
-            <SelectField label="Marka" value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
+            <SelectField
+              // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku"
+              // (pojašnjava da bira marku VOZILA kojem dio odgovara, ne
+              // proizvođača dijela).
+              label={category === "dijelovi" && subcategory === "auto-dijelovi" ? "Za marku" : "Marka"}
+              value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
           {!showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
