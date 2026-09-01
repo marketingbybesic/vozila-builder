@@ -183,7 +183,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
-    if (usesPartsLayout) return makeOptionsGrouped(list);
+    // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
+    // ovog datuma NIJE više na AUTO_MAKES (vidi makesForSub), pa bi grupa
+    // "Najpopularnije" (Audi/BMW/Citroen…) tražila auto slugove u popisu
+    // kamperske opreme i vraćala krivi/prazan rezultat. usesPartsLayout i
+    // dalje vrijedi za "Stanje predmeta" (obje rubrike), samo ne i ovdje.
+    if (isAutoDijelovi) return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
