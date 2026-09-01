@@ -550,6 +550,12 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // popisa (gore), ali Model se upisuje slobodno (varijante dijelova/opreme
   // su previše raznolike za fiksni popis, isto obrazloženje kao mehanizacija).
   if (categorySlug === "prosti-cas" && subcategory === "kamping-oprema") return true;
+  // ⚠️ Karlo 01.09.2026 (st.41 dopuna): Dijelovi/Za gospodarska vozila —
+  // Marka bira iz spojenog popisa (GOSPODARSKA_DIJELOVI_MAKES, gore), ali
+  // Model se upisuje slobodno — isto obrazloženje kao kamping-oprema/
+  // mehanizacija (dijelovi za kamione/dostavna/autobuse/prikolice imaju
+  // previše raznolikih varijanti za fiksni popis).
+  if (categorySlug === "dijelovi" && subcategory === "za-gospodarska") return true;
   return false;
 }
 
