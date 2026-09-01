@@ -725,6 +725,27 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "sklopivi", label: "Sklopivi" },
     ] },
 
+  // ⚠️ Karlo 01.09.2026 (st.48): "Vrsta vozila" — novi izbornik ISPOD
+  // Podkategorije za "Ponude za najam" (isti mehanizam kao "Stil"/"Tip
+  // e-bicikla"/prosti-cas "Predmet najma" — grupa "Vrsta" renderira se tu
+  // automatski). Iste opcije kao ostale Moto podkategorije, BEZ "Ponude za
+  // najam" same sebe. Placeholder "Sva vozila" umjesto generičkog "Sve".
+  { key: "vehicleType", label: "Vrsta vozila", type: "select", storage: "attr", group: "Vrsta",
+    scope: ["najam"], placeholder: "Sva vozila",
+    options: [
+      { value: "motocikl", label: "Motocikl" },
+      { value: "skuter", label: "Skuter" },
+      { value: "moped", label: "Moped" },
+      { value: "atv-utv", label: "ATV / UTV" },
+      { value: "minimoto", label: "Minimoto" },
+      { value: "oldtimer", label: "Oldtimer" },
+      { value: "gokart", label: "Go-kart" },
+      { value: "motorne-sanke", label: "Motorne sanke" },
+      { value: "e-skuter", label: "E-romobil" },
+      { value: "e-bicikl", label: "E-bicikl" },
+      { value: "moto-ostalo", label: "Ostalo" },
+    ] },
+
   // Karlo 27.07: obujam do 1500 cm³, snaga do 112 kW (ljestvice u MOTO_ENGINE_STEPS /
   // MOTO_POWER_STEPS ispod — Od/Do izbornik koristi njih, ne linearni step).
   // ⚠️ Karlo 26.08.2026: E-romobil (`e-skuter`) i E-bicikl (`e-bicikl`) NEMAJU
