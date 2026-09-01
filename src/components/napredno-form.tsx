@@ -185,6 +185,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
     // razlicite od motocikala → biraj po podkategoriji.
     if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
+    // ⚠️ Karlo 01.09.2026 (st.40): Dijelovi/Moto dijelovi i oprema — spojeni
+    // popis SVIH marki Mota (MOTO_DIJELOVI_MAKES), ne AUTO_MAKES. Grupa
+    // "Najpopularnije" mora tražiti MOTO slugove (Honda/Yamaha/Piaggio...),
+    // ne auto slugove (Audi/BMW...) — inače prazna/kriva grupa kao st.38.
+    if (category === "dijelovi" && subcategory === "moto-dijelovi") return makeOptionsGrouped(list, popularMotoSlugsFor());
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od

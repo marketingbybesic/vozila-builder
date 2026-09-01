@@ -578,7 +578,44 @@ export function showsModelField(categorySlug: string, subcategory?: string): boo
   return true;
 }
 
+/**
+ * ⚠️ Karlo 01.09.2026 (st.40): Dijelovi i oprema/Moto dijelovi i oprema —
+ * spoj SVIH marki I MODELA iz svih 9 podkategorija Mota koje imaju vlastiti
+ * popis (motocikl/skuter/moped/oldtimer/najam/moto-ostalo dijele MOTO_MAKES;
+ * ATV/minimoto/gokart/motorne sanke/e-romobil/e-bicikl imaju svoje).
+ *
+ * ⚠️ Za razliku od PROSTI_CAS_NAJAM_MAKES (koji kod duplog sluga zadrži samo
+ * PRVI nailazak i baci ostatak) — 70 od 343 marki ovdje se pojavljuje u VIŠE
+ * od jedne liste s RAZLIČITIM modelima (npr. Honda: motocikli + ATV-i +
+ * go-kartovi). Karlo je tražio "sve marke I MODELE", pa se modeli za isti
+ * slug SPAJAJU (unija, bez duplikata), ne odbacuju.
+ */
+const MOTO_DIJELOVI_SOURCE_LISTS: CarMake[][] = [
+  MOTO_MAKES, ATV_MAKES, MINIMOTO_MAKES, GOKART_MAKES, SANKE_MAKES, EROMOBIL_MAKES, EBICIKL_MAKES,
+];
+const motoDijeloviBySlug = new Map<string, CarMake>();
+for (const list of MOTO_DIJELOVI_SOURCE_LISTS) {
+  for (const m of list) {
+    if (m.slug === "ostalo") continue;
+    const existing = motoDijeloviBySlug.get(m.slug);
+    if (!existing) {
+      motoDijeloviBySlug.set(m.slug, { ...m, models: [...m.models] });
+      continue;
+    }
+    const mergedModels = new Set([...existing.models, ...m.models]);
+    existing.models = [...mergedModels].sort((a, b) => a.localeCompare(b, "hr"));
+  }
+}
+export const MOTO_DIJELOVI_MAKES: CarMake[] = [
+  ...[...motoDijeloviBySlug.values()].sort((a, b) => a.name.localeCompare(b.name, "hr")),
+  { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
+];
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
+  // ⚠️ Karlo 01.09.2026 (st.40): mora stajati ISPRED "dijelovi" grane niže
+  // (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana pobijedila
+  // i Moto dijelovi nikad ne bi stigao do ovog override-a.
+  if (categorySlug === "dijelovi" && subcategory === "moto-dijelovi") return MOTO_DIJELOVI_MAKES;
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
   if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
   if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;
