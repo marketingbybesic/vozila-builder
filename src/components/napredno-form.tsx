@@ -137,10 +137,14 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   const isAuto = category === "auto";
   const isMoto = category === "moto";
   const isGospodarska = category === "gospodarska";
-  /** Karlo 31.08.2026 (st.26/27): "Auto dijelovi" (Dijelovi i oprema) dobiva
-   * svoje posebno ponašanje na više mjesta (Za marku, Stanje predmeta,
-   * skrivena Godina) — jedan zastavica umjesto ponovljene provjere. */
-  const isAutoDijelovi = category === "dijelovi" && subcategory === "auto-dijelovi";
+  /** Karlo 31.08.2026 (st.26/27), prošireno 01.09.2026 (st.39): "Auto
+   * dijelovi" je imao ISPRAVNA polja/ponašanje napredne pretrage (Za marku s
+   * punim popisom auto marki, Stanje predmeta, grupirane "Najpopularnije
+   * marke") — Karlo je tražio da se to primijeni na CIJELU kategoriju
+   * Dijelovi i oprema, ne samo tu jednu podkategoriju. Ime zastavice ostaje
+   * (koristi se posvuda), sad samo pokriva čitavu kategoriju umjesto jedne
+   * podkategorije. */
+  const isAutoDijelovi = category === "dijelovi";
   /** Karlo 31.08.2026 (st.30): "Oprema za kampere i kamping" (Slobodno
    * vrijeme) dobiva IDENTIČNU pretragu kao Auto dijelovi (Za marku, Stanje
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */

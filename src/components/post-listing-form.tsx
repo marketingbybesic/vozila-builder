@@ -277,10 +277,12 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const filterDef: CategoryFilters = useMemo(() => getFilterDefs(s.category), [s.category]);
 
   // Marka po kategoriji (kao napredno-form): categoryDef.makes.
-  /** Karlo 31.08.2026 (st.26/30): "Auto dijelovi" i "Oprema za kampere i
-   * kamping" dijele isto ponašanje (Za marku, Stanje predmeta). */
+  /** Karlo 31.08.2026 (st.26/30), prošireno 01.09.2026 (st.39): "Auto
+   * dijelovi" i "Oprema za kampere i kamping" dijele isto ponašanje (Za
+   * marku, Stanje predmeta) — st.39 to širi na CIJELU kategoriju Dijelovi i
+   * oprema (isto kao napredno-form), ne samo Auto dijelove. */
   const usesPartsLayout =
-    (s.category === "dijelovi" && s.subcategory === "auto-dijelovi") ||
+    s.category === "dijelovi" ||
     (s.category === "prosti-cas" && s.subcategory === "kamping-oprema");
 
   // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise

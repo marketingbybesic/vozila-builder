@@ -614,7 +614,12 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   // marku" i puni popis auto marki+modela (isti kao Osobni auto), umjesto
   // popisa proizvođača dijelova (Bosch/Michelin...) koji ostaje svugdje
   // drugdje u Dijelovima (gume/felge/multimedija/ulja).
-  if (categorySlug === "dijelovi" && subcategory === "auto-dijelovi") return AUTO_MAKES;
+  // ⚠️ Karlo 01.09.2026 (st.39): "Sve u Dijelovima i opremi" — Auto dijelovi
+  // je imao ISPRAVNA polja, primijenjeno na CIJELU kategoriju. Sad SVE
+  // podkategorije Dijelova i opreme (gume, felge, multimedija, moto dijelovi,
+  // ulja...) koriste isti puni popis auto marki+modela, ne popis proizvođača
+  // dijelova (Bosch/Michelin...).
+  if (categorySlug === "dijelovi") return AUTO_MAKES;
   // ⚠️ Karlo 01.09.2026 (st.38): Slobodno vrijeme/Oprema za kampere i kamping
   // — "Za marku" popis marki NIJE bio kompletan (st.30 ga je stavio na AUTO_MAKES,
   // krivo — kamperska oprema treba marke IZ SLOBODNOG VREMENA, ne osobna vozila).
