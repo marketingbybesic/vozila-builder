@@ -556,6 +556,11 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // mehanizacija (dijelovi za kamione/dostavna/autobuse/prikolice imaju
   // previše raznolikih varijanti za fiksni popis).
   if (categorySlug === "dijelovi" && subcategory === "za-gospodarska") return true;
+  // ⚠️ Karlo 01.09.2026 (st.42): Dijelovi/Za građevinske strojeve — Marka bira
+  // iz spojenog popisa (MEHANIZACIJA_DIJELOVI_MAKES, gore), Model slobodan
+  // upis (izričito zatraženo; modeli strojeva/priključaka previše raznoliki
+  // za fiksni popis, isto obrazloženje kao ostali "Dijelovi za" popisi).
+  if (categorySlug === "dijelovi" && subcategory === "za-gradevinske-strojeve") return true;
   return false;
 }
 
@@ -627,12 +632,33 @@ export const GOSPODARSKA_DIJELOVI_MAKES: CarMake[] = mergeMakesWithModels([
   GOSPODARSKA_PRIKOLICE_MAKES, GOSPODARSKA_AUTOBUSI_MAKES,
 ]);
 
+/**
+ * Dijelovi i oprema/Za građevinske strojeve (st.42) — spoj svih 5 izvora
+ * Mehanizacije (viličari/građevinski/poljoprivredni/šumarski/komunalni), plus
+ * generički starter popis (pokriva najam/mehanizacija-ostalo, koji nemaju
+ * vlastitu dediciranu listu). ⚠️ Građevinski i Poljoprivredni su GOTOVO
+ * IDENTIČNI (1368/1368 istih slugova — dijele isti master popis proizvođača
+ * strojeva s avto.neta), pa merge tu ne dodaje ništa novo; Viličari (45 novih),
+ * Šumarski i Komunalni (par novih svaki) su ti koji stvarno prošire popis.
+ */
+const MEHANIZACIJA_STARTER_AS_MAKES: CarMake[] = MEHANIZACIJA_MAKES_STARTER.map(
+  (n) => ({ slug: SLUG(n), name: n, country: "—", models: [] })
+);
+export const MEHANIZACIJA_DIJELOVI_MAKES: CarMake[] = mergeMakesWithModels([
+  MEHANIZACIJA_GRADEVINSKI_MAKES, MEHANIZACIJA_POLJOPRIVREDNI_MAKES, MEHANIZACIJA_VILICARI_MAKES,
+  MEHANIZACIJA_SUMARSKI_MAKES, MEHANIZACIJA_KOMUNALNI_MAKES, MEHANIZACIJA_STARTER_AS_MAKES,
+]);
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
-  // ⚠️ Karlo 01.09.2026 (st.40/41): moraju stajati ISPRED "dijelovi" grane
+  // ⚠️ Karlo 01.09.2026 (st.40/41/42): moraju stajati ISPRED "dijelovi" grane
   // niže (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana
   // pobijedila i ovi override-i nikad ne bi bili dosegnuti.
   if (categorySlug === "dijelovi" && subcategory === "moto-dijelovi") return MOTO_DIJELOVI_MAKES;
   if (categorySlug === "dijelovi" && subcategory === "za-gospodarska") return GOSPODARSKA_DIJELOVI_MAKES;
+  // Karlo 01.09.2026 (st.42): "Za građevinske strojeve" marke dolaze iz cijele
+  // Mehanizacije, ne samo Građevinski (naziv podkategorije, "za-gradevinske-strojeve",
+  // ostaje isti — samo izvor marki je proširen na cijelu Mehanizaciju).
+  if (categorySlug === "dijelovi" && subcategory === "za-gradevinske-strojeve") return MEHANIZACIJA_DIJELOVI_MAKES;
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
   if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
   if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;

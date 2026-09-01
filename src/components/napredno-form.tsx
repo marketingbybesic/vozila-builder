@@ -197,6 +197,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // pa ni njen "Dijelovi za" ekvivalent ne dobiva grupu — isti bug-obrazac
     // kao st.38/40 da se izbjegne.
     if (category === "dijelovi" && subcategory === "za-gospodarska") return list.map((m) => ({ value: m.slug, label: m.name }));
+    // ⚠️ Karlo 01.09.2026 (st.42): Dijelovi/Za građevinske strojeve — spojeni
+    // popis SVIH marki Mehanizacije (MEHANIZACIJA_DIJELOVI_MAKES). Mehanizacija
+    // sama nema grupu "Najpopularnije" — isti razlog kao st.41 (Gospodarska).
+    if (category === "dijelovi" && subcategory === "za-gradevinske-strojeve") return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
