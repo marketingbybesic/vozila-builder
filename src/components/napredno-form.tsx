@@ -721,6 +721,22 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             kroz slikoviti gate iznad (needsVrstaPick) — ovdje bi se ponovila
             kao multi-select checkbox lista, pa se za nju preskače. */}
         {vrstaGroup && !isKampingOprema && renderDynGroup(vrstaGroup)}
+        {/* ⚠️ Karlo 01.09.2026 (st.37): kamping-oprema — kad je Vrsta već
+            odabrana kroz slikoviti gate, korisnik unutar forme nije imao
+            NIKAKAV vidljivi trag koju je Vrstu odabrao ni način da je
+            promijeni. Dropdown, ista vizualna razina kao "Podkategorija"
+            odmah iznad — isti sub.children popis (bez ikona, kao i sve
+            druge SelectField opcije), stvarna vrijednost i dalje ostaje
+            attrs.vrsta (niz s 1 elementom, isti ključ kao gate). */}
+        {isKampingOprema && vrstaGroup && (
+          <SelectField
+            label="Vrsta"
+            value={Array.isArray(vrstaValue) ? (vrstaValue[0] ?? "") : (vrstaValue as string | undefined) ?? ""}
+            onChange={(v) => setAttr("vrsta", v ? [v] : undefined)}
+            options={(vrstaGroup.fields[0]?.options ?? []).map((o) => ({ value: o.value, label: o.label }))}
+            placeholder="Sve vrste"
+          />
+        )}
         {/* Tip ponude + Stanje vozila ODMAH ispod Podkategorije */}
         <div className="grid sm:grid-cols-2 gap-3">
           {/* ⚠️ Karlo 26.08.2026: "Tip ponude" je RUČNI MultiSelect (izvan sheme),
