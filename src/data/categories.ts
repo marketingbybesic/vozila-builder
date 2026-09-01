@@ -565,6 +565,10 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // bira iz Mehanizacija/Poljoprivredni strojevi (MEHANIZACIJA_POLJOPRIVREDNI_MAKES),
   // Model slobodan upis (izričito zatraženo, isto obrazloženje kao st.42).
   if (categorySlug === "dijelovi" && subcategory === "za-poljoprivredne-strojeve") return true;
+  // ⚠️ Karlo 01.09.2026 (st.44): Dijelovi/Za viličare — Marka bira iz
+  // Mehanizacija/Viličari (MEHANIZACIJA_VILICARI_MAKES), Model slobodan upis
+  // (izričito zatraženo, isto obrazloženje kao st.42/43).
+  if (categorySlug === "dijelovi" && subcategory === "za-vilicare") return true;
   return false;
 }
 
@@ -667,6 +671,9 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   // Poljoprivredni strojevi (Mehanizacija), izričito NE spoj svih rubrika
   // Mehanizacije (za razliku od st.42, koje je tražilo cijelu kategoriju).
   if (categorySlug === "dijelovi" && subcategory === "za-poljoprivredne-strojeve") return MEHANIZACIJA_POLJOPRIVREDNI_MAKES;
+  // Karlo 01.09.2026 (st.44): "Za viličare" — SAMO izvor Viličari (Mehanizacija),
+  // isti obrazac kao st.43.
+  if (categorySlug === "dijelovi" && subcategory === "za-vilicare") return MEHANIZACIJA_VILICARI_MAKES;
   if (categorySlug === "moto" && subcategory === "atv-utv") return ATV_MAKES;
   if (categorySlug === "moto" && subcategory === "minimoto") return MINIMOTO_MAKES;
   if (categorySlug === "moto" && subcategory === "gokart") return GOKART_MAKES;
