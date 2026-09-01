@@ -190,6 +190,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // "Najpopularnije" mora tražiti MOTO slugove (Honda/Yamaha/Piaggio...),
     // ne auto slugove (Audi/BMW...) — inače prazna/kriva grupa kao st.38.
     if (category === "dijelovi" && subcategory === "moto-dijelovi") return makeOptionsGrouped(list, popularMotoSlugsFor());
+    // ⚠️ Karlo 01.09.2026 (st.41): Dijelovi/Za gospodarska vozila — spojeni
+    // popis SVIH marki Gospodarske (GOSPODARSKA_DIJELOVI_MAKES). Gospodarska
+    // kategorija SAMA nema grupu "Najpopularnije" (ravna abeceda, vidi ispod
+    // — nijedna grana ovdje ne postavlja `isGospodarska` u makeOptionsGrouped),
+    // pa ni njen "Dijelovi za" ekvivalent ne dobiva grupu — isti bug-obrazac
+    // kao st.38/40 da se izbjegne.
+    if (category === "dijelovi" && subcategory === "za-gospodarska") return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
