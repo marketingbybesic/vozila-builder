@@ -546,6 +546,10 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // bez ponuđenih limitiranih popisa (previše proizvođača/varijanti da bi
   // fiksni popis pokrio sve).
   if (categorySlug === "prosti-cas" && subcategory === "plovila") return true;
+  // ⚠️ Karlo 01.09.2026 (st.38): kamping oprema — Marka bira iz spojenog
+  // popisa (gore), ali Model se upisuje slobodno (varijante dijelova/opreme
+  // su previše raznolike za fiksni popis, isto obrazloženje kao mehanizacija).
+  if (categorySlug === "prosti-cas" && subcategory === "kamping-oprema") return true;
   return false;
 }
 
@@ -611,9 +615,12 @@ export function makesForSub(categorySlug: string, subcategory?: string): CarMake
   // popisa proizvođača dijelova (Bosch/Michelin...) koji ostaje svugdje
   // drugdje u Dijelovima (gume/felge/multimedija/ulja).
   if (categorySlug === "dijelovi" && subcategory === "auto-dijelovi") return AUTO_MAKES;
-  // ⚠️ Karlo 31.08.2026 (st.30): Slobodno vrijeme/Oprema za kampere i kamping
-  // dobiva IDENTIČNU pretragu kao Auto dijelovi — isti popis auto marki+modela
-  // za "Za marku" (samo Vrsta ostaje njena postojeća lista, netaknuta).
-  if (categorySlug === "prosti-cas" && subcategory === "kamping-oprema") return AUTO_MAKES;
+  // ⚠️ Karlo 01.09.2026 (st.38): Slobodno vrijeme/Oprema za kampere i kamping
+  // — "Za marku" popis marki NIJE bio kompletan (st.30 ga je stavio na AUTO_MAKES,
+  // krivo — kamperska oprema treba marke IZ SLOBODNOG VREMENA, ne osobna vozila).
+  // Sad koristi isti spojeni popis kao "Ponude za najam" (svih 8 rubrika Slobodnog
+  // vremena s vlastitim popisom marki, bez duplikata) — Model ostaje slobodan upis
+  // (freeTextModelField niže), jer kamperska oprema ima previše varijanti za popis.
+  if (categorySlug === "prosti-cas" && subcategory === "kamping-oprema") return PROSTI_CAS_NAJAM_MAKES;
   return null;
 }
