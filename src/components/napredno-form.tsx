@@ -201,6 +201,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // popis SVIH marki Mehanizacije (MEHANIZACIJA_DIJELOVI_MAKES). Mehanizacija
     // sama nema grupu "Najpopularnije" — isti razlog kao st.41 (Gospodarska).
     if (category === "dijelovi" && subcategory === "za-gradevinske-strojeve") return list.map((m) => ({ value: m.slug, label: m.name }));
+    // ⚠️ Karlo 01.09.2026 (st.43): Dijelovi/Za poljoprivredne strojeve — popis
+    // Mehanizacija/Poljoprivredni strojevi, ista logika kao st.42 (bez grupe
+    // "Najpopularnije").
+    if (category === "dijelovi" && subcategory === "za-poljoprivredne-strojeve") return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
