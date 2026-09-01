@@ -291,6 +291,15 @@ const NUM_OWNERS_FIELD: FilterField = {
   ],
 };
 
+/**
+ * ⚠️ Karlo 01.09.2026 (st.47): "Ponude za najam" (Auto) ne treba niz polja
+ * koja pretpostavljaju da se vozilo KUPUJE (emisije/potrošnja, konfiguracija
+ * vrata/sjedala/tapacirunga, oštećenja/kvar, gomila opreme, vlasništvo/broj
+ * vlasnika/servisna povijest — sve to su kupčeva pitanja o VLASNIŠTVU, ne o
+ * najmu). Svaka Auto podkategorija OSIM najma dobiva ovaj scope.
+ */
+const AUTO_SUBS_EXCEPT_NAJAM = ["auto-oglasi", "trkaci", "eko", "luksuzni", "oldtimer", "ostecen-u-kvaru", "auto-ostalo"];
+
 // ── AUTO — full 39-field taxonomy from avto.net ────────────────────────
 const AUTO_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_YEAR, COMMON_KM, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
@@ -324,13 +333,16 @@ const AUTO_FIELDS: FilterField[] = [
   // Karlo st. 23 (05.08.2026): dodana 2 vrata (coupe/roadster) — lista je
   // kretala od 3. Zod (min(2)) i baza (integer) već primaju 2.
   { key: "doors", label: "Vrata", type: "multi", storage: "column", group: "Vrata i sjedala",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [{ value: "2", label: "2 vrata" }, { value: "3", label: "3 vrata" }, { value: "4", label: "4 vrata" }, { value: "5", label: "5 vrata" }] },
-  { key: "slidingDoors", label: "Klizna vrata", type: "toggle", storage: "attr", group: "Vrata i sjedala" },
+  { key: "slidingDoors", label: "Klizna vrata", type: "toggle", storage: "attr", group: "Vrata i sjedala", scope: AUTO_SUBS_EXCEPT_NAJAM },
   // Karlo t.17: dodan broj 3
   { key: "seats", label: "Sjedala", type: "multi", storage: "column", group: "Vrata i sjedala",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [2,3,4,5,7,9].map((n) => ({ value: String(n), label: `${n}` })) },
   // Karlo 31.07: tapacirung + njegova boja (obje uz Vrata i sjedala).
   { key: "upholstery", label: "Tapacirung", type: "select", storage: "attr", group: "Vrata i sjedala",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "tkanina", label: "Tkanina" },
       { value: "velur", label: "Velur" },
@@ -342,6 +354,7 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "djelomicna-koza", label: "Djelomična koža" },
     ] },
   { key: "upholsteryColor", label: "Boja tapacirunga", type: "select", storage: "attr", group: "Vrata i sjedala",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "svijetlosiva", label: "Svijetlosiva" },
       { value: "tamnosiva", label: "Tamnosiva" },
@@ -364,18 +377,19 @@ const AUTO_FIELDS: FilterField[] = [
 
   // Emisijska norma + registracija (domenska analiza 2026-06-22)
   { key: "euroNorm", label: "Emisijska norma", type: "select", storage: "attr", group: "Motor",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: ["EURO 3","EURO 4","EURO 5","EURO 6","EURO 6d","EURO 7"].map(v) },
   // Karlo 31.07: CO2 i potrošnja idu POKRAJ emisijske norme (ista rubrika).
   // Mjerna jedinica stoji fiksno uz prozorčić — NumberField je renderira kao
   // sufiks, korisnik upisuje samo broj.
   { key: "co2", label: "Emisija CO2", type: "range", unit: "g/km", min: 0, max: 500, step: 5,
-    storage: "attr", group: "Motor" },
+    storage: "attr", group: "Motor", scope: AUTO_SUBS_EXCEPT_NAJAM },
   // ⚠️ `step: 0.01` (Dino 04.08.2026) — potrošnja je decimalna, DO DVIJE
   // decimale ("5,5" i "12,75" moraju proći). Objava iz stepa izvodi broj
   // decimala; `storage: "attr"` = jsonb, nema cjelobrojnog stupca u bazi koji
   // bi trebalo migrirati.
   { key: "fuelConsumption", label: "Kombinirana potrošnja", type: "range", unit: "l/100km",
-    min: 0, max: 30, step: 0.01, storage: "attr", group: "Motor" },
+    min: 0, max: 30, step: 0.01, storage: "attr", group: "Motor", scope: AUTO_SUBS_EXCEPT_NAJAM },
 
   // Karlo 31.07: Garancija POKRAJ kilometraže — kvačica "ima garanciju".
   // Bez `group` → pada u "Osnovno", isto gdje je i COMMON_KM.
@@ -410,8 +424,8 @@ const AUTO_FIELDS: FilterField[] = [
    * mora upisati vrijednost, a ne samo označiti da nešto postoji.
    */
   { key: "airbagCount", label: "Broj zračnih jastuka", type: "range", unit: "kom",
-    min: 0, max: 14, step: 1, storage: "attr", group: "Dodatne opcije" },
-  { key: "safety", label: "Sigurnost", type: "multi", storage: "attr", group: "Dodatne opcije",
+    min: 0, max: 14, step: 1, storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM },
+  { key: "safety", label: "Sigurnost", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "rdk", label: "Kontrola tlaka u gumama (RDK)" },
       { value: "ksenon", label: "Ksenonska svjetla" },
@@ -439,7 +453,7 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "sigurnosni-razmak", label: "Upozorenje na sigurnosni razmak" },
     ] },
 
-  { key: "chassis", label: "Podvozje i ovjes", type: "multi", storage: "attr", group: "Dodatne opcije",
+  { key: "chassis", label: "Podvozje i ovjes", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "alu-felge", label: "ALU felge" },
       { value: "abs", label: "Kočioni sustav (ABS)" },
@@ -461,9 +475,9 @@ const AUTO_FIELDS: FilterField[] = [
   // ionako upisuju oboje ("225/45 R17, 5x112 ET45").
   // ⚠️ `key` ostaje `wheelSize` — postojeći oglasi u bazi zadržavaju vrijednost.
   { key: "wheelSize", label: "Dimenzije gume i felge", type: "text", storage: "attr",
-    group: "Dodatne opcije", placeholder: 'npr. 225/45 R17, 5x112 ET45' },
+    group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM, placeholder: 'npr. 225/45 R17, 5x112 ET45' },
 
-  { key: "cabin", label: "Unutrašnjost", type: "multi", storage: "attr", group: "Dodatne opcije",
+  { key: "cabin", label: "Unutrašnjost", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "virtual-cockpit", label: "Virtualni Cockpit" },
       { value: "ambijentalno-svjetlo", label: "Ambijentalno osvjetljenje unutrašnjosti" },
@@ -487,7 +501,7 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "rashladni-pretinac", label: "Rashladni pretinac" },
     ] },
 
-  { key: "multimedia", label: "Multimedija", type: "multi", storage: "attr", group: "Dodatne opcije",
+  { key: "multimedia", label: "Multimedija", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "cd-izmjenjivac", label: "CD izmjenjivač / spremnik" },
       { value: "mp3", label: "MP3 player" },
@@ -509,13 +523,13 @@ const AUTO_FIELDS: FilterField[] = [
     ] },
   // Tri slobodna unosa uz Multimediju — prodavač upisuje ŠTO točno ima.
   { key: "radio", label: "Autoradio", type: "text", storage: "attr",
-    group: "Dodatne opcije", placeholder: "npr. Pioneer MVH-S120UI" },
+    group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM, placeholder: "npr. Pioneer MVH-S120UI" },
   { key: "radioCd", label: "Autoradio / CD", type: "text", storage: "attr",
-    group: "Dodatne opcije", placeholder: "npr. tvornički s CD-om" },
+    group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM, placeholder: "npr. tvornički s CD-om" },
   { key: "hifi", label: "Hi-Fi ozvučenje", type: "text", storage: "attr",
-    group: "Dodatne opcije", placeholder: "npr. Bose 13 zvučnika" },
+    group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM, placeholder: "npr. Bose 13 zvučnika" },
 
-  { key: "comfort", label: "Udobnost", type: "multi", storage: "attr", group: "Dodatne opcije",
+  { key: "comfort", label: "Udobnost", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "klima-rucna", label: "Klima uređaj – ručni" },
       { value: "klima-auto", label: "Automatski klima uređaj / digitalni" },
@@ -551,7 +565,7 @@ const AUTO_FIELDS: FilterField[] = [
       { value: "grijano-vjetrobran", label: "Grijano vjetrobransko staklo" },
     ] },
 
-  { key: "practicality", label: "Praktičnost", type: "multi", storage: "attr", group: "Dodatne opcije",
+  { key: "practicality", label: "Praktičnost", type: "multi", storage: "attr", group: "Dodatne opcije", scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "klupa-1-2", label: "Djeljiva stražnja klupa 1/2 – 1/2" },
       { value: "klupa-1-3", label: "Djeljiva stražnja klupa 1/3 – 2/3" },
@@ -580,7 +594,10 @@ const AUTO_FIELDS: FilterField[] = [
     ] },
 
   // Ownership / history (attr.multi)
+  // ⚠️ Karlo 01.09.2026 (st.47): "Ponude za najam" ne treba Vlasništvo (svi
+  // ostali su isto scope-ani na AUTO_SUBS_EXCEPT_NAJAM).
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
@@ -603,8 +620,11 @@ const AUTO_FIELDS: FilterField[] = [
   // i "Uvezeno iz" — datumska polja slobodnog unosa nisu se koristila za pretragu.
   // Dino 04.08.: "Broj vlasnika" stoji IZNAD "Servisne evidencije" — redoslijed
   // polja u shemi diktira redoslijed prikaza unutar rubrike.
-  NUM_OWNERS_FIELD,
+  // ⚠️ Karlo 01.09.2026 (st.47): "Broj vlasnika" i "Servisna evidencija" isto
+  // scope-ani van najma — isti obrazac kao NUM_OWNERS_FIELD override drugdje.
+  { ...NUM_OWNERS_FIELD, shared: false, scope: AUTO_SUBS_EXCEPT_NAJAM },
   { key: "serviceHistory", label: "Servisna evidencija", type: "select", storage: "attr", group: "Povijest",
+    scope: AUTO_SUBS_EXCEPT_NAJAM,
     options: [
       { value: "potpuna", label: "Potpuna servisna" },
       { value: "djelomicna", label: "Djelomična servisna" },
@@ -652,7 +672,10 @@ const AUTO_FIELDS: FilterField[] = [
     ] },
 
   // Karlo 30.07: nova rubrika "Stanje vozila" umjesto "Stanje karoserije".
-  ...VEHICLE_STATE_FIELDS,
+  // ⚠️ Karlo 01.09.2026 (st.47): "Ponude za najam" ne treba "Prikaz oštećenih/
+  // u kvaru" (VEHICLE_STATE_FIELDS) — kupčev filter za VLASNIŠTVO, ne najam.
+  // Scope dodan po polju umjesto spreada (isti obrazac kao NUM_OWNERS_FIELD).
+  ...VEHICLE_STATE_FIELDS.map((f) => ({ ...f, scope: AUTO_SUBS_EXCEPT_NAJAM })),
   ...SELLER_STATE_FIELDS,
 
   // Karlo 31.07: VIN + prva registracija + tehnički (svi osobni auti).
