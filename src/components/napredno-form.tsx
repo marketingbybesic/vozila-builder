@@ -150,13 +150,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
   const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
-  /** Karlo 31.08.2026: Dijelovi i oprema, Slobodno vrijeme, Moto, Gospodarska
-   * i Mehanizacija — kad je kategorija odabrana ali podkategorija JOŠ NIJE,
-   * prikaži SAMO slikoviti odabir podkategorije (ništa drugo). Nema "Sve
-   * podkategorije" — mora se izabrati jedna prije nego se otvori ostatak
-   * forme. */
+  /** Karlo 31.08.2026, prošireno 01.09.2026 (st.46): Auto, Dijelovi i oprema,
+   * Slobodno vrijeme, Moto, Gospodarska i Mehanizacija — kad je kategorija
+   * odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti odabir
+   * podkategorije (ništa drugo). Nema "Sve podkategorije" — mora se izabrati
+   * jedna prije nego se otvori ostatak forme. Auto je bio jedina kategorija
+   * bez ovog mehanizma (nikad izričito tražena do st.46) — sad su svih 6
+   * kategorija s podkategorijama pokrivene. */
   const usesSubPickGrid =
-    category === "dijelovi" || category === "prosti-cas" || category === "moto" || category === "gospodarska" || category === "mehanizacija";
+    category === "dijelovi" || category === "prosti-cas" || category === "moto" || category === "gospodarska" || category === "mehanizacija" || category === "auto";
   const needsSubPick = usesSubPickGrid && !subcategory;
   /** Karlo 31.08.2026 (st.36): Slobodno vrijeme → Oprema za kampere i kamping
    * ide JOŠ jednu razinu dublje — kad je podkategorija odabrana ali "Vrsta"
