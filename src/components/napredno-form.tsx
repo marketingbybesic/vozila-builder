@@ -799,7 +799,14 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               onChange={(v) => { const nv = v === SVE_MARKE ? "" : v; setMake(nv); setModel(""); }}
               onFocus={() => setMakeFocus(true)}
               onBlur={() => setMakeFocus(false)}
-              placeholder="npr. Jeanneau, Bavaria..."
+              /* ⚠️ Karlo 01.09.2026 (st.45): Servisna oprema nema "marku vozila"
+                 (dizalice/alat/oprema) — primjeri moraju odgovarati toj rubrici,
+                 ne kamperskim markama (Jeanneau/Bavaria) naslijeđenim od plovila. */
+              placeholder={
+                category === "dijelovi" && subcategory === "servisna-oprema"
+                  ? "npr. Bosch, Facom, Snap-on..."
+                  : "npr. Jeanneau, Bavaria..."
+              }
             />
           ) : (
             <SelectField

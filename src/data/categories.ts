@@ -569,6 +569,9 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // Mehanizacija/Viličari (MEHANIZACIJA_VILICARI_MAKES), Model slobodan upis
   // (izričito zatraženo, isto obrazloženje kao st.42/43).
   if (categorySlug === "dijelovi" && subcategory === "za-vilicare") return true;
+  // ⚠️ Karlo 01.09.2026 (st.45): Dijelovi/Servisna oprema — Marka I Model oboje
+  // slobodan upis (vidi freeTextMakeField gore za obrazloženje).
+  if (categorySlug === "dijelovi" && subcategory === "servisna-oprema") return true;
   return false;
 }
 
@@ -579,7 +582,14 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
  * i dalje biraju iz popisa da oglas ostane dohvatljiv kroz filtar marke).
  */
 export function freeTextMakeField(categorySlug: string, subcategory?: string): boolean {
-  return categorySlug === "prosti-cas" && subcategory === "plovila";
+  if (categorySlug === "prosti-cas" && subcategory === "plovila") return true;
+  // ⚠️ Karlo 01.09.2026 (st.45): Dijelovi/Servisna oprema — dizalice, dijagnostika,
+  // ručni/pneumatski alat, vulkanizerska/limarska oprema, radionički namještaj...
+  // nemaju "marku vozila" na koju bi se odnosili (za razliku od "Za viličare"/"Za
+  // gospodarska" gdje popis marki ima smisla) — korisnik upisuje marku alata/opreme
+  // slobodno, bez ponuđenog popisa.
+  if (categorySlug === "dijelovi" && subcategory === "servisna-oprema") return true;
+  return false;
 }
 
 export function showsModelField(categorySlug: string, subcategory?: string): boolean {

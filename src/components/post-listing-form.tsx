@@ -925,7 +925,13 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   label="Marka"
                   value={s.make}
                   onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
-                  placeholder="npr. Jeanneau, Bavaria..."
+                  /* ⚠️ Karlo 01.09.2026 (st.45): Servisna oprema — primjeri
+                     alata/opreme, ne kamperskih marki naslijeđenih od plovila. */
+                  placeholder={
+                    s.category === "dijelovi" && s.subcategory === "servisna-oprema"
+                      ? "npr. Bosch, Facom, Snap-on..."
+                      : "npr. Jeanneau, Bavaria..."
+                  }
                 />
               ) : (
                 <SelectField
