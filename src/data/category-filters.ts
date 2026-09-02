@@ -1294,6 +1294,21 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
       { value: "prikljucni", label: "Priključni stroj" },
     ] },
 
+  // ⚠️ Karlo 02.09.2026 (st.53): "Vrsta vozila" — novi izbornik ISPOD
+  // Podkategorije za "Ponude za najam" (isti mehanizam kao Moto st.48 i
+  // Gospodarska st.50). Iste opcije kao ostale Mehanizacija podkategorije,
+  // BEZ "Ponude za najam" same sebe. Placeholder "Sva vozila".
+  { key: "vehicleType", label: "Vrsta vozila", type: "select", storage: "attr", group: "Vrsta",
+    scope: ["najam"], placeholder: "Sva vozila",
+    options: [
+      { value: "poljoprivredni-strojevi", label: "Poljoprivredni strojevi" },
+      { value: "vilicari", label: "Viličari" },
+      { value: "sumarski-strojevi", label: "Šumarski strojevi" },
+      { value: "komunalni-strojevi", label: "Komunalni strojevi" },
+      { value: "gradevinski-strojevi", label: "Građevinski strojevi" },
+      { value: "mehanizacija-ostalo", label: "Ostalo" },
+    ] },
+
   // Karlo 30.07: rubrike MOTOR i SPECIFIKACIJE IZBAČENE iz poljoprivrednih,
   // viličara i građevinskih strojeva. Polja niže zadržavaju scope na preostale
   // podkategorije (šumarski / komunalni / najam) gdje su i dalje korisna.
