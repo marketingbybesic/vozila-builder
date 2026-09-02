@@ -938,6 +938,21 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "pickup", label: "Pick up" },
     ] },
 
+  // ⚠️ Karlo 02.09.2026 (st.50): "Vrsta vozila" — novi izbornik ISPOD
+  // Podkategorije za "Ponude za najam" (isti mehanizam kao Moto st.48). Iste
+  // opcije kao ostale Gospodarska podkategorije, BEZ "Ponude za najam" same
+  // sebe. Placeholder "Sva vozila" umjesto generičkog "Sve".
+  { key: "vehicleType", label: "Vrsta vozila", type: "select", storage: "attr", group: "Vrsta",
+    scope: ["najam"], placeholder: "Sva vozila",
+    options: [
+      { value: "dostavna", label: "Dostavna vozila" },
+      { value: "kamioni", label: "Kamioni" },
+      { value: "autobusi", label: "Autobusi" },
+      { value: "prikolice", label: "Teretne prikolice" },
+      { value: "utv", label: "UTV vozila" },
+      { value: "gospodarska-ostalo", label: "Ostalo" },
+    ] },
+
   { key: "priceVat",
     scope: ["dostavna", "kamioni", "autobusi", "najam"], label: "PDV", type: "select", storage: "attr", group: "Cijena",
     options: [
