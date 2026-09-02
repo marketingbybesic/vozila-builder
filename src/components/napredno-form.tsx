@@ -24,7 +24,7 @@ import {
 import {
   Car, Gauge, Palette, ShieldCheck, Sofa, Tag, DoorOpen, ChevronRight,
   History, MapPin, Settings2, Zap, Boxes, Ruler, ListFilter, Search, RotateCcw,
-  Wrench, CircleDot, Droplets, Scale, FileText,
+  Wrench, CircleDot, Droplets, Scale, FileText, Bike,
 } from "lucide-react";
 import {
   MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, ColorPicker, RangeSelect, RangeInput, TogglePill, TextField, Label,
@@ -590,14 +590,21 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   };
 
   const renderDynGroup = (g: { name: string; fields: FilterField[] }) => {
-    const GIcon = GROUP_ICON[g.name] ?? ListFilter;
+    // ⚠️ Karlo 02.09.2026 (st.49): rubrika "Vrsta" u Motu ("Vrsta vozila" za
+    // Ponude za najam) dijelila je generičku auto ikonu i naslov sa SVIM
+    // ostalim kategorijama koje imaju "Vrsta" grupu (Gospodarska/Mehanizacija/
+    // Slobodno vrijeme/Dijelovi). Moto dobiva SVOJU ikonu (Bike) i naslov
+    // "Moto vrsta" — ostale kategorije ostaju na generičkom GROUP_ICON/nazivu.
+    const isMotoVrsta = category === "moto" && g.name === "Vrsta";
+    const GIcon = isMotoVrsta ? Bike : (GROUP_ICON[g.name] ?? ListFilter);
+    const groupTitle = isMotoVrsta ? "Moto vrsta" : g.name;
     return (
       // Karlo st. 15: crta između rubrika unutar istog panela ("Više filtera"
       // slaže OPREMU/POVIJEST/SPECIFIKACIJE bez ikakve podjele). `first:` je
       // gasi kad je rubrika prvi element panela; s panelovim space-y-4 linija
       // stoji simetrično (16px razmaka iznad i ispod).
       <div key={g.name} className="space-y-3 border-t border-[var(--color-line)] pt-4 first:border-t-0 first:pt-0">
-        <SectionHead icon={GIcon} title={g.name} />
+        <SectionHead icon={GIcon} title={groupTitle} />
         <div className="grid sm:grid-cols-2 gap-3">
           {g.fields.map(renderField)}
         </div>
