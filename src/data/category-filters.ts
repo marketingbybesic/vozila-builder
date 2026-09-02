@@ -1732,24 +1732,9 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "oilVolume", label: "Volumen", type: "range", unit: "L", min: 0, max: 60, step: 1, storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
   { key: "oilBrand", label: "Proizvođač", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
 
-  // Multimedija — scope multimedija
-  { key: "mediaType", label: "Vrsta uređaja", type: "select", storage: "attr", group: "Detalji", scope: ["multimedija"],
-    options: [
-      { value: "radio", label: "Radio / glavna jedinica" },
-      { value: "zvucnici", label: "Zvučnici" },
-      { value: "pojacalo", label: "Pojačalo" },
-      { value: "subwoofer", label: "Subwoofer" },
-      { value: "navigacija", label: "Navigacija" },
-      { value: "kamera", label: "Kamera" },
-    ] },
-  { key: "mediaConnectivity", label: "Povezivost", type: "multi", storage: "attr", group: "Detalji", scope: ["multimedija"],
-    options: [
-      { value: "bluetooth", label: "Bluetooth" },
-      { value: "carplay", label: "Apple CarPlay" },
-      { value: "androidauto", label: "Android Auto" },
-      { value: "usb", label: "USB" },
-      { value: "dab", label: "DAB+" },
-    ] },
+  // ⚠️ Karlo 02.09.2026 (st.56): "Vrsta uređaja" (mediaType) i "Povezivost"
+  // (mediaConnectivity) POTPUNO UKLONJENI — bila su scope-ana isključivo na
+  // multimedija (izričito zatraženo brisanje).
 
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" },
   // ⚠️ Karlo 01.09.2026 (st.39): "Dostava moguća" uklonjena posvuda — auto-dijelovi
