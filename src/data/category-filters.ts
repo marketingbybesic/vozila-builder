@@ -1282,9 +1282,10 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
       { value: "asfalter", label: "Stroj za asfalt" },
       { value: "ostalo", label: "Ostalo" },
     ] },
-  // Ostale podkategorije (šumarski, komunalni, najam) zadržavaju opću listu.
+  // Ostale podkategorije (šumarski, komunalni) zadržavaju opću listu.
+  // ⚠️ Karlo 02.09.2026 (st.55): "najam" maknuta — izričito zatraženo.
   { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
+    scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [
       v("Traktor"), v("Kombajn"), v("Bager"), v("Utovarivač"),
       { value: "rovokopac", label: "Rovokopač" },
@@ -1311,22 +1312,24 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
 
   // Karlo 30.07: rubrike MOTOR i SPECIFIKACIJE IZBAČENE iz poljoprivrednih,
   // viličara i građevinskih strojeva. Polja niže zadržavaju scope na preostale
-  // podkategorije (šumarski / komunalni / najam) gdje su i dalje korisna.
+  // podkategorije (šumarski / komunalni) gdje su i dalje korisna.
+  // ⚠️ Karlo 02.09.2026 (st.55): cijela rubrika Motor i cijela rubrika
+  // Specifikacije uklonjene iz "najam" (izričito zatraženo).
   { key: "fuel", label: "Pogon", type: "multi", storage: "column", group: "Motor",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
+    scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: ["Dizel","Električni","Hibrid","Plin"].map(v) },
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
+    scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [v("Ručni"), v("Automatski"), { value: "hidrostatski", label: "Hidrostatski" }] },
   { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
   { key: "powerHp", label: "Snaga", type: "range", unit: "KS", min: 0, max: 800, step: 5, storage: "attr", group: "Motor",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
   { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", publishRequired: true,
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
   { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
   // ── VILIČARI: nova rubrika "Nosivost, visina dizanja" (Karlo 30.07) ──────
   // Od/Do izbornik s fiksnom ljestvicom (`steps`), isti pattern kao Cijena.
@@ -1343,47 +1346,50 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
 
   // Dodatne opcije — Karlo nije tražio promjenu, ali polja koja su bila vezana
   // uz izbačene rubrike dobivaju scope da ne vise prazna.
-  { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "cabin", label: "Klimatizirana kabina", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "rops", label: "ROPS (zaštita od prevrtanja)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "fops", label: "FOPS (zaštita od pada predmeta)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "gps", label: "GPS / Telematika", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "drive4x4", label: "Pogon 4x4 / 4WD", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "pto", label: "Priključno vratilo (PTO)", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "threePointHitch", label: "Trozglobna poveznica", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "frontLoader", label: "Prednji utovarivač", type: "toggle", storage: "attr", group: "Dodatne opcije", scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "cabin", label: "Klimatizirana kabina", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "rops", label: "ROPS (zaštita od prevrtanja)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "fops", label: "FOPS (zaštita od pada predmeta)", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "gps", label: "GPS / Telematika", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "ac", label: "Klima uređaj", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "quickCoupler", label: "Brza spojka", type: "toggle", storage: "attr", group: "Dodatne opcije" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
   // ── Karlo 30.07: nova rubrika "Stanje mehanizacije" ─────────────────────
   // Traži se za poljoprivredne i građevinske strojeve; dajemo je i preostalim
   // podkategorijama radi dosljednosti (ista logika Prikaži / Ne prikaži).
+  // ⚠️ Karlo 02.09.2026 (st.55): cijela rubrika uklonjena iz "najam" (izričito
+  // zatraženo) — scope dodan (prije nije postojao = vidljivo svugdje).
   { key: "hideDamaged", label: "Mehanizacija oštećena", type: "select", storage: "attr", searchOnly: true,
-    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["poljoprivredni-strojevi", "vilicari", "sumarski-strojevi", "komunalni-strojevi", "gradevinski-strojevi", "mehanizacija-ostalo"] },
   { key: "hideBroken", label: "Mehanizacija u kvaru", type: "select", storage: "attr", searchOnly: true,
-    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS },
+    group: "Stanje mehanizacije", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
+    scope: ["poljoprivredni-strojevi", "vilicari", "sumarski-strojevi", "komunalni-strojevi", "gradevinski-strojevi", "mehanizacija-ostalo"] },
 
   // Povijest — Karlo 30.07: "Stanje" (6 stupnjeva) izbačeno, gore je zamjena.
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
+    scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [
       { value: "servisna", label: "Servisna knjižica" },
       { value: "hr-podrijetlo", label: "Hrvatsko podrijetlo" },
     ] },
-  { ...NUM_OWNERS_FIELD, shared: false, scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { ...NUM_OWNERS_FIELD, shared: false, scope: ["sumarski-strojevi", "komunalni-strojevi"] },
   { key: "registeredForRoad", label: "Registriran za cestu", type: "toggle", storage: "attr", group: "Povijest",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
-  // Najam — samo najam subkategorija (domenska analiza)
-  { key: "dailyRate", label: "Dnevna cijena najma", type: "range", unit: "€", min: 0, max: 5000, step: 10, storage: "attr", group: "Ostalo", scope: ["najam"] },
-  { key: "minRentalDays", label: "Min. dana najma", type: "select", storage: "attr", group: "Ostalo", scope: ["najam"],
-    options: [1,3,7,14,30].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "operator", label: "S operaterom", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "delivery", label: "Dostava na lokaciju", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  // ⚠️ Karlo 02.09.2026 (st.55): "Dnevna cijena najma"/"Min. dana najma"
+  // POTPUNO UKLONJENI — "najam" je bio JEDINI scope, izričito potvrđeno
+  // brisanje cijele rubrike "Ostalo" bez iznimke (uklj. ova dva polja).
+  { key: "operator", label: "S operaterom", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "delivery", label: "Dostava na lokaciju", type: "toggle", storage: "attr", group: "Ostalo", scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
   { key: "offerType", label: "Tip ponude", type: "multi", storage: "attr", group: "Ostalo",
-    scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"],
+    scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [v("prodaja"), v("najam")] },
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
-  { key: "serviceHistory", label: "Servisna evidencija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi", "najam"] },
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "serviceHistory", label: "Servisna evidencija", type: "toggle", storage: "attr", group: "Ostalo" , scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
   // Karlo 31.07: mehanizacija ima serijski broj, ali NEMA tehnički pregled
   // (bager i viličar se ne registriraju za cestu), pa samo taj jedan podatak.
