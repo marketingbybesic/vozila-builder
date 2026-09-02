@@ -34,6 +34,15 @@ import { ActiveChips, type Chip } from "@/components/napredno/active-filters";
 import type { LucideIcon } from "lucide-react";
 
 const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
+// ⚠️ Karlo 02.09.2026 (st.57): Dijelovi/Multimedija — dijelovi su jeftiniji od
+// vozila (autoradio/zvučnici/kamere), pa gruba PRICE_STEPS ljestvica (skokovi
+// od 500-1000€) nema smisla. Gušća ljestvica: do 500€ po 25€, 500-1000€ po
+// 100€, 1000-3000€ po 500€.
+const MULTIMEDIJA_PRICE_STEPS = [
+  25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500,
+  600, 700, 800, 900, 1000,
+  1500, 2000, 2500, 3000,
+];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
 const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
 const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
@@ -863,7 +872,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
             nema godinu proizvodnje kao vozilo), pa naslov postaje "Cijena". */}
         <SectionHead icon={Tag} title={usesPartsLayout ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
-        <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax} steps={PRICE_STEPS} />
+        <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax}
+          steps={category === "dijelovi" && subcategory === "multimedija" ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           {!usesPartsLayout && (
             <div>
