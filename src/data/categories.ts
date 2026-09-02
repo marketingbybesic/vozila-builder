@@ -537,7 +537,10 @@ export function makesDbFor(categorySlug: string): CarMake[] {
  */
 export function freeTextModelField(categorySlug: string, subcategory?: string): boolean {
   if (categorySlug === "gospodarska") {
-    return subcategory === "kamioni" || subcategory === "autobusi" || subcategory === "prikolice";
+    // ⚠️ Karlo 02.09.2026 (st.51): "najam" dodan — vidi freeTextMakeField
+    // niže za puno obrazloženje (spaja 5 vrsta vozila, nijedan popis marki
+    // ne pokriva sve).
+    return subcategory === "kamioni" || subcategory === "autobusi" || subcategory === "prikolice" || subcategory === "najam";
   }
   // Karlo 26.08.2026: nakon građevinskih, SVE rubrike mehanizacije imaju
   // slobodan upis — jednostavnije od nabrajanja svih pet.
@@ -572,6 +575,9 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // ⚠️ Karlo 01.09.2026 (st.45): Dijelovi/Servisna oprema — Marka I Model oboje
   // slobodan upis (vidi freeTextMakeField gore za obrazloženje).
   if (categorySlug === "dijelovi" && subcategory === "servisna-oprema") return true;
+  // Karlo 02.09.2026 (st.51): Gospodarska/Ponude za najam Model slobodan upis
+  // — pokriveno gore u ranom "gospodarska" return-u (dodano "najam" uz
+  // kamioni/autobusi/prikolice), ne treba zaseban if ovdje.
   return false;
 }
 
@@ -589,6 +595,14 @@ export function freeTextMakeField(categorySlug: string, subcategory?: string): b
   // gospodarska" gdje popis marki ima smisla) — korisnik upisuje marku alata/opreme
   // slobodno, bez ponuđenog popisa.
   if (categorySlug === "dijelovi" && subcategory === "servisna-oprema") return true;
+  // ⚠️ Karlo 02.09.2026 (st.51): Gospodarska/Ponude za najam — pretraga spaja
+  // dostavna vozila, kamione, autobuse, prikolice i UTV-ove (st.50 "Vrsta
+  // vozila" izbornik), pa jedan fiksni popis marki nema smisla — svaka od
+  // pet vrsta ima svoj vlastiti popis (GOSPODARSKA_DOSTAVNA_MAKES,
+  // GOSPODARSKA_KAMIONI_MAKES, itd.), i ni jedan pojedinačno ne pokriva sve.
+  // Korisnik upisuje marku slobodno, isto obrazloženje kao Dijelovi/
+  // Servisna oprema.
+  if (categorySlug === "gospodarska" && subcategory === "najam") return true;
   return false;
 }
 
