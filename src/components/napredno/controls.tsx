@@ -13,7 +13,8 @@ import {
   Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets,
   House, Layers, Tent, TentTree, Zap, Backpack, CalendarDays,
   Route, Mountain, Rocket, History, Flag, MountainSnow, TreePine, Trash2,
-  Flame, Sun, Armchair, Leaf, Gem, AlertTriangle, type LucideIcon,
+  Flame, Sun, Armchair, Leaf, Gem, AlertTriangle, Snowflake, RefreshCw, Shield,
+  type LucideIcon,
 } from "lucide-react";
 import { AUTO_BODY_ICON } from "./body-icons";
 
@@ -913,6 +914,7 @@ const SUB_ICON: Record<string, LucideIcon> = {
   bus: Bus, tractor: Tractor, treepine: TreePine, trash2: Trash2,
   flame: Flame, sun: Sun, armchair: Armchair,
   car: Car, leaf: Leaf, gem: Gem, alerttriangle: AlertTriangle,
+  snowflake: Snowflake, refreshcw: RefreshCw, shield: Shield, disc3: Disc3,
 };
 
 /**

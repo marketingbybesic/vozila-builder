@@ -159,6 +159,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    * predmeta, skrivena Godina) — SAMO Vrsta ostaje njena postojeća lista. */
   const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
+  /** Karlo 02.09.2026 (st.58): Dijelovi/Gume i felge — isti mehanizam kao
+   * kamping-oprema (st.36/37): slikoviti odabir Vrste (13 djece: ljetne/
+   * zimske/cjelogodišnje gume, felge, ratkape, TPMS, itd.) prije nego se
+   * otvori ostatak postojeće pretrage za gume/felge. */
+  const isGumeFelge = category === "dijelovi" && subcategory === "gume";
   /** Karlo 31.08.2026, prošireno 01.09.2026 (st.46): Auto, Dijelovi i oprema,
    * Slobodno vrijeme, Moto, Gospodarska i Mehanizacija — kad je kategorija
    * odabrana ali podkategorija JOŠ NIJE, prikaži SAMO slikoviti odabir
@@ -178,7 +183,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // `a.vrsta` iz URL-a (npr. drill-down link) stiže kao GOLI string kad nema
   // zareza (vidi parsing gore), ne kao niz — provjera mora pokriti oba oblika.
   const hasVrsta = Array.isArray(vrstaValue) ? vrstaValue.length > 0 : Boolean(vrstaValue);
-  const needsVrstaPick = isKampingOprema && !hasVrsta;
+  const needsVrstaPick = (isKampingOprema || isGumeFelge) && !hasVrsta;
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -767,18 +772,20 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         )}
         {/* Karlo 27.07: "Stil" (moto) / "Tip vozila" (kamioni) ide ODMAH ispod
             podkategorije — grupa "Vrsta" renderirana ovdje, ne dolje uz Boje.
-            ⚠️ Karlo 31.08.2026 (st.36): kamping-oprema svoju "Vrsta" već bira
-            kroz slikoviti gate iznad (needsVrstaPick) — ovdje bi se ponovila
-            kao multi-select checkbox lista, pa se za nju preskače. */}
-        {vrstaGroup && !isKampingOprema && renderDynGroup(vrstaGroup)}
-        {/* ⚠️ Karlo 01.09.2026 (st.37): kamping-oprema — kad je Vrsta već
-            odabrana kroz slikoviti gate, korisnik unutar forme nije imao
-            NIKAKAV vidljivi trag koju je Vrstu odabrao ni način da je
-            promijeni. Dropdown, ista vizualna razina kao "Podkategorija"
-            odmah iznad — isti sub.children popis (bez ikona, kao i sve
-            druge SelectField opcije), stvarna vrijednost i dalje ostaje
-            attrs.vrsta (niz s 1 elementom, isti ključ kao gate). */}
-        {isKampingOprema && vrstaGroup && (
+            ⚠️ Karlo 31.08.2026 (st.36), prošireno 02.09.2026 (st.58): kamping-
+            oprema i Gume i felge svoju "Vrsta" već biraju kroz slikoviti gate
+            iznad (needsVrstaPick) — ovdje bi se ponovila kao multi-select
+            checkbox lista, pa se za obje preskače. */}
+        {vrstaGroup && !isKampingOprema && !isGumeFelge && renderDynGroup(vrstaGroup)}
+        {/* ⚠️ Karlo 01.09.2026 (st.37), prošireno 02.09.2026 (st.58): kamping-
+            oprema i Gume i felge — kad je Vrsta već odabrana kroz slikoviti
+            gate, korisnik unutar forme nije imao NIKAKAV vidljivi trag koju
+            je Vrstu odabrao ni način da je promijeni. Dropdown, ista
+            vizualna razina kao "Podkategorija" odmah iznad — isti
+            sub.children popis (bez ikona, kao i sve druge SelectField
+            opcije), stvarna vrijednost i dalje ostaje attrs.vrsta (niz s 1
+            elementom, isti ključ kao gate). */}
+        {(isKampingOprema || isGumeFelge) && vrstaGroup && (
           <SelectField
             label="Vrsta"
             value={Array.isArray(vrstaValue) ? (vrstaValue[0] ?? "") : (vrstaValue as string | undefined) ?? ""}
