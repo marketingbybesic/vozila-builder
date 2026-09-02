@@ -603,6 +603,12 @@ export function freeTextMakeField(categorySlug: string, subcategory?: string): b
   // Korisnik upisuje marku slobodno, isto obrazloženje kao Dijelovi/
   // Servisna oprema.
   if (categorySlug === "gospodarska" && subcategory === "najam") return true;
+  // ⚠️ Karlo 02.09.2026 (st.54): Mehanizacija/Ponude za najam — pretraga
+  // spaja 5 vrsta strojeva (st.53 "Vrsta vozila" izbornik), svaka sa svojim
+  // vlastitim popisom marki (MEHANIZACIJA_VILICARI_MAKES, itd.), pa jedan
+  // fiksni popis nema smisla — isto obrazloženje kao Gospodarska/najam.
+  // (Model je već slobodan upis za CIJELU Mehanizaciju, uklj. najam.)
+  if (categorySlug === "mehanizacija" && subcategory === "najam") return true;
   return false;
 }
 
