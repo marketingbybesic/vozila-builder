@@ -183,6 +183,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // `a.vrsta` iz URL-a (npr. drill-down link) stiže kao GOLI string kad nema
   // zareza (vidi parsing gore), ne kao niz — provjera mora pokriti oba oblika.
   const hasVrsta = Array.isArray(vrstaValue) ? vrstaValue.length > 0 : Boolean(vrstaValue);
+  // ⚠️ Karlo 03.09.2026 (st.59): normalizirana jedna vrijednost Vrste (isti
+  // "goli string ili niz" oblik kao gore) — koristi se za polja koja se
+  // odnose SAMO na jednu specifičnu Vrstu unutar podkategorije (vidi
+  // vrstaScope na FilterField), ne na cijelu podkategoriju kao `scope`.
+  const currentVrsta = Array.isArray(vrstaValue) ? vrstaValue[0] : vrstaValue;
+  const isLjetneGume = category === "dijelovi" && subcategory === "gume" && currentVrsta === "ljetne-gume";
   const needsVrstaPick = (isKampingOprema || isGumeFelge) && !hasVrsta;
 
   const makeOptions: Opt[] = useMemo(() => {
@@ -272,12 +278,24 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       if (f.key === "offerType") return false;
       if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
       if (f.searchable === false) return false;
+      // ⚠️ Karlo 03.09.2026 (st.59): OEM/Proizvođač dijela su bez `scope`
+      // (vrijede za sve Dijelovi podkategorije), ali izričito su maknuti SAMO
+      // za Ljetne gume — ne mogu se scope-ati na razini polja bez skrivanja
+      // svugdje drugdje, pa je izuzetak ovdje, uz Vrstu.
+      if (isLjetneGume && (f.key === "oem" || f.key === "brandPart")) return false;
       if (f.scope && f.scope.length > 0) {
-        return subcategory ? f.scope.includes(subcategory) : false;
+        if (!(subcategory && f.scope.includes(subcategory))) return false;
+      }
+      // ⚠️ Karlo 03.09.2026 (st.59): `vrstaScope` — dublji filter od `scope`,
+      // po odabranoj "Vrsta" unutar podkategorije (ne po samoj podkategoriji).
+      // Prvi primjer: "Dimenzije" polja gume (Širina/Profil/Promjer/itd.) sad
+      // vrijede SAMO za Ljetne gume, ne za sve Vrste unutar Gume i felge.
+      if (f.vrstaScope && f.vrstaScope.length > 0) {
+        return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
       }
       return true;
     }),
-    [filterDef, subcategory]
+    [filterDef, subcategory, isLjetneGume, currentVrsta]
   );
   const dynamicGroups = useMemo(() => groupFields(dynamicFields), [dynamicFields]);
   // Grupe koje hardkodirane sekcije već pokrivaju (Motor/Karoserija/Boja/Cijena)
@@ -294,12 +312,17 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // Isto za "Cijena" (PDV) i "Boja" (Tip boje) — inače nastaju duple rubrike.
   const cijenaRest = dynamicGroups.find((g) => g.name === "Cijena")?.fields ?? [];
   const bojaRest = dynamicGroups.find((g) => g.name === "Boja")?.fields ?? [];
+  // ⚠️ Karlo 03.09.2026 (st.59): "Dimenzije" (bivša "Gume", Ljetne gume) mora
+  // stajati IZNAD Cijene — isti obrazac kao Gospodarska Motor+karoserija
+  // (`{isGospodarska && motorSection}`), izvučena iz basicDynamic/
+  // advancedDynamic i renderirana zasebno prije Cijena panela.
+  const dimenzijeGroup = dynamicGroups.find((g) => g.name === "Dimenzije");
   const basicDynamic = dynamicGroups.filter(
-    (g) => !["Vrsta", "Motor", "Cijena", "Boja"].includes(g.name) &&
+    (g) => !["Vrsta", "Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
            BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name)
   );
   const advancedDynamic = dynamicGroups.filter(
-    (g) => !["Motor", "Cijena", "Boja"].includes(g.name) &&
+    (g) => !["Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
            (!BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name))
   );
 
@@ -838,11 +861,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku"
               // (pojašnjava da bira marku VOZILA kojem dio odgovara, ne
               // proizvođača dijela).
-              label={usesPartsLayout ? "Za marku" : "Marka"}
+              // ⚠️ Karlo 03.09.2026 (st.59): Ljetne gume — natrag na "Marka"
+              // (izričito zatraženo, gume nemaju "vozilo kojem odgovaraju").
+              label={usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
-          {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi). */}
-          {!showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+          {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
+              ⚠️ Karlo 03.09.2026 (st.59): Ljetne gume — Model polje POTPUNO
+              uklonjeno (izričito zatraženo, "izbriši izbor za model"). */}
+          {isLjetneGume ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
@@ -873,6 +900,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
       {/* Karlo 29.07: kod GOSPODARSKE Motor i karoserija stoji IZNAD cijene. */}
       {isGospodarska && motorSection}
+
+      {/* ⚠️ Karlo 03.09.2026 (st.59): "Dimenzije" (Ljetne gume) isto IZNAD
+          cijene, isti obrazac kao Gospodarska motorSection gore. */}
+      {dimenzijeGroup && (
+        <Panel>{renderDynGroup(dimenzijeGroup)}</Panel>
+      )}
 
       {/* ── 2. CIJENA, GODINA (+ km samo ako kategorija koristi km) ── */}
       <Panel>

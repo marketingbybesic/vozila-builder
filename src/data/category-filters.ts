@@ -104,6 +104,16 @@ export type FilterField = {
    */
   searchOnly?: boolean;
   scope?: string[];            // podkategorije na koje se polje odnosi (prazno = sve)
+  /**
+   * ⚠️ Karlo 03.09.2026 (st.59): drugi, dublji filter OSIM `scope` — polja na
+   * koja se polje odnosi unutar podkategorije po ODABRANOJ "Vrsta" (drill-down
+   * djeci taksonomije, `attrs.vrsta`), ne po samoj podkategoriji. Prazno/
+   * neupisano = vrijedi za sve Vrste unutar te podkategorije (kao i prije).
+   * Prvi slučaj: Dijelovi/Gume i felge → Ljetne gume dobiva SVOJ "Dimenzije"
+   * set (Širina/Profil/Promjer/itd.), različit od ostalih Vrsta (Zimske,
+   * Felge, TPMS...) koje ostaju bez tog seta dok se ne zatraži drugačije.
+   */
+  vrstaScope?: string[];
 };
 
 export type CategoryFilters = {
@@ -1679,21 +1689,21 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji" },
   { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji" },
 
-  // Gume (tires) — scope gume
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
+  // ⚠️ Karlo 03.09.2026 (st.59): rubrika "Gume" → "Dimenzije", scope-ana SAMO
+  // na Vrstu "Ljetne gume" (vrstaScope), ne na cijelu podkategoriju Gume i
+  // felge kao prije — "Sezona" (tireSeason) izričito uklonjena.
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [155,165,175,185,195,205,215,225,235,245,255,265,275,285,295,305].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [30,35,40,45,50,55,60,65,70,75,80].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `R${n}` })) },
-  { key: "tireSeason", label: "Sezona", type: "multi", storage: "attr", group: "Gume", scope: ["gume"],
-    options: [v("Ljetne"), v("Zimske"), { value: "all-season", label: "Cjelogodišnje" }] },
-  { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Gume", scope: ["gume"],
+  { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [{ value: "osobne", label: "Osobne" }, { value: "teretne", label: "Teretne" }, v("Moto"), { value: "off-road", label: "Off-road" }] },
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Gume", scope: ["gume"] },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Gume", scope: ["gume"],
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: ["T","H","V","W","Y"].map(v) },
-  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Gume", scope: ["gume"] },
+  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
 
   // Felge (wheels) — scope felge
   { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
