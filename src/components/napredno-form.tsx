@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -200,7 +200,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // pala u plosnatu granu i grupe se ne bi vidjele.
     // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
     // popise marki s avto.neta — override ispred popisa kategorije.
-    const list = makesForSub(category, subcategory)
+    // ⚠️ Karlo 04.09.2026 (st.64): Ljetne gume — "Marka" mora biti popis
+    // PROIZVOĐAČA GUMA (Michelin/Continental/...), ne AUTO_MAKES na koji cijela
+    // Dijelovi kategorija inače pada — override MORA stajati ispred
+    // makesForSub, koji za "gume" nema vlastiti slučaj i pada na opću granu.
+    const list = isLjetneGume ? TIRE_BRAND_MAKES
+      : makesForSub(category, subcategory)
       ?? categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
     if (!category || category === "auto") return makeOptionsGrouped(list);
@@ -230,6 +235,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 01.09.2026 (st.44): Dijelovi/Za viličare — popis Mehanizacija/
     // Viličari, ista logika kao st.42/43 (bez grupe "Najpopularnije").
     if (category === "dijelovi" && subcategory === "za-vilicare") return list.map((m) => ({ value: m.slug, label: m.name }));
+    // ⚠️ Karlo 04.09.2026 (st.64): Ljetne gume — popis proizvođača guma
+    // (TIRE_BRAND_MAKES), plosnata lista bez grupe "Najpopularnije" (auto
+    // slugovi ne bi svejedno pronašli ništa u ovom popisu, ali eksplicitno je
+    // jasnije od oslanjanja na tu slučajnost — isti obrazac kao st.41-44).
+    if (isLjetneGume) return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
@@ -242,7 +252,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
     // podkategoriju zadrži krivu grupu popularnih marki.
-  }, [category, categoryDef, subcategory]);
+  }, [category, categoryDef, subcategory, isLjetneGume]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {

@@ -687,6 +687,44 @@ export const MEHANIZACIJA_DIJELOVI_MAKES: CarMake[] = mergeMakesWithModels([
   MEHANIZACIJA_SUMARSKI_MAKES, MEHANIZACIJA_KOMUNALNI_MAKES, MEHANIZACIJA_STARTER_AS_MAKES,
 ]);
 
+/**
+ * ⚠️ Karlo 04.09.2026 (st.64): Dijelovi/Gume i felge/Ljetne gume — "Marka" mora
+ * biti popis proizvođača GUMA (Michelin/Continental/Bridgestone...), NE popis
+ * marki vozila (AUTO_MAKES) na koji cijela kategorija Dijelovi inače pada
+ * (vidi makesForSub niže, opća "dijelovi" grana). Puni popis 230 brendova gume
+ * dan doslovno, TOČNIM redoslijedom. Bez modela (Model polje je već obrisano
+ * za Ljetne gume, st.59).
+ */
+const TIRE_BRAND_NAMES: string[] = [
+  "Accelera","Achilles","Aeolus","Antares","Aoteli","Apollo","Aplus","Aptany","Atlas","Atturo",
+  "Aurora","Autogrip","Autoguard","Austone","Avon","Barkley","Barum","BCT","Belshina","BFGoodrich",
+  "Blackstone","Blacklion","Black-Star","Blizzak","Boto","Bridgestone","Briway","Camac","Capitol","CarbonSeries",
+  "Ceat","Champiro","Cheyen","Clear","CokerTire","Comforser","Constancy","Continental","Cooper","Cordiant",
+  "Cratos","Crosswind","CST","DailyWay","Davanti","Dayton","Debica","Delfin","Deli Tire","Delinte",
+  "DMACK","DoubleStar","Dunlop","Duraturn","Durun","EffiPlus","EP Tires","Eternity","Eurotec","Event",
+  "Evergreen","Evermax","Excelsior","Falken","Farroad","Fate","Federal","Fedima","Firemax","Firenze",
+  "Firestone","Fortuna","Fortune","Fulda","Fullrun","Fullway","General Tire","Gerutti","Gislaved","Giti",
+  "Goalstar","Goform","Goodride","Goodyear","Gremax","Gripmax","GT Radial","Haida","Hankook","Headway",
+  "Hifly","High Performer","Imperial","Infinity","Insa Turbo","Interstate","Invovic","Jinyu","Joyroad","Kama",
+  "Kelly-Springfield","Kenda","Kinforest","King-Meiler","Kingstar","Kleber","Kormoran","Kumho","Landsail-Delinte","Lanvigator",
+  "Lapponia","Lassa","Laufenn","Leao","Lexani","Linglong","Luccini","Mabor","Malatesta","Maloya",
+  "Marangoni","Marix","Marshal","MasterSteel","Matador","Maxtrek","Maxxis","Mazzini","Membat","Mentor",
+  "Meteor","Michelin","Mickey Thompson","Milestone","Minerva","Momo","Motrio","MRF","Multirac","Nankang",
+  "Nereus","Nexen","Nitto","Nokian","Nordexx","Nordic Tyres","Nordman","Novex","Pace","Paxaro",
+  "Petlas","Pirelli","Platin","Pneumant","Point S","Powertrac","Premiorri","Radar","Rapid","Regal",
+  "Rigdon","Riken","Roadcruza","Roadstone","Rockstone","Rosava","Rotal","Rotalla","Rotex","Rovelo",
+  "Royal Black","Runway","Saetta","Saferich","Saffiro","Sagitar","Sailun","Sava","Sebring","Security",
+  "Seha","Semperit","Silverstone","Sonar","Sportiva","Star Performer","Starfire","Strmaxx","Stunner","Sumitomo",
+  "Sunew","Sunfull","Sunitrac","Sunny","Suntek","Superia","Syron","Talon","Taurus","Tecar",
+  "Three-A","Tigar","Tomket","Torque","Tourador","Toyo","Tracmax","Trazano","Triangle","Tristar",
+  "Tyfoon","Unigrip","Uniroyal","V-Netik","Viatti","Victorun","Viking","Vredestein","VSP","Wanda",
+  "Wanli","West Lake","Windforce","Winrun","Yokohama","Zeetex","Zeta",
+];
+export const TIRE_BRAND_MAKES: CarMake[] = [
+  ...TIRE_BRAND_NAMES.map((n) => ({ slug: SLUG(n), name: n, country: "—", models: [] })),
+  { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
+];
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   // ⚠️ Karlo 01.09.2026 (st.40/41/42): moraju stajati ISPRED "dijelovi" grane
   // niže (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana
