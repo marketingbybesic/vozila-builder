@@ -931,7 +931,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Akcija −40%", "Nove", "Set 4 kom", "Montaža gratis"],
     sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
     daysAgo: 1,
-    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "205", tireProfile: "55", tireDiameter: "16", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "205", tireProfile: "55", tireDiameter: "R16", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
   },
   {
     category: "dijelovi", subcategory: "gume",
@@ -945,7 +945,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Akcija −34%", "Nove", "Set 4 kom", "Montaža gratis"],
     sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
     daysAgo: 1,
-    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "215", tireProfile: "60", tireDiameter: "17", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "215", tireProfile: "60", tireDiameter: "R17", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
   },
   {
     category: "dijelovi", subcategory: "gume",
@@ -959,7 +959,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Akcija −30%", "Nove", "Set 4 kom", "Cjelogodišnje"],
     sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
     daysAgo: 2,
-    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "195", tireProfile: "65", tireDiameter: "15", tireSeason: ["Cjelogodišnje"], tireType: ["osobne"], shipping: true },
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "195", tireProfile: "65", tireDiameter: "R15", tireSeason: ["Cjelogodišnje"], tireType: ["osobne"], shipping: true },
   },
   {
     category: "dijelovi", subcategory: "gume",
@@ -973,7 +973,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Akcija −28%", "Nove", "Set 4 kom", "Montaža gratis"],
     sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
     daysAgo: 3,
-    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "18", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "R18", tireSeason: ["Zimske"], tireType: ["osobne"], shipping: true },
   },
 
   {
@@ -987,7 +987,7 @@ const EXTRA_SPECS: Spec[] = [
     features: ["Nove", "Set 4 kom", "DOT 2024"],
     sellerName: "Guma Centar", sellerType: "Trgovac", sellerPhone: "+385 1 150 7788",
     daysAgo: 2,
-    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "17", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
+    attributes: { partType: "Vanjski", condition2: "Novo", tireWidth: "225", tireProfile: "45", tireDiameter: "R17", tireSeason: ["Ljetne"], tireType: ["osobne"], shipping: true },
   },
   {
     category: "dijelovi", subcategory: "gume",

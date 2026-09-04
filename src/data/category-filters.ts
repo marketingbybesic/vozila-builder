@@ -1771,8 +1771,12 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
+  // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
+  // redoslijedom kako je dan). "R17,5" zapisano kao "R17.5" (točka) — dosljedno s
+  // konvencijom potvrđenom u st.61.
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
-    options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `R${n}` })) },
+    options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
+      .map((v) => ({ value: v, label: v })) },
   { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [{ value: "osobne", label: "Osobne" }, { value: "teretne", label: "Teretne" }, v("Moto"), { value: "off-road", label: "Off-road" }] },
   { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
