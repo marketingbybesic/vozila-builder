@@ -1764,8 +1764,13 @@ const DIJELOVI_FIELDS: FilterField[] = [
       { value: "38x13.00", label: "38x13.00" },
       { value: "38x14.50", label: "38x14.50" },
     ] },
+  // ⚠️ Karlo 04.09.2026 (st.61): puni popis Karlovih brojeva (16 stavki,
+  // TOČNIM redoslijedom kako je diktirao). "10,5" zapisano kao "10.5" (točka,
+  // dosljedno s tireWidth st.60); "650" zadržan kao stoji u popisu, iako je
+  // outlier u nizu — nije upitan, dan doslovno kao ostatak liste.
   { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
-    options: [30,35,40,45,50,55,60,65,70,75,80].map((n) => ({ value: String(n), label: `${n}` })) },
+    options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
+      .map((n) => ({ value: n, label: n })) },
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `R${n}` })) },
   { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
