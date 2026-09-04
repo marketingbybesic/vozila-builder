@@ -457,7 +457,11 @@ export const ADVANCED_SUBCATEGORIES: Record<string, string[]> = {
   // ⚠️ Karlo 29.08.2026 (st.21): "plovila" dodan — klik je vodio ravno na
   // /oglasi umjesto na naprednu pretragu.
   "prosti-cas": ["kamperi", "kamp-prikolice", "plovila"],
-  dijelovi: [],
+  // ⚠️ Karlo 04.09.2026 (st.65): "gume" dodan — klik na Dijelovi i oprema/
+  // Gume i felge/Ljetne gume (2. nivo, homepage panel) mora otvoriti ISTU
+  // pretragu kao napredna pretraga (Marka/Dimenzije/Cijena rubrike iz st.58-64),
+  // ne običnu `/oglasi` listu bez tih polja.
+  dijelovi: ["gume"],
 };
 
 /** Vodi li (kategorija, podkategorija) na naprednu pretragu? */
@@ -485,6 +489,14 @@ export function subChildHref(
 ): string {
   // 2. nivo se filtrira preko attr engine-a (a.vrsta=<child>) → bez izmjena
   // filter enginea; radi automatski kad oglasi dobiju attributes.vrsta.
+  // ⚠️ Karlo 04.09.2026 (st.65): podkategorije s naprednom formom (npr.
+  // Dijelovi/Gume i felge) moraju voditi na `/oglasi/napredno`, isto kao
+  // `subcategoryHref` gore — inače klik na dijete (Ljetne gume) iz homepage
+  // panela otvara običnu `/oglasi` listu bez Marke/Dimenzija/Cijene iz
+  // napredne forme.
+  if (subcategoryUsesAdvanced(categorySlug, parentSlug)) {
+    return `/oglasi/napredno?category=${categorySlug}&subcategory=${parentSlug}&a.vrsta=${childSlug}`;
+  }
   return `/oglasi?category=${categorySlug}&subcategory=${parentSlug}&a.vrsta=${childSlug}`;
 }
 
