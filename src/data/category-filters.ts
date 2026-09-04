@@ -1777,8 +1777,8 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
-  { key: "tireType", label: "Vrsta", type: "multi", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
-    options: [{ value: "osobne", label: "Osobne" }, { value: "teretne", label: "Teretne" }, v("Moto"), { value: "off-road", label: "Off-road" }] },
+  // ⚠️ Karlo 04.09.2026 (st.63): "Vrsta" (osobne/teretne/moto/off-road) unutar
+  // rubrike Dimenzije obrisana — polje tireType uklonjeno.
   { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
   { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
     options: ["T","H","V","W","Y"].map(v) },
