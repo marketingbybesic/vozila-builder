@@ -1676,6 +1676,14 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-bicikli"] })),
 ];
 
+// ⚠️ Karlo 05.09.2026 (st.66): Vrste unutar Dijelovi/Gume i felge s PUNOM
+// formom (Dimenzije rubrika) — Ljetne gume (st.59) + Zimske gume (st.66,
+// identično). Dijeli isti popis kao `TIRE_FULL_FORM_VRSTE` u napredno-form.tsx
+// (dvije konstante jer je jedna data-only, druga component-level — ne
+// duplicirati sadržaj bez razloga, ali držati sinkronizirano ako se doda nova
+// Vrsta ovdje).
+const TIRE_FULL_FORM_VRSTE = ["ljetne-gume", "zimske-gume"];
+
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
 const DIJELOVI_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
@@ -1698,7 +1706,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // industrijske gume "6.00-16"), i "flotation" oznake za ATV/UTV/traktore
   // (npr. "31x10.50"). Karlo je potvrdio da 35x12.50 i 37x12.50 doslovno
   // stoje DVAPUT u popisu — nije tipfeler, zadržano kako je dano.
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1768,21 +1776,21 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // TOČNIM redoslijedom kako je diktirao). "10,5" zapisano kao "10.5" (točka,
   // dosljedno s tireWidth st.60); "650" zadržan kao stoji u popisu, iako je
   // outlier u nizu — nije upitan, dan doslovno kao ostatak liste.
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
   // redoslijedom kako je dan). "R17,5" zapisano kao "R17.5" (točka) — dosljedno s
   // konvencijom potvrđenom u st.61.
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.63): "Vrsta" (osobne/teretne/moto/off-road) unutar
   // rubrike Dimenzije obrisana — polje tireType uklonjeno.
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"],
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
     options: ["T","H","V","W","Y"].map(v) },
-  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ljetne-gume"] },
+  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE },
 
   // Felge (wheels) — scope felge
   { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
