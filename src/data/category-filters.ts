@@ -1804,8 +1804,18 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // TOČNIM redoslijedom kako je diktirao). "10,5" zapisano kao "10.5" (točka,
   // dosljedno s tireWidth st.60); "650" zadržan kao stoji u popisu, iako je
   // outlier u nizu — nije upitan, dan doslovno kao ostatak liste.
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
+  // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume dobivaju VLASTITI popis
+  // Profila gume (vidi zaseban `tireProfile` unos niže) — ovaj popis više NE
+  // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`, st.69).
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
+      .map((n) => ({ value: n, label: n })) },
+  // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume — vlastiti popis Profila gume
+  // (16 stavki, TOČNIM redoslijedom kako je diktirao). Isti key `tireProfile`
+  // kao gornji unos — RAZLIČIT `vrstaScope` (samo "teretne-c-gume") osigurava
+  // međusobnu isključivost (isti presedan kao `tireWidth` st.69).
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+    options: ["6","6.5","14","15.5","40","45","50","55","60","65","70","75","80","85","90","100"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
   // redoslijedom kako je dan). "R17,5" zapisano kao "R17.5" (točka) — dosljedno s
