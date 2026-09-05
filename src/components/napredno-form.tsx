@@ -55,12 +55,12 @@ const SVI_MODELI = "Svi modeli";
 // ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, isti obrazac
 // kao SVI_MODELI za free-text Model (kamioni/mehanizacija).
 const SVE_MARKE = "Sve marke";
-// ⚠️ Karlo 05.09.2026 (st.66): Vrste unutar Dijelovi/Gume i felge koje dobivaju
-// PUNU formu iz st.58-65 (Marka=proizvođači guma, Dimenzije iznad Cijene, bez
-// Model/OEM/Proizvođač dijela). Ljetne gume su bile prve (st.59); Zimske gume
-// dodane identično (st.66) — dodaj novu Vrstu ovdje kad se zatraži isto za
-// preostale (cjelogodišnje, teretne-c, moto-atv, agro-industrijske...).
-const TIRE_FULL_FORM_VRSTE = ["ljetne-gume", "zimske-gume"];
+// ⚠️ Karlo 05.09.2026 (st.66/67): Vrste unutar Dijelovi/Gume i felge koje
+// dobivaju PUNU formu iz st.58-65 (Marka=proizvođači guma, Dimenzije iznad
+// Cijene, bez Model/OEM/Proizvođač dijela). Ljetne gume su bile prve (st.59);
+// Zimske (st.66) i Cjelogodišnje (st.67) dodane identično — dodaj novu Vrstu
+// ovdje kad se zatraži isto za preostale (teretne-c, moto-atv, agro-industrijske...).
+const TIRE_FULL_FORM_VRSTE = ["ljetne-gume", "zimske-gume", "cjelogodisnje-gume"];
 
 type AttrValue = string | string[] | boolean | undefined;
 

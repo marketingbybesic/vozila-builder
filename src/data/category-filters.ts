@@ -1676,13 +1676,13 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-bicikli"] })),
 ];
 
-// ⚠️ Karlo 05.09.2026 (st.66): Vrste unutar Dijelovi/Gume i felge s PUNOM
-// formom (Dimenzije rubrika) — Ljetne gume (st.59) + Zimske gume (st.66,
-// identično). Dijeli isti popis kao `TIRE_FULL_FORM_VRSTE` u napredno-form.tsx
-// (dvije konstante jer je jedna data-only, druga component-level — ne
-// duplicirati sadržaj bez razloga, ali držati sinkronizirano ako se doda nova
-// Vrsta ovdje).
-const TIRE_FULL_FORM_VRSTE = ["ljetne-gume", "zimske-gume"];
+// ⚠️ Karlo 05.09.2026 (st.66/67): Vrste unutar Dijelovi/Gume i felge s PUNOM
+// formom (Dimenzije rubrika) — Ljetne gume (st.59) + Zimske (st.66) +
+// Cjelogodišnje (st.67, identično). Dijeli isti popis kao `TIRE_FULL_FORM_VRSTE`
+// u napredno-form.tsx (dvije konstante jer je jedna data-only, druga
+// component-level — ne duplicirati sadržaj bez razloga, ali držati
+// sinkronizirano ako se doda nova Vrsta ovdje).
+const TIRE_FULL_FORM_VRSTE = ["ljetne-gume", "zimske-gume", "cjelogodisnje-gume"];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
 const DIJELOVI_FIELDS: FilterField[] = [
