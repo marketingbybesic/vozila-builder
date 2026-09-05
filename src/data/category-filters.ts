@@ -1710,7 +1710,11 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // industrijske gume "6.00-16"), i "flotation" oznake za ATV/UTV/traktore
   // (npr. "31x10.50"). Karlo je potvrdio da 35x12.50 i 37x12.50 doslovno
   // stoje DVAPUT u popisu — nije tipfeler, zadržano kako je dano.
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
+  // ⚠️ Karlo 05.09.2026 (st.69): Teretne i C gume dobivaju VLASTITI popis
+  // Širine gume (128 stavki, vidi zaseban `tireWidth` unos niže) — ovaj popis
+  // više NE vrijedi za tu Vrstu (maknuta iz vrstaScope, isključena eksplicitno
+  // kako drugi unos ne bi bio dvostruko renderiran za istu Vrstu).
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1776,6 +1780,26 @@ const DIJELOVI_FIELDS: FilterField[] = [
       { value: "38x13.00", label: "38x13.00" },
       { value: "38x14.50", label: "38x14.50" },
     ] },
+  // ⚠️ Karlo 05.09.2026 (st.69): Teretne i C gume — vlastiti popis Širine
+  // gume (128 stavki, TOČNIM redoslijedom kako je diktirao — ne sortirano).
+  // Mix formata: cijeli mm/inči decimalni (2.5-33), "flotation" (23x8.5,
+  // 26x12, 27x8.5, 31x15.5, 33x15.5), i cijeli mm veći raspon (145-1050) za
+  // teške teretne/industrijske dimenzije. Isti key `tireWidth` kao gornji
+  // unos — RAZLIČIT `vrstaScope` (samo "teretne-c-gume") osigurava da su
+  // popisi međusobno isključivi (vidi `poljeZa`/dynamicFields presedan iz
+  // fuel/color/bodyType, gdje više unosa s istim key dijeli scope-based
+  // razlikovanje).
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+    options: [
+      "2.5","3","3.5","4","4.5","5","5.5","6.00","6.50","7.00","7.50","8","8.25","8.3","8.5","9","9.5","10",
+      "10.50","11","11.2","11.50","12.00","12.4","12.50","13","13.6","14.00","14.50","14.9","15","15.50","16",
+      "16.9","17","17.50","18.00","18.4","19","19.50","20.50","20.80","21.00","23x8.5","23.10","23.50","24",
+      "24.50","25","26","26.50","26x12","27x8.5","28","29.50","31","31x15.5","33x15.5","33",
+      "145","155","165","175","180","185","195","200","205","210","215","225","230","235","240","245","250",
+      "255","260","265","270","275","280","285","290","295","300","305","315","320","325","335","340","355",
+      "360","365","375","380","385","400","405","420","425","435","440","445","455","460","480","495","500",
+      "520","525","540","550","560","580","600","620","650","680","710","750","800","825","850","900","1000","1050",
+    ].map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.61): puni popis Karlovih brojeva (16 stavki,
   // TOČNIM redoslijedom kako je diktirao). "10,5" zapisano kao "10.5" (točka,
   // dosljedno s tireWidth st.60); "650" zadržan kao stoji u popisu, iako je
