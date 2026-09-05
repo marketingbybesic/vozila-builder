@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -222,7 +222,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // PROIZVOĐAČA GUMA (Michelin/Continental/...), ne AUTO_MAKES na koji cijela
     // Dijelovi kategorija inače pada — override MORA stajati ispred
     // makesForSub, koji za "gume" nema vlastiti slučaj i pada na opću granu.
-    const list = isLjetneGume ? TIRE_BRAND_MAKES
+    // ⚠️ Karlo 05.09.2026 (st.72): Teretne i C gume — VLASTITI popis
+    // proizvođača (TERETNE_C_TIRE_BRAND_MAKES, 169 brendova, djelomično
+    // različit od TIRE_BRAND_MAKES) — provjera MORA stajati ISPRED
+    // `isLjetneGume`, jer "teretne-c-gume" JE u TIRE_FULL_FORM_VRSTE (dijeli
+    // formu), ali NE dijeli popis marki s ostalih 9 Vrsta.
+    const list = currentVrsta === "teretne-c-gume" ? TERETNE_C_TIRE_BRAND_MAKES
+      : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
       ?? categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));
     // ⚠️ Karlo 17.08.2026: i MOTO dobiva grupe (vlastitih 10 popularnih).
@@ -270,7 +276,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 18.08.2026: isti propust kao u filter-sidebaru — bez
     // podkategorije u ovisnostima klijentska navigacija na drugu
     // podkategoriju zadrži krivu grupu popularnih marki.
-  }, [category, categoryDef, subcategory, isLjetneGume]);
+  }, [category, categoryDef, subcategory, isLjetneGume, currentVrsta]);
   // Karlo 27.07: modeli se biraju iz baze TE kategorije (prije je uvijek gledao
   // AUTO bazu → moto/gospodarska marke nikad nisu imale modele).
   const modelOptions = useMemo(() => {

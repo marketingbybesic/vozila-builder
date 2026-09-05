@@ -737,6 +737,37 @@ export const TIRE_BRAND_MAKES: CarMake[] = [
   { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
 ];
 
+/**
+ * ⚠️ Karlo 05.09.2026 (st.72): Teretne i C gume dobivaju VLASTITI popis
+ * proizvođača guma (169 brendova, TOČNIM redoslijedom kako je diktirao) —
+ * djelomično se preklapa s TIRE_BRAND_MAKES, ali nije identičan (druge marke
+ * specifične za teretne/industrijske gume: Alliance, Annaite, Arktrans, BKT,
+ * Bandag, Carlisle, Galaxy, itd.), pa je zaseban popis, ne filter postojećeg.
+ */
+const TERETNE_C_TIRE_BRAND_NAMES: string[] = [
+  "Accelera","Aeolus","Alliance","Annaite","Aplus","Arktrans","Atlas","Aurora","Austone","Autoguard",
+  "Avon","Bandag","Barkley","Barum","BCT","Belshina","BFGoodrich","BKT","Blacklion","Blitz",
+  "Boto","Bridgestone","Briway","Camac","Carlisle","Ceat","Champiro","Chengshan","Clear","Comforser",
+  "Continental","Cooper","Cordiant","CST","DailyWay","Dayton","Debica","Deli Tire","DMACK","Double Coin",
+  "DoubleStar","Dunlop","Duraturn","Durun","EffiPlus","Falken","Faralong","Fate","Federal","Fedima",
+  "Firenza","Firestone","Fortuna","Fortune","Fulda","Fullrun","Galaxy","General Tire","Gerutti","Goodride",
+  "Gislaved","Giti","Goalstar","Goodyear","GT Radial","Haida","Hankook","Hifly","Imperial","Innova",
+  "Infinity","Insa Turbo","Interstate","Invovic","ITR","Jinyu","Joyroad","Kings","Kelly-Springfield","Kenda",
+  "Keter","Kleber","Kormoran","Kumho","Lassa","Leao","Linglong","Magna","Malatesta","Maloya",
+  "Marangoni","Marix","Marshal","Matador","Maxtrek","Maxxis","Meteor","Michelin","Minerva","MRF",
+  "Multirac","Nankang","Nereus","Nexen","Nitto","Nokian","Nordexx","Nordic Tyres","Ovation","Petlas",
+  "Pirelli","Pneumant","Point S","Powertrac","Pre-Q","ProTire","Radar","Regal","Rigdon","Riken",
+  "Roadcruza","Roadstone","Rockstone","Rosava","Rotal","Rotalla","Royal Black","Saferich","Saffiro","Sailun",
+  "Sava","Sebring","Security","Seha","Semperit","Silverstone","SnowWolf","Speedways","Starco","Strmaxx",
+  "Stunner","Sumitomo","Sunfull","Sunitrac","Sunny","Superia","Syron","Taurus","Three-A","Tianli",
+  "Titan","Toledo","Torque","Tourador","Toyo","Trayal","Triangle","Uniroyal","Viatti","Viking",
+  "Vredestein","Wanda","Wanli","Windforce","Windpower","Winrun","Yokohama","Zeetex","Zeta",
+];
+export const TERETNE_C_TIRE_BRAND_MAKES: CarMake[] = [
+  ...TERETNE_C_TIRE_BRAND_NAMES.map((n) => ({ slug: SLUG(n), name: n, country: "—", models: [] })),
+  { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
+];
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   // ⚠️ Karlo 01.09.2026 (st.40/41/42): moraju stajati ISPRED "dijelovi" grane
   // niže (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana
