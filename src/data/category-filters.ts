@@ -1820,9 +1820,23 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
   // redoslijedom kako je dan). "R17,5" zapisano kao "R17.5" (točka) — dosljedno s
   // konvencijom potvrđenom u st.61.
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
+  // ⚠️ Karlo 05.09.2026 (st.71): Teretne i C gume dobivaju VLASTITI popis
+  // Promjera (vidi zaseban `tireDiameter` unos niže) — ovaj popis više NE
+  // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`/`tireProfile`,
+  // st.69/70).
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
+  // ⚠️ Karlo 05.09.2026 (st.71): Teretne i C gume — vlastiti popis Promjera
+  // (45 stavki, TOČNIM redoslijedom kako je diktirao). Isti key `tireDiameter`
+  // kao gornji unos — RAZLIČIT `vrstaScope` (samo "teretne-c-gume") osigurava
+  // međusobnu isključivost (isti presedan kao `tireWidth`/`tireProfile`, st.69/70).
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+    options: [
+      "R6","R8","R9","R10","R12","R13","R14","R15","R15.3","R15.5","R16","R16.5","R17","R17.5","R18",
+      "R19","R19.5","R20","R20.5","R21","R22.5","R24","R24.5","R25","R26","R26.5","R27","R28","R29","R30",
+      "R30.5","R31","R32","R33","R34","R35","R36","R38","R40","R42","R44","R46","R48","R50","R52","R54",
+    ].map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.63): "Vrsta" (osobne/teretne/moto/off-road) unutar
   // rubrike Dimenzije obrisana — polje tireType uklonjeno.
   { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE },
