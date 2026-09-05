@@ -68,6 +68,10 @@ const TIRE_FULL_FORM_VRSTE = [
   "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
   "aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape",
 ];
+// ⚠️ Karlo 05.09.2026 (st.73): Vrste koje dijele Teretne i C guma's VLASTITE
+// Marka/Dimenzije popise (st.69-72, različiti od preostalih 8 Vrsta u
+// TIRE_FULL_FORM_VRSTE) — Agro i industrijske gume dodane identično (st.73).
+const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
 
 type AttrValue = string | string[] | boolean | undefined;
 
@@ -222,12 +226,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // PROIZVOĐAČA GUMA (Michelin/Continental/...), ne AUTO_MAKES na koji cijela
     // Dijelovi kategorija inače pada — override MORA stajati ispred
     // makesForSub, koji za "gume" nema vlastiti slučaj i pada na opću granu.
-    // ⚠️ Karlo 05.09.2026 (st.72): Teretne i C gume — VLASTITI popis
-    // proizvođača (TERETNE_C_TIRE_BRAND_MAKES, 169 brendova, djelomično
-    // različit od TIRE_BRAND_MAKES) — provjera MORA stajati ISPRED
-    // `isLjetneGume`, jer "teretne-c-gume" JE u TIRE_FULL_FORM_VRSTE (dijeli
-    // formu), ali NE dijeli popis marki s ostalih 9 Vrsta.
-    const list = currentVrsta === "teretne-c-gume" ? TERETNE_C_TIRE_BRAND_MAKES
+    // ⚠️ Karlo 05.09.2026 (st.72/73): Teretne i C gume + Agro i industrijske
+    // gume (st.73, identično) — VLASTITI popis proizvođača
+    // (TERETNE_C_TIRE_BRAND_MAKES, 169 brendova, djelomično različit od
+    // TIRE_BRAND_MAKES) — provjera MORA stajati ISPRED `isLjetneGume`, jer obje
+    // Vrste JESU u TIRE_FULL_FORM_VRSTE (dijele formu), ali NE dijele popis
+    // marki s ostalih 8 Vrsta.
+    const list = TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
       ?? categoryDef?.makes ?? MAKES.map((m) => ({ slug: m.slug, name: m.name }));

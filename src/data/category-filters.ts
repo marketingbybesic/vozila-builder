@@ -1687,6 +1687,11 @@ const TIRE_FULL_FORM_VRSTE = [
   "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
   "aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape",
 ];
+// ⚠️ Karlo 05.09.2026 (st.73): Vrste koje dijele Teretne i C guma's VLASTITE
+// popise (st.69-72: Širina/Profil/Promjer/Marka, različiti od preostalih 8
+// Vrsta u TIRE_FULL_FORM_VRSTE) — Agro i industrijske gume dodane identično
+// (st.73). Dodaj novu Vrstu ovdje kad se zatraži isto za još neku.
+const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
 const DIJELOVI_FIELDS: FilterField[] = [
@@ -1714,7 +1719,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Širine gume (128 stavki, vidi zaseban `tireWidth` unos niže) — ovaj popis
   // više NE vrijedi za tu Vrstu (maknuta iz vrstaScope, isključena eksplicitno
   // kako drugi unos ne bi bio dvostruko renderiran za istu Vrstu).
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v)),
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1789,7 +1794,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // popisi međusobno isključivi (vidi `poljeZa`/dynamicFields presedan iz
   // fuel/color/bodyType, gdje više unosa s istim key dijeli scope-based
   // razlikovanje).
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TERETNE_C_STYLE_VRSTE,
     options: [
       "2.5","3","3.5","4","4.5","5","5.5","6.00","6.50","7.00","7.50","8","8.25","8.3","8.5","9","9.5","10",
       "10.50","11","11.2","11.50","12.00","12.4","12.50","13","13.6","14.00","14.50","14.9","15","15.50","16",
@@ -1807,14 +1812,14 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume dobivaju VLASTITI popis
   // Profila gume (vidi zaseban `tireProfile` unos niže) — ovaj popis više NE
   // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`, st.69).
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v)),
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume — vlastiti popis Profila gume
   // (16 stavki, TOČNIM redoslijedom kako je diktirao). Isti key `tireProfile`
   // kao gornji unos — RAZLIČIT `vrstaScope` (samo "teretne-c-gume") osigurava
   // međusobnu isključivost (isti presedan kao `tireWidth` st.69).
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TERETNE_C_STYLE_VRSTE,
     options: ["6","6.5","14","15.5","40","45","50","55","60","65","70","75","80","85","90","100"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
@@ -1824,14 +1829,14 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Promjera (vidi zaseban `tireDiameter` unos niže) — ovaj popis više NE
   // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`/`tireProfile`,
   // st.69/70).
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "teretne-c-gume"),
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v)),
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 05.09.2026 (st.71): Teretne i C gume — vlastiti popis Promjera
   // (45 stavki, TOČNIM redoslijedom kako je diktirao). Isti key `tireDiameter`
   // kao gornji unos — RAZLIČIT `vrstaScope` (samo "teretne-c-gume") osigurava
   // međusobnu isključivost (isti presedan kao `tireWidth`/`tireProfile`, st.69/70).
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["teretne-c-gume"],
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TERETNE_C_STYLE_VRSTE,
     options: [
       "R6","R8","R9","R10","R12","R13","R14","R15","R15.3","R15.5","R16","R16.5","R17","R17.5","R18",
       "R19","R19.5","R20","R20.5","R21","R22.5","R24","R24.5","R25","R26","R26.5","R27","R28","R29","R30",
