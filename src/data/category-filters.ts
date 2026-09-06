@@ -1692,6 +1692,14 @@ const TIRE_FULL_FORM_VRSTE = [
 // Vrsta u TIRE_FULL_FORM_VRSTE) — Agro i industrijske gume dodane identično
 // (st.73). Dodaj novu Vrstu ovdje kad se zatraži isto za još neku.
 const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
+// ⚠️ Karlo 06.09.2026 (st.74): 6 od 10 Vrsta unutar TIRE_FULL_FORM_VRSTE
+// (Ljetne/Zimske/Cjelogodišnje/Teretne i C/Moto i ATV/Agro i industrijske
+// gume) gube Indeks nosivosti + Indeks brzine iz rubrike Dimenzije — preostale
+// 4 (felge: Aluminijske/Čelične/Kompleti/Ratkape) ih ZADRŽAVAJU.
+const TIRE_GUME_VRSTE_NO_INDEX = [
+  "ljetne-gume", "zimske-gume", "cjelogodisnje-gume",
+  "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
+];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
 const DIJELOVI_FIELDS: FilterField[] = [
@@ -1844,8 +1852,10 @@ const DIJELOVI_FIELDS: FilterField[] = [
     ].map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.63): "Vrsta" (osobne/teretne/moto/off-road) unutar
   // rubrike Dimenzije obrisana — polje tireType uklonjeno.
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE,
+  // ⚠️ Karlo 06.09.2026 (st.74): obrisana za 6 Vrsta guma (vidi
+  // TIRE_GUME_VRSTE_NO_INDEX) — ostaje SAMO za 4 Vrste felgi.
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v)) },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v)),
     options: ["T","H","V","W","Y"].map(v) },
   { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE },
 
