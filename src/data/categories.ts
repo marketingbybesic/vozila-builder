@@ -323,7 +323,12 @@ const DIJELOVI_SUBS: Subcategory[] = [
       { slug: "zimske-gume", name: "Zimske gume", icon: "snowflake" },
       { slug: "cjelogodisnje-gume", name: "Cjelogodišnje gume", icon: "refreshcw" },
       { slug: "teretne-c-gume", name: "Teretne i C gume", icon: "truck" },
-      { slug: "moto-atv-gume", name: "Moto i ATV gume", icon: "bike" },
+      // ⚠️ Karlo 07.09.2026 (st.76): "Moto i ATV gume" → "Moto gume" (ATV maknut
+      // iz naziva, slug OSTAJE isti "moto-atv-gume" — mijenja se samo prikazani
+      // naziv, ne diramo vrstaScope reference nigdje u kodu).
+      { slug: "moto-atv-gume", name: "Moto gume", icon: "bike" },
+      // ⚠️ Karlo 07.09.2026 (st.76): nova Vrsta "Quad / ATV i UTV gume" dodana.
+      { slug: "quad-atv-utv-gume", name: "Quad / ATV i UTV gume", icon: "car" },
       { slug: "agro-industrijske-gume", name: "Agro i industrijske gume", icon: "tractor" },
       { slug: "aluminijske-felge", name: "Aluminijske felge", icon: "disc3" },
       { slug: "celicne-felge", name: "Čelične felge", icon: "circledot" },
