@@ -1861,7 +1861,9 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Promjera (vidi zaseban `tireDiameter` unos niže) — ovaj popis više NE
   // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`/`tireProfile`,
   // st.69/70).
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v)),
+  // ⚠️ Karlo 07.09.2026 (st.80): Moto gume dobivaju VLASTITI popis Promjera
+  // (vidi zaseban `tireDiameter` unos niže) — maknuta i ova iz vrstaScope.
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume"),
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 05.09.2026 (st.71): Teretne i C gume — vlastiti popis Promjera
@@ -1874,6 +1876,13 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "R19","R19.5","R20","R20.5","R21","R22.5","R24","R24.5","R25","R26","R26.5","R27","R28","R29","R30",
       "R30.5","R31","R32","R33","R34","R35","R36","R38","R40","R42","R44","R46","R48","R50","R52","R54",
     ].map((v) => ({ value: v, label: v })) },
+  // ⚠️ Karlo 07.09.2026 (st.80): Moto gume — vlastiti popis Promjera (20
+  // stavki, TOČNIM redoslijedom kako je diktirao — "R420" zadržan kao outlier,
+  // dan doslovno). Isti key `tireDiameter` kao gornja 2 unosa — RAZLIČIT
+  // `vrstaScope` (samo "moto-atv-gume") osigurava međusobnu isključivost.
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["moto-atv-gume"],
+    options: ["R4","R6","R7","R8","R9","R10","R11","R12","R13","R14","R15","R16","R17","R18","R19","R20","R21","R22","R23","R420"]
+      .map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.63): "Vrsta" (osobne/teretne/moto/off-road) unutar
   // rubrike Dimenzije obrisana — polje tireType uklonjeno.
   // ⚠️ Karlo 06.09.2026 (st.74): obrisana za 6 Vrsta guma (vidi
