@@ -74,7 +74,10 @@ const MOTO_SUBS: Subcategory[] = [
   { slug: "motocikl", name: "Motocikl", icon: "route" },
   { slug: "skuter", name: "Skuter", icon: "gauge" },
   { slug: "moped", name: "Moped", icon: "circledot" },
-  { slug: "atv-utv", name: "ATV / UTV", icon: "mountain" },
+  // ⚠️ Karlo 07.09.2026 (st.77): naziv "ATV / UTV" → "Quad / ATV / UTV" (dodan
+  // "Quad" na početak). SLUG ostaje isti — mijenjanje bi razbilo scope
+  // reference u category-filters.ts i postojeće oglase (enum drift).
+  { slug: "atv-utv", name: "Quad / ATV / UTV", icon: "mountain" },
   { slug: "minimoto", name: "Minimoto", icon: "rocket" },
   { slug: "oldtimer", name: "Oldtimer", icon: "history" },
   { slug: "gokart", name: "Go-kart", icon: "flag" },

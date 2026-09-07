@@ -748,7 +748,8 @@ const MOTO_FIELDS: FilterField[] = [
       { value: "motocikl", label: "Motocikl" },
       { value: "skuter", label: "Skuter" },
       { value: "moped", label: "Moped" },
-      { value: "atv-utv", label: "ATV / UTV" },
+      // ⚠️ Karlo 07.09.2026 (st.77): naziv usklađen s MOTO_SUBS ("Quad / ATV / UTV").
+      { value: "atv-utv", label: "Quad / ATV / UTV" },
       { value: "minimoto", label: "Minimoto" },
       { value: "oldtimer", label: "Oldtimer" },
       { value: "gokart", label: "Go-kart" },
