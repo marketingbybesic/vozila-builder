@@ -796,6 +796,25 @@ export const MOTO_GUME_TIRE_BRAND_MAKES: CarMake[] = [
   { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
 ];
 
+/**
+ * ⚠️ Karlo 07.09.2026 (st.85): Quad / ATV i UTV gume dobivaju VLASTITI popis
+ * proizvođača guma (52 brenda, TOČNIM redoslijedom kako je diktirao) — gotovo
+ * identičan popisu Moto gume (st.81), s 2 razlike: "Obor" (ne "Obar") i
+ * "VeeRubber" (ne "Veerubber") — zadržano doslovno kako je diktirano.
+ */
+const QUAD_ATV_UTV_TIRE_BRAND_NAMES: string[] = [
+  "Artrax","Avon","BCT","Blackstone","Boto","Bridgestone","Briway","Buldog","Camac","Carlisle",
+  "Coker Tire","Continental","CST","Deestone","Deli Tire","Dunlop","Duro","DWT","EFX","Full Bore",
+  "Giti","GoldenTyre","Goldspeed","Heidenau","Hifly","Innova","IRC Tire","ITP","Journey","Kenda",
+  "Kings","MEFO Sport","Maxxis","Mentor","Metzeler","Michelin","Mitas","MRF","Obor","Pirelli",
+  "Rush","Sava","Schwalbe","Shinko","Silverstone","Speedways","Sun-F","Titan","Trayal","VeeRubber",
+  "Vredestein","Wanda",
+];
+export const QUAD_ATV_UTV_TIRE_BRAND_MAKES: CarMake[] = [
+  ...QUAD_ATV_UTV_TIRE_BRAND_NAMES.map((n) => ({ slug: SLUG(n), name: n, country: "—", models: [] })),
+  { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
+];
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   // ⚠️ Karlo 01.09.2026 (st.40/41/42): moraju stajati ISPRED "dijelovi" grane
   // niže (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana

@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES, QUAD_ATV_UTV_TIRE_BRAND_MAKES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -238,7 +238,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 07.09.2026 (st.81): Moto gume — VLASTITI popis proizvođača
     // (MOTO_GUME_TIRE_BRAND_MAKES, 52 motociklistička/ATV/UTV brenda) — ista
     // logika, mora stajati ispred `isLjetneGume`.
+    // ⚠️ Karlo 07.09.2026 (st.85): Quad / ATV i UTV gume — VLASTITI popis
+    // proizvođača (QUAD_ATV_UTV_TIRE_BRAND_MAKES, gotovo identičan Moto gume
+    // popisu uz 2 diktirane razlike: "Obor"/"VeeRubber") — ista logika.
     const list = currentVrsta === "moto-atv-gume" ? MOTO_GUME_TIRE_BRAND_MAKES
+      : currentVrsta === "quad-atv-utv-gume" ? QUAD_ATV_UTV_TIRE_BRAND_MAKES
       : TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
