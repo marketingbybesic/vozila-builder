@@ -1956,9 +1956,12 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // felge, Broj rupa, Razmak rupa, ET Oznaka — 5 zasebnih unosa (isti key kao
   // odgovarajuća "gume" polja gore, RAZLIČIT vrstaScope: samo
   // "aluminijske-felge", osigurava međusobnu isključivost).
+  // ⚠️ Karlo 07.09.2026 (st.89): puni popis Promjera (17 stavki, TOČNIM
+  // redoslijedom kako je diktirao — "cola" oznaka, ne "R" prefiks kao ostale
+  // Vrste). Zamjenjuje privremeni "R"-popis iz st.86.
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
-    options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
-      .map((v) => ({ value: v, label: v })) },
+    options: ["8","10","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"]
+      .map((v) => ({ value: v, label: `${v} cola` })) },
   // ⚠️ Karlo 07.09.2026 (st.88): puni popis Širine felge (49 stavki, TOČNIM
   // redoslijedom kako je diktirao — "J" oznaka standardnih ET/JJ inč koraka,
   // 2.5J-15.75J, cijeli/pola-J koraci ispod 5.5J, 0.25J koraci od 5.25J
