@@ -952,7 +952,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             nema godinu proizvodnje kao vozilo), pa naslov postaje "Cijena". */}
         <SectionHead icon={Tag} title={usesPartsLayout ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax}
-          steps={category === "dijelovi" && subcategory === "multimedija" ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
+          steps={category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume") ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           {!usesPartsLayout && (
             <div>
