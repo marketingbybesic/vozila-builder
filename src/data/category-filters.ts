@@ -1989,7 +1989,18 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "98","100","105","108","110","112","114.3","115","118","120","120.6","127","128",
       "130","135","139.7","150","160","165",
     ].map((v) => ({ value: v, label: `${v} mm` })) },
-  { key: "tireSpeedIndex", label: "ET Oznaka", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
+  // ⚠️ Karlo 07.09.2026 (st.92): puni popis ET Oznake (79 stavki, TOČNIM
+  // redoslijedom kako je diktirao) — mijenja tip polja iz slobodnog upisa
+  // (st.86, dok popis nije bio poznat) u padajući izbornik. Decimalni zarez
+  // ("31,5", "36,5", "37,5", "42,5", "52,5") normaliziran u točku, dosljedno
+  // s konvencijom potvrđenom u st.60/61.
+  { key: "tireSpeedIndex", label: "ET Oznaka", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+    options: [
+      "-10","-9","-8","-7","-6","-5","-4","-3","-2","-1","0","1","2","3","4","5","6","7","8","9","10",
+      "11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30",
+      "31","31.5","32","33","34","35","36","36.5","37","37.5","38","39","40","41","42","42.5","43","43.5",
+      "44","45","46","47","48","49","50","51","52","52.5","53","54","55","56","57","58","59","60","68","70",
+    ].map((v) => ({ value: v, label: v })) },
 
   // Felge (wheels) — scope felge
   { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
