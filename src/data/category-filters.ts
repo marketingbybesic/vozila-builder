@@ -1974,8 +1974,11 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "12.75J","13J","13.25J","13.5J","13.75J","14J","14.25J","14.5J","14.75J","15J","15.25J",
       "15.5J","15.75J",
     ].map((v) => ({ value: v, label: v })) },
+  // ⚠️ Karlo 07.09.2026 (st.90): puni popis Broja rupa (6 stavki, TOČNIM
+  // redoslijedom kako je diktirao — "1" zadržan kao dan, iako neuobičajen za
+  // felgu). Zamjenjuje privremeni popis iz st.86.
   { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
-    options: ["3","4","5","6","8"].map((v) => ({ value: v, label: v })) },
+    options: ["1","3","4","5","6","7"].map((v) => ({ value: v, label: v })) },
   { key: "tireLoadIndex", label: "Razmak rupa", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
   { key: "tireSpeedIndex", label: "ET Oznaka", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
 
