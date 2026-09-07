@@ -913,7 +913,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // proizvođača dijela).
               // ⚠️ Karlo 03.09.2026 (st.59): Ljetne gume — natrag na "Marka"
               // (izričito zatraženo, gume nemaju "vozilo kojem odgovaraju").
-              label={usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
+              // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge — "Za Marku"
+              // (vlastita oznaka, drukčija od "Marka"/"Za marku" ostalih Vrsta).
+              label={currentVrsta === "aluminijske-felge" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
