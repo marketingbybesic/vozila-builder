@@ -241,8 +241,14 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // ⚠️ Karlo 07.09.2026 (st.85): Quad / ATV i UTV gume — VLASTITI popis
     // proizvođača (QUAD_ATV_UTV_TIRE_BRAND_MAKES, gotovo identičan Moto gume
     // popisu uz 2 diktirane razlike: "Obor"/"VeeRubber") — ista logika.
+    // ⚠️ Karlo 07.09.2026 (st.87): Aluminijske felge — "Za Marku" MORA biti isti
+    // popis marki VOZILA kao Osobni auto (MAKES), NE popis proizvođača guma —
+    // felga se bira po marki auta kojem odgovara, ne po brendu koji ju je
+    // proizveo. Provjera mora stajati ISPRED `isLjetneGume` (aluminijske-felge
+    // JEST u TIRE_FULL_FORM_VRSTE, dijeli formu, ali NE popis marki).
     const list = currentVrsta === "moto-atv-gume" ? MOTO_GUME_TIRE_BRAND_MAKES
       : currentVrsta === "quad-atv-utv-gume" ? QUAD_ATV_UTV_TIRE_BRAND_MAKES
+      : currentVrsta === "aluminijske-felge" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
       : TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
