@@ -1733,7 +1733,9 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Širine gume (128 stavki, vidi zaseban `tireWidth` unos niže) — ovaj popis
   // više NE vrijedi za tu Vrstu (maknuta iz vrstaScope, isključena eksplicitno
   // kako drugi unos ne bi bio dvostruko renderiran za istu Vrstu).
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v)),
+  // ⚠️ Karlo 07.09.2026 (st.79): Moto gume dobivaju VLASTITI popis Širine gume
+  // (vidi zaseban `tireWidth` unos niže) — maknuta i ova iz vrstaScope.
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume"),
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1818,6 +1820,22 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "255","260","265","270","275","280","285","290","295","300","305","315","320","325","335","340","355",
       "360","365","375","380","385","400","405","420","425","435","440","445","455","460","480","495","500",
       "520","525","540","550","560","580","600","620","650","680","710","750","800","825","850","900","1000","1050",
+    ].map((v) => ({ value: v, label: v })) },
+  // ⚠️ Karlo 07.09.2026 (st.79): Moto gume — vlastiti popis Širine gume (87
+  // stavki, TOČNIM redoslijedom kako je diktirao). Mix formata: motociklističke
+  // oznake (MT90/MU85/MH90), decimalni inči (1.75-6.70), "flotation" ATV/UTV
+  // oznake (15x7.00-27x10.00), i cijeli mm (60-300). Isti key `tireWidth` kao
+  // gornja 2 unosa — RAZLIČIT `vrstaScope` (samo "moto-atv-gume") osigurava
+  // međusobnu isključivost (isti presedan kao st.69).
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["moto-atv-gume"],
+    options: [
+      "MT90","MU85","MH90","1.75","2.00","2.25","2.50","2.75","3.00","3.25","3.50","3.60","3.75","4.00","4.10",
+      "4.25","4.50","4.60","5.00","5.10","5.40","6.10","6.70","12","15x7.00","16x8.00","17x7.00","18x8.00","18",
+      "18x7.00","18x9.50","19x8.00","19x7.00","20x10.00","20x11.00","20x7.00","21x10.00","21x7.00","22x7.00",
+      "22x12.00","22x8.00","22x10.00","22x9.00","22x11.00","23x11.00","23x7.00","23x8.00","24x11.00","24x8.00",
+      "24x9.00","25x10.00","25x12.00","25x8.00","25x12.50","25x11.00","26x9.00","26x12.00","27x12.00","27x10.00",
+      "60","70","80","90","100","110","120","130","140","145","150","160","165","170","175","180","185","190",
+      "200","210","225","230","240","250","255","270","280","300",
     ].map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 04.09.2026 (st.61): puni popis Karlovih brojeva (16 stavki,
   // TOČNIM redoslijedom kako je diktirao). "10,5" zapisano kao "10.5" (točka,
