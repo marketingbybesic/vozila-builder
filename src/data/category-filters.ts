@@ -1740,7 +1740,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITO polje
   // "Širina felge" (vidi zaseban unos niže, drukčiji label i redoslijed unutar
   // Dimenzije) — maknuta i ova iz vrstaScope.
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge"),
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1869,7 +1869,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Profila gume (vidi zaseban `tireProfile` unos niže) — maknuta i ova iz vrstaScope.
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge više NEMAJU "Profil gume" —
   // zamijenjeno poljem "Broj rupa" (vidi zaseban unos niže) — maknuta iz vrstaScope.
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge"),
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume — vlastiti popis Profila gume
@@ -1907,7 +1907,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITI (repozicionirani,
   // PRVI u Dimenzije) unos "Promjer (col)" niže — maknuta iz vrstaScope ovdje da se
   // izbjegne dvostruko renderiranje.
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge"),
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 05.09.2026 (st.71): Teretne i C gume — vlastiti popis Promjera
@@ -1941,12 +1941,12 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITA polja
   // "Razmak rupa"/"ET Oznaka" niže (zamjena za Indeks nosivosti/brzine) — maknuta
   // iz vrstaScope ovdje.
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge") },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge"),
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge") },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge"),
     options: ["T","H","V","W","Y"].map(v) },
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge nemaju Runflat (toggle nema
   // smisla za felge, samo za gume) — maknuta iz vrstaScope.
-  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "aluminijske-felge") },
+  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "aluminijske-felge" && v !== "celicne-felge") },
 
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge — potpuno prilagođena rubrika
   // Dimenzije (felga, ne guma): "Marka" → "Za Marku" (napredno-form.tsx),
@@ -1956,17 +1956,23 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // felge, Broj rupa, Razmak rupa, ET Oznaka — 5 zasebnih unosa (isti key kao
   // odgovarajuća "gume" polja gore, RAZLIČIT vrstaScope: samo
   // "aluminijske-felge", osigurava međusobnu isključivost).
+  // ⚠️ Karlo 07.09.2026 (st.93): Čelične felge — SVE IDENTIČNO Aluminijskim
+  // felgama (izričito zatraženo: "napravi sve identično"). "celicne-felge"
+  // dodana u vrstaScope svih 5 dediciranih unosa niže, I u isključenja svih
+  // odgovarajućih "gume"/Indeks/Runflat unosa gore (da se izbjegne dvostruko
+  // renderiranje). "Za Marku" label i MAKES popis marki (napredno-form.tsx)
+  // isto prošireni na celicne-felge.
   // ⚠️ Karlo 07.09.2026 (st.89): puni popis Promjera (17 stavki, TOČNIM
   // redoslijedom kako je diktirao — "cola" oznaka, ne "R" prefiks kao ostale
   // Vrste). Zamjenjuje privremeni "R"-popis iz st.86.
-  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+  { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: ["8","10","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"]
       .map((v) => ({ value: v, label: `${v} cola` })) },
   // ⚠️ Karlo 07.09.2026 (st.88): puni popis Širine felge (49 stavki, TOČNIM
   // redoslijedom kako je diktirao — "J" oznaka standardnih ET/JJ inč koraka,
   // 2.5J-15.75J, cijeli/pola-J koraci ispod 5.5J, 0.25J koraci od 5.25J
   // naviše). Zamjenjuje privremeni raspon iz st.86.
-  { key: "tireWidth", label: "Širina felge", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+  { key: "tireWidth", label: "Širina felge", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: [
       "2.5J","3J","3.5J","4J","4.5J","5J","5.25J","5.5J","5.75J","6J","6.25J","6.5J","6.75J",
       "7J","7.25J","7.5J","7.75J","8J","8.25J","8.5J","8.75J","9J","9.25J","9.5J","9.75J",
@@ -1977,14 +1983,14 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.90): puni popis Broja rupa (6 stavki, TOČNIM
   // redoslijedom kako je diktirao — "1" zadržan kao dan, iako neuobičajen za
   // felgu). Zamjenjuje privremeni popis iz st.86.
-  { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+  { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: ["1","3","4","5","6","7"].map((v) => ({ value: v, label: v })) },
   // ⚠️ Karlo 07.09.2026 (st.91): puni popis Razmaka rupa (19 stavki, TOČNIM
   // redoslijedom kako je diktirao) — mijenja tip polja iz slobodnog upisa
   // (st.86, dok popis nije bio poznat) u padajući izbornik. Decimalni zarez
   // ("114,3 mm", "120,6 mm") normaliziran u točku, dosljedno s konvencijom
   // potvrđenom u st.60/61.
-  { key: "tireLoadIndex", label: "Razmak rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+  { key: "tireLoadIndex", label: "Razmak rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: [
       "98","100","105","108","110","112","114.3","115","118","120","120.6","127","128",
       "130","135","139.7","150","160","165",
@@ -1994,7 +2000,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // (st.86, dok popis nije bio poznat) u padajući izbornik. Decimalni zarez
   // ("31,5", "36,5", "37,5", "42,5", "52,5") normaliziran u točku, dosljedno
   // s konvencijom potvrđenom u st.60/61.
-  { key: "tireSpeedIndex", label: "ET Oznaka", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+  { key: "tireSpeedIndex", label: "ET Oznaka", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: [
       "-10","-9","-8","-7","-6","-5","-4","-3","-2","-1","0","1","2","3","4","5","6","7","8","9","10",
       "11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30",
