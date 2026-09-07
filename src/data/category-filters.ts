@@ -1862,7 +1862,9 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // vrijedi za tu Vrstu (isti obrazac razdvajanja kao `tireWidth`, st.69).
   // ⚠️ Karlo 07.09.2026 (st.79-1): Moto gume dobivaju VLASTITI popis Profila
   // gume (vidi zaseban `tireProfile` unos niže) — maknuta i ova iz vrstaScope.
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume"),
+  // ⚠️ Karlo 07.09.2026 (st.84): Quad / ATV i UTV gume dobivaju VLASTITI popis
+  // Profila gume (vidi zaseban `tireProfile` unos niže) — maknuta i ova iz vrstaScope.
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume"),
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume — vlastiti popis Profila gume
@@ -1878,6 +1880,13 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // međusobnu isključivost.
   { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["moto-atv-gume"],
     options: ["35","40","50","55","60","65","67","70","75","80","85","88","90","100","600","620","630","640","645"]
+      .map((n) => ({ value: n, label: n })) },
+  // ⚠️ Karlo 07.09.2026 (st.84): Quad / ATV i UTV gume — vlastiti popis Profila
+  // gume (5 stavki, TOČNIM redoslijedom kako je diktirao). Isti key
+  // `tireProfile` kao gornja 3 unosa — RAZLIČIT `vrstaScope` (samo
+  // "quad-atv-utv-gume") osigurava međusobnu isključivost.
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["quad-atv-utv-gume"],
+    options: ["30","40","60","70","88"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 04.09.2026 (st.62): puni popis Karlovih promjera (18 stavki, TOČNIM
   // redoslijedom kako je dan). "R17,5" zapisano kao "R17.5" (točka) — dosljedno s
