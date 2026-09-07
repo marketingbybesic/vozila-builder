@@ -1959,12 +1959,18 @@ const DIJELOVI_FIELDS: FilterField[] = [
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
-  // Karlo nije dao točan popis za Širina felge — potvrđeno preko AskUserQuestion
-  // da je standardni raspon 5.5"-15" (pola-inčni koraci) dovoljan za sada.
+  // ⚠️ Karlo 07.09.2026 (st.88): puni popis Širine felge (49 stavki, TOČNIM
+  // redoslijedom kako je diktirao — "J" oznaka standardnih ET/JJ inč koraka,
+  // 2.5J-15.75J, cijeli/pola-J koraci ispod 5.5J, 0.25J koraci od 5.25J
+  // naviše). Zamjenjuje privremeni raspon iz st.86.
   { key: "tireWidth", label: "Širina felge", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
     options: [
-      "5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12","12.5","13","14","15",
-    ].map((v) => ({ value: v, label: `${v}"` })) },
+      "2.5J","3J","3.5J","4J","4.5J","5J","5.25J","5.5J","5.75J","6J","6.25J","6.5J","6.75J",
+      "7J","7.25J","7.5J","7.75J","8J","8.25J","8.5J","8.75J","9J","9.25J","9.5J","9.75J",
+      "10J","10.25J","10.5J","10.75J","11J","11.25J","11.5J","11.75J","12J","12.25J","12.5J",
+      "12.75J","13J","13.25J","13.5J","13.75J","14J","14.25J","14.5J","14.75J","15J","15.25J",
+      "15.5J","15.75J",
+    ].map((v) => ({ value: v, label: v })) },
   { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
     options: ["3","4","5","6","8"].map((v) => ({ value: v, label: v })) },
   { key: "tireLoadIndex", label: "Razmak rupa", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
