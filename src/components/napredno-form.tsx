@@ -248,9 +248,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // JEST u TIRE_FULL_FORM_VRSTE, dijeli formu, ali NE popis marki).
     // ⚠️ Karlo 07.09.2026 (st.93): Čelične felge — identično Aluminijskim
     // felgama, uključena u istu provjeru.
+    // ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — "Za Marku" isti popis
+    // marki vozila kao Aluminijske felge, uključena u istu provjeru.
     const list = currentVrsta === "moto-atv-gume" ? MOTO_GUME_TIRE_BRAND_MAKES
       : currentVrsta === "quad-atv-utv-gume" ? QUAD_ATV_UTV_TIRE_BRAND_MAKES
-      : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
+      : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
       : TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
@@ -924,7 +926,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge — "Za Marku"
               // (vlastita oznaka, drukčija od "Marka"/"Za marku" ostalih Vrsta).
               // ⚠️ Karlo 07.09.2026 (st.93): Čelične felge — identično Aluminijskim felgama.
-              label={currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
+              // ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — "Za Marku"
+              // (isti popis marki kao Aluminijske felge, "Marka" → "Za Marku").
+              label={currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
@@ -955,6 +959,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               iako je polje maknuto iz `PROSTI_CAS_FIELDS`. */}
           {filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
             <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
+          )}
+          {/* ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — dva dodatna
+              gumba-prekidača POKRAJ Garancije, isti stil, za odabir Ljetni/Zimski
+              komplet (mogu biti uključena oba istovremeno). */}
+          {currentVrsta === "kompleti-gume-felge" && (
+            <>
+              <TogglePill on={Boolean(attrs.kompletLjetni)} onClick={() => setAttr("kompletLjetni", !attrs.kompletLjetni)} label="Ljetni komplet" />
+              <TogglePill on={Boolean(attrs.kompletZimski)} onClick={() => setAttr("kompletZimski", !attrs.kompletZimski)} label="Zimski komplet" />
+            </>
           )}
         </div>
       </Panel>

@@ -1700,11 +1700,16 @@ const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
 // (Ljetne/Zimske/Cjelogodišnje/Teretne i C/Moto i ATV/Agro i industrijske
 // gume) gube Indeks nosivosti + Indeks brzine iz rubrike Dimenzije — preostale
 // 4 (felge: Aluminijske/Čelične/Kompleti/Ratkape) ih ZADRŽAVAJU.
+// ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) izričito traži brisanje
+// Indeks nosivosti/brzine — dodano ovdje (Aluminijske/Čelične felge te polje
+// više ne dijele s ovim mehanizmom otkako imaju vlastite Razmak rupa/ET
+// Oznaka zamjene, st.86/93 — ostaje samo Ratkape od originalna 4 s ovim poljima).
 const TIRE_GUME_VRSTE_NO_INDEX = [
   "ljetne-gume", "zimske-gume", "cjelogodisnje-gume",
   "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
   // ⚠️ Karlo 07.09.2026 (st.78): Quad / ATV i UTV gume — isto kao Moto gume.
   "quad-atv-utv-gume",
+  "kompleti-gume-felge",
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
