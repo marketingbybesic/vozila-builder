@@ -1687,6 +1687,9 @@ const TIRE_FULL_FORM_VRSTE = [
   "ljetne-gume", "zimske-gume", "cjelogodisnje-gume",
   "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
   "aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape",
+  // ⚠️ Karlo 07.09.2026 (st.78): "Quad / ATV i UTV gume" dodana — identična
+  // forma kao "Moto gume" (moto-atv-gume).
+  "quad-atv-utv-gume",
 ];
 // ⚠️ Karlo 05.09.2026 (st.73): Vrste koje dijele Teretne i C guma's VLASTITE
 // popise (st.69-72: Širina/Profil/Promjer/Marka, različiti od preostalih 8
@@ -1700,6 +1703,8 @@ const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
 const TIRE_GUME_VRSTE_NO_INDEX = [
   "ljetne-gume", "zimske-gume", "cjelogodisnje-gume",
   "teretne-c-gume", "moto-atv-gume", "agro-industrijske-gume",
+  // ⚠️ Karlo 07.09.2026 (st.78): Quad / ATV i UTV gume — isto kao Moto gume.
+  "quad-atv-utv-gume",
 ];
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
