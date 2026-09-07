@@ -1979,7 +1979,16 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // felgu). Zamjenjuje privremeni popis iz st.86.
   { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
     options: ["1","3","4","5","6","7"].map((v) => ({ value: v, label: v })) },
-  { key: "tireLoadIndex", label: "Razmak rupa", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
+  // ⚠️ Karlo 07.09.2026 (st.91): puni popis Razmaka rupa (19 stavki, TOČNIM
+  // redoslijedom kako je diktirao) — mijenja tip polja iz slobodnog upisa
+  // (st.86, dok popis nije bio poznat) u padajući izbornik. Decimalni zarez
+  // ("114,3 mm", "120,6 mm") normaliziran u točku, dosljedno s konvencijom
+  // potvrđenom u st.60/61.
+  { key: "tireLoadIndex", label: "Razmak rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"],
+    options: [
+      "98","100","105","108","110","112","114.3","115","118","120","120.6","127","128",
+      "130","135","139.7","150","160","165",
+    ].map((v) => ({ value: v, label: `${v} mm` })) },
   { key: "tireSpeedIndex", label: "ET Oznaka", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge"] },
 
   // Felge (wheels) — scope felge
