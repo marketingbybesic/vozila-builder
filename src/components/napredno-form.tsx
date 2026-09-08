@@ -938,8 +938,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
               ⚠️ Karlo 03.09.2026 (st.59): Ljetne gume — Model polje POTPUNO
-              uklonjeno (izričito zatraženo, "izbriši izbor za model"). */}
-          {isLjetneGume ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+              uklonjeno (izričito zatraženo, "izbriši izbor za model").
+              ⚠️ Karlo 08.09.2026 (st.98): Distancijeri i prstenovi + TPMS
+              senzori — Model polje POTPUNO uklonjeno (izričito zatraženo),
+              iste Vrste kao ostatak forme (bez "Za Marku"/felge-tretmana,
+              samo Model nestaje). */}
+          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
