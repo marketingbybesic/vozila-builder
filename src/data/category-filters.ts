@@ -2039,13 +2039,13 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // felge (st.88/90/91), isti key kao ta polja gore, RAZLIČIT vrstaScope
   // (samo "distancijeri-prstenovi") osigurava međusobnu isključivost. "Za
   // Marku"/"ET Oznaka"/"Promjer" NISU dio ovog zahtjeva — izostavljeni.
+  // ⚠️ Karlo 08.09.2026 (st.97): puni popis Širine (10 stavki + "Druge
+  // dimenzije" opcija, TOČNIM redoslijedom kako je diktirao) — zamjenjuje
+  // privremeni popis (Aluminijske felge "J" oznake) iz st.96. Distancijeri i
+  // prstenovi imaju vlastite mm-mjere debljine, ne felge-inč oznake.
   { key: "tireWidth", label: "Širina", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["distancijeri-prstenovi"],
     options: [
-      "2.5J","3J","3.5J","4J","4.5J","5J","5.25J","5.5J","5.75J","6J","6.25J","6.5J","6.75J",
-      "7J","7.25J","7.5J","7.75J","8J","8.25J","8.5J","8.75J","9J","9.25J","9.5J","9.75J",
-      "10J","10.25J","10.5J","10.75J","11J","11.25J","11.5J","11.75J","12J","12.25J","12.5J",
-      "12.75J","13J","13.25J","13.5J","13.75J","14J","14.25J","14.5J","14.75J","15J","15.25J",
-      "15.5J","15.75J",
+      "5mm","10mm","15mm","20mm","25mm","30mm","35mm","40mm","45mm","50mm","Druge dimenzije",
     ].map((v) => ({ value: v, label: v })) },
   { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["distancijeri-prstenovi"],
     options: ["1","3","4","5","6","7"].map((v) => ({ value: v, label: v })) },
