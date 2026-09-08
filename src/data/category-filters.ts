@@ -1745,7 +1745,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITO polje
   // "Širina felge" (vidi zaseban unos niže, drukčiji label i redoslijed unutar
   // Dimenzije) — maknuta i ova iz vrstaScope.
-  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
+  { key: "tireWidth", label: "Širina gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape"),
     options: [
       { value: "100", label: "100" },
       { value: "105", label: "105" },
@@ -1874,7 +1874,7 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // Profila gume (vidi zaseban `tireProfile` unos niže) — maknuta i ova iz vrstaScope.
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge više NEMAJU "Profil gume" —
   // zamijenjeno poljem "Broj rupa" (vidi zaseban unos niže) — maknuta iz vrstaScope.
-  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
+  { key: "tireProfile", label: "Profil gume", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape"),
     options: ["10.5","25","30","35","40","45","50","55","60","65","650","70","75","80","85","90"]
       .map((n) => ({ value: n, label: n })) },
   // ⚠️ Karlo 05.09.2026 (st.70): Teretne i C gume — vlastiti popis Profila gume
@@ -1912,6 +1912,11 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITI (repozicionirani,
   // PRVI u Dimenzije) unos "Promjer (col)" niže — maknuta iz vrstaScope ovdje da se
   // izbjegne dvostruko renderiranje.
+  // ⚠️ Karlo 08.09.2026 (st.95b): Ratkape — jedino polje koje OSTAJE u rubrici
+  // Dimenzije (izričito zatraženo: "izbriši sve, samo ostavi Promjer (col)").
+  // Ratkape NAMJERNO ostaje u ovom (općem) `tireDiameter` unosu — sve OSTALO iz
+  // Dimenzije (Širina gume/Profil gume/Indeks nosivosti/Indeks brzine/Runflat)
+  // sad isključuje "ratkape" iz svog vrstaScope (vidi ta polja niže).
   { key: "tireDiameter", label: "Promjer (col)", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TERETNE_C_STYLE_VRSTE.includes(v) && v !== "moto-atv-gume" && v !== "quad-atv-utv-gume" && v !== "aluminijske-felge" && v !== "celicne-felge"),
     options: ["R10","R12","R13","R14","R15","R16","R17","R17.5","R18","R19","R20","R21","R22","R23","R24","R25","R390","R460"]
       .map((v) => ({ value: v, label: v })) },
@@ -1946,12 +1951,12 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITA polja
   // "Razmak rupa"/"ET Oznaka" niže (zamjena za Indeks nosivosti/brzine) — maknuta
   // iz vrstaScope ovdje.
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge") },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge"),
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape") },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape"),
     options: ["T","H","V","W","Y"].map(v) },
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge nemaju Runflat (toggle nema
   // smisla za felge, samo za gume) — maknuta iz vrstaScope.
-  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "aluminijske-felge" && v !== "celicne-felge") },
+  { key: "tireRunflat", label: "Runflat", type: "toggle", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape") },
 
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge — potpuno prilagođena rubrika
   // Dimenzije (felga, ne guma): "Marka" → "Za Marku" (napredno-form.tsx),
