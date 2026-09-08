@@ -250,9 +250,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // felgama, uključena u istu provjeru.
     // ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — "Za Marku" isti popis
     // marki vozila kao Aluminijske felge, uključena u istu provjeru.
+    // ⚠️ Karlo 08.09.2026 (st.95): Ratkape — "Za marku" isti popis marki vozila
+    // kao Aluminijske felge, uključena u istu provjeru.
     const list = currentVrsta === "moto-atv-gume" ? MOTO_GUME_TIRE_BRAND_MAKES
       : currentVrsta === "quad-atv-utv-gume" ? QUAD_ATV_UTV_TIRE_BRAND_MAKES
-      : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
+      : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
       : TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
       : makesForSub(category, subcategory)
@@ -928,7 +930,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 07.09.2026 (st.93): Čelične felge — identično Aluminijskim felgama.
               // ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — "Za Marku"
               // (isti popis marki kao Aluminijske felge, "Marka" → "Za Marku").
-              label={currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
+              // ⚠️ Karlo 08.09.2026 (st.95): Ratkape — "Za marku" (Karlo je diktirao
+              // malim "m", zadržan pravopis dosljedan s ostalim felgama "Za Marku"
+              // — vizualno identična oznaka, isti gumb).
+              label={currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
