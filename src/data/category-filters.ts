@@ -2031,6 +2031,30 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "44","45","46","47","48","49","50","51","52","52.5","53","54","55","56","57","58","59","60","68","70",
     ].map((v) => ({ value: v, label: v })) },
 
+  // ⚠️ Karlo 08.09.2026 (st.96): Distancijeri i prstenovi — NOVA rubrika
+  // Dimenzije (dosad nije postojala za ovu Vrstu — nije bila u
+  // TIRE_FULL_FORM_VRSTE i nije dobivena namjerno, "samo Dimenzije" zatraženo
+  // preko AskUserQuestion, ostatak forme ostaje standardni Dijelovi izbornik).
+  // 3 polja: Širina, Broj rupa, Razmak rupa — ISTI popisi kao Aluminijske
+  // felge (st.88/90/91), isti key kao ta polja gore, RAZLIČIT vrstaScope
+  // (samo "distancijeri-prstenovi") osigurava međusobnu isključivost. "Za
+  // Marku"/"ET Oznaka"/"Promjer" NISU dio ovog zahtjeva — izostavljeni.
+  { key: "tireWidth", label: "Širina", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["distancijeri-prstenovi"],
+    options: [
+      "2.5J","3J","3.5J","4J","4.5J","5J","5.25J","5.5J","5.75J","6J","6.25J","6.5J","6.75J",
+      "7J","7.25J","7.5J","7.75J","8J","8.25J","8.5J","8.75J","9J","9.25J","9.5J","9.75J",
+      "10J","10.25J","10.5J","10.75J","11J","11.25J","11.5J","11.75J","12J","12.25J","12.5J",
+      "12.75J","13J","13.25J","13.5J","13.75J","14J","14.25J","14.5J","14.75J","15J","15.25J",
+      "15.5J","15.75J",
+    ].map((v) => ({ value: v, label: v })) },
+  { key: "tireProfile", label: "Broj rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["distancijeri-prstenovi"],
+    options: ["1","3","4","5","6","7"].map((v) => ({ value: v, label: v })) },
+  { key: "tireLoadIndex", label: "Razmak rupa", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["distancijeri-prstenovi"],
+    options: [
+      "98","100","105","108","110","112","114.3","115","118","120","120.6","127","128",
+      "130","135","139.7","150","160","165",
+    ].map((v) => ({ value: v, label: `${v} mm` })) },
+
   // Felge (wheels) — scope felge
   { key: "rimSize", label: "Promjer felge (col)", type: "select", storage: "attr", group: "Felge", scope: ["felge"],
     options: [13,14,15,16,17,18,19,20,21,22].map((n) => ({ value: String(n), label: `${n}"` })) },
