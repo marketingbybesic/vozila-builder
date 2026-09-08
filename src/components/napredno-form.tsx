@@ -345,10 +345,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       // za Ljetne gume — ne mogu se scope-ati na razini polja bez skrivanja
       // svugdje drugdje, pa je izuzetak ovdje, uz Vrstu.
       if (isLjetneGume && (f.key === "oem" || f.key === "brandPart")) return false;
-      // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — OEM / kataloški
-      // broj potpuno uklonjen (brandPart OSTAJE, preimenovan u "Viskoznost
-      // ulja" u renderField).
-      if (currentVrsta === "ulja-maziva-aditivi" && f.key === "oem") return false;
+      // ⚠️ Karlo 08.09.2026 (st.100/101): Ulja, maziva i adetivi — OEM /
+      // kataloški broj potpuno uklonjen; "Proizvođač dijela" (brandPart, text)
+      // zamijenjen st.101 dediciranim select poljem `oilViscosityList` s
+      // Karlovim popisom viskoznosti, pa se stari tekst-brandPart ovdje skriva.
+      if (currentVrsta === "ulja-maziva-aditivi" && (f.key === "oem" || f.key === "brandPart")) return false;
       if (f.scope && f.scope.length > 0) {
         if (!(subcategory && f.scope.includes(subcategory))) return false;
       }
@@ -662,17 +663,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       );
     }
     if (f.type === "text") {
-      // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — "Proizvođač
-      // dijela" → "Viskoznost ulja" (isti key `brandPart`, samo za ovu
-      // Vrstu; svugdje drugdje ostaje "Proizvođač dijela").
-      const textLabel = f.key === "brandPart" && currentVrsta === "ulja-maziva-aditivi" ? "Viskoznost ulja" : f.label;
       return (
         <TextField
           key={f.key}
-          label={textLabel}
+          label={f.label}
           value={(attrs[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
-          placeholder={textLabel}
+          placeholder={f.label}
         />
       );
     }
@@ -984,8 +981,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           <TogglePill on={showWithoutPrice} onClick={() => setShowWithoutPrice((s) => !s)} label="Prikaži oglase bez cijene" />
           {/* ⚠️ Karlo 26.08.2026: mobilne kućice nemaju Garanciju — gumb je ručni
               (izvan sheme), pa ga se mora ovdje uvjetovati, inače ostane vidljiv
-              iako je polje maknuto iz `PROSTI_CAS_FIELDS`. */}
-          {filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
+              iako je polje maknuto iz `PROSTI_CAS_FIELDS`.
+              ⚠️ Karlo 08.09.2026 (st.101): Ulja, maziva i adetivi — Garancija
+              potpuno uklonjena (izričito zatraženo). */}
+          {currentVrsta !== "ulja-maziva-aditivi" &&
+            filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
             <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
           )}
           {/* ⚠️ Karlo 08.09.2026 (st.94): Kompleti (gume+felge) — dva dodatna

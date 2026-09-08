@@ -2076,7 +2076,11 @@ const DIJELOVI_FIELDS: FilterField[] = [
     options: [1,2,4].map((n) => ({ value: String(n), label: `${n}` })) },
 
   // Ulja i tekućine (oils/fluids) — scope ulja-tekucine
-  { key: "fluidType", label: "Vrsta tekućine", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
+  // ⚠️ Karlo 08.09.2026 (st.101): rubrika Tekućine izbrisana za Vrstu "Ulja,
+  // maziva i adetivi" (izričito zatraženo) — `vrstaScope` je ovdje ograničen
+  // na jedinu preostalu sestrinsku Vrstu ("Autokozmetika i njega vozila", st.99),
+  // pa ostaje netaknuta ondje.
+  { key: "fluidType", label: "Vrsta tekućine", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"],
     options: [
       { value: "motorno-ulje", label: "Motorno ulje" },
       { value: "ulje-mjenjac", label: "Ulje za mjenjač" },
@@ -2084,17 +2088,39 @@ const DIJELOVI_FIELDS: FilterField[] = [
       { value: "kocnice", label: "Kočiona tekućina" },
       { value: "adblue", label: "AdBlue" },
     ] },
-  { key: "viscosity", label: "Viskozitet", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
+  { key: "viscosity", label: "Viskozitet", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"],
     options: ["0W-20","0W-30","5W-30","5W-40","10W-40","15W-40"].map(v) },
-  { key: "oilSpecification", label: "Specifikacija", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
-  { key: "oilSynthetic", label: "Tip", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"],
+  { key: "oilSpecification", label: "Specifikacija", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"] },
+  { key: "oilSynthetic", label: "Tip", type: "select", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"],
     options: [
       { value: "sintetsko", label: "Sintetsko" },
       { value: "polusintetsko", label: "Polusintetsko" },
       { value: "mineralno", label: "Mineralno" },
     ] },
-  { key: "oilVolume", label: "Volumen", type: "range", unit: "L", min: 0, max: 60, step: 1, storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
-  { key: "oilBrand", label: "Proizvođač", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"] },
+  { key: "oilVolume", label: "Volumen", type: "range", unit: "L", min: 0, max: 60, step: 1, storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"] },
+  { key: "oilBrand", label: "Proizvođač", type: "text", storage: "attr", group: "Tekućine", scope: ["ulja-tekucine"], vrstaScope: ["autokozmetika-njega"] },
+
+  // ⚠️ Karlo 08.09.2026 (st.101): "Viskoznost ulja" (bivši brandPart tekst-
+  // polje, preimenovano st.100) sad je SELECT s Karlovim popisom, SAMO za
+  // Vrstu "Ulja, maziva i adetivi". Odvojen ključ (`oilViscosityList`) od
+  // dijeljenog `brandPart` (koji ostaje tekst-polje "Proizvođač dijela" za
+  // sve ostale Vrste Dijelova) — isti obrazac kao st.86 label/type split.
+  { key: "oilViscosityList", label: "Viskoznost ulja", type: "select", storage: "attr", group: "Detalji", scope: ["ulja-tekucine"], vrstaScope: ["ulja-maziva-aditivi"],
+    options: [
+      "0W-16","0W-20","0W-30","0W-40","0W-50",
+      "5W-20","5W-30","5W-40","5W-50",
+      "10W-30","10W-40","10W-50","10W-60",
+      "15W-40","15W-50",
+      "20W-40","20W-50",
+      "25W-40",
+      "75W-80","75W-90","75W-140",
+      "80W-90",
+      "85W-140",
+      "32W","46W","68W",
+      "SAE 20","SAE 30","SAE 40","SAE 50","SAE 60",
+      "2T","4T",
+      "ATF","DOT3","DOT4","DOT5.1","HLP","Ostalo",
+    ].map((v) => ({ value: v, label: v })) },
 
   // ⚠️ Karlo 02.09.2026 (st.56): "Vrsta uređaja" (mediaType) i "Povezivost"
   // (mediaConnectivity) POTPUNO UKLONJENI — bila su scope-ana isključivo na
