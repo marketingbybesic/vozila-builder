@@ -342,18 +342,19 @@ const DIJELOVI_SUBS: Subcategory[] = [
       { slug: "gume-felge-ostalo", name: "Ostalo", icon: "box" },
     ],
   },
+  // ⚠️ Karlo 08.09.2026 (st.99): Ulja i tekućine — Vrsta svedena SAMO na ove
+  // 2 nove opcije ("napravi da u VRSTA ima samo ove dvije NOVE opcije",
+  // izričito zatraženo brisanje postojeće liste). "Vrsta" ovdje postaje
+  // single-select (vidi `vrstaFromChildren`, category-filters.ts).
   {
     slug: "ulja-tekucine",
     name: "Ulja i tekućine",
     icon: "droplets",
     children: [
-      { slug: "motorna-ulja", name: "Motorna ulja" },
-      { slug: "ulja-mjenjac", name: "Ulja za mjenjače i transmisiju" },
-      { slug: "hidraulicna-ulja", name: "Hidraulična i ostala industrijska ulja" },
-      { slug: "rashladne-tekucine", name: "Rashladne i staklo tekućine" },
-      { slug: "aditivi", name: "Aditivi i kemijska sredstva" },
+      // Napomena: "adetivi" zadržano doslovno kako je Karlo diktirao
+      // (vjerojatan tipfeler za "aditivi") — isti presedan kao st.60.
+      { slug: "ulja-maziva-aditivi", name: "Ulja, maziva i adetivi" },
       { slug: "autokozmetika-njega", name: "Autokozmetika i njega vozila" },
-      { slug: "ulja-tekucine-ostalo", name: "Ostalo" },
     ],
   },
   { slug: "dijelovi-ostalo", name: "Ostalo", icon: "box" },

@@ -61,7 +61,11 @@ function vrstaFromChildren(categorySlug: string): FilterField[] {
     .map((sub) => ({
       key: "vrsta",
       label: "Vrsta",
-      type: "multi" as const,
+      // ⚠️ Karlo 08.09.2026 (st.99): Ulja i tekućine — Vrsta postaje
+      // single-select ("u Vrsta moze samo jedna opcija da se bira a ne vise
+      // njih odjednom"), ostatak Napredne pretrage nedirano. Svugdje drugdje
+      // Vrsta ostaje multi-select (nepromijenjeno ponašanje).
+      type: (sub.slug === "ulja-tekucine" ? "select" : "multi") as "select" | "multi",
       storage: "attr" as const,
       group: "Vrsta",
       scope: [sub.slug],
