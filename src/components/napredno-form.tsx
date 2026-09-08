@@ -345,6 +345,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       // za Ljetne gume — ne mogu se scope-ati na razini polja bez skrivanja
       // svugdje drugdje, pa je izuzetak ovdje, uz Vrstu.
       if (isLjetneGume && (f.key === "oem" || f.key === "brandPart")) return false;
+      // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — OEM / kataloški
+      // broj potpuno uklonjen (brandPart OSTAJE, preimenovan u "Viskoznost
+      // ulja" u renderField).
+      if (currentVrsta === "ulja-maziva-aditivi" && f.key === "oem") return false;
       if (f.scope && f.scope.length > 0) {
         if (!(subcategory && f.scope.includes(subcategory))) return false;
       }
@@ -379,8 +383,15 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // (`{isGospodarska && motorSection}`), izvučena iz basicDynamic/
   // advancedDynamic i renderirana zasebno prije Cijena panela.
   const dimenzijeGroup = dynamicGroups.find((g) => g.name === "Dimenzije");
+  // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — "Detalji" (OEM/
+  // Proizvođač dijela) mora stajati IZNAD Cijene, isti obrazac kao Dimenzije
+  // (st.59) — SAMO za ovu Vrstu, svugdje drugdje Detalji ostaje na
+  // uobičajenom mjestu (ispod Cijene, preko basicDynamic).
+  const isUljaMazivaAditivi = currentVrsta === "ulja-maziva-aditivi";
+  const detaljiAboveGroup = isUljaMazivaAditivi ? dynamicGroups.find((g) => g.name === "Detalji") : undefined;
   const basicDynamic = dynamicGroups.filter(
     (g) => !["Vrsta", "Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
+           !(isUljaMazivaAditivi && g.name === "Detalji") &&
            BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name)
   );
   const advancedDynamic = dynamicGroups.filter(
@@ -651,13 +662,17 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       );
     }
     if (f.type === "text") {
+      // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — "Proizvođač
+      // dijela" → "Viskoznost ulja" (isti key `brandPart`, samo za ovu
+      // Vrstu; svugdje drugdje ostaje "Proizvođač dijela").
+      const textLabel = f.key === "brandPart" && currentVrsta === "ulja-maziva-aditivi" ? "Viskoznost ulja" : f.label;
       return (
         <TextField
           key={f.key}
-          label={f.label}
+          label={textLabel}
           value={(attrs[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
-          placeholder={f.label}
+          placeholder={textLabel}
         />
       );
     }
@@ -890,8 +905,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           )}
           {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje vozila" →
               "Stanje predmeta" (Novo/Polovno/Obnovljeno umjesto Rabljeno/Novo).
-              Svugdje drugdje ostaje nepromijenjeno. */}
-          {usesPartsLayout ? (
+              Svugdje drugdje ostaje nepromijenjeno.
+              ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — Stanje
+              predmeta POTPUNO uklonjeno (izričito zatraženo). */}
+          {currentVrsta === "ulja-maziva-aditivi" ? null : usesPartsLayout ? (
             <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
               options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
           ) : (
@@ -942,8 +959,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               ⚠️ Karlo 08.09.2026 (st.98): Distancijeri i prstenovi + TPMS
               senzori — Model polje POTPUNO uklonjeno (izričito zatraženo),
               iste Vrste kao ostatak forme (bez "Za Marku"/felge-tretmana,
-              samo Model nestaje). */}
-          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+              samo Model nestaje).
+              ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — Model
+              polje POTPUNO uklonjeno (izričito zatraženo), isti obrazac. */}
+          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori" || currentVrsta === "ulja-maziva-aditivi") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
@@ -988,6 +1007,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           cijene, isti obrazac kao Gospodarska motorSection gore. */}
       {dimenzijeGroup && (
         <Panel>{renderDynGroup(dimenzijeGroup)}</Panel>
+      )}
+
+      {/* ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — "Detalji"
+          IZNAD cijene, isti obrazac kao Dimenzije gore. */}
+      {detaljiAboveGroup && (
+        <Panel>{renderDynGroup(detaljiAboveGroup)}</Panel>
       )}
 
       {/* ── 2. CIJENA, GODINA (+ km samo ako kategorija koristi km) ── */}
