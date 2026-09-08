@@ -55,6 +55,20 @@ const SVI_MODELI = "Svi modeli";
 // ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, isti obrazac
 // kao SVI_MODELI za free-text Model (kamioni/mehanizacija).
 const SVE_MARKE = "Sve marke";
+// ⚠️ Karlo 08.09.2026 (st.102): Ulja, maziva i adetivi — Model polje (uklonjeno
+// st.100) VRAĆENO, ali kao proizvođač ULJA (ne vozila) — "Za marku" gore
+// ostaje marka vozila (nepromijenjeno). Statični popis, izvan make/model
+// baze jer nema veze s markom vozila iz `make` state-a iznad.
+const ULJA_BRAND_OPTIONS = [
+  "Agip","Ambra","Aral","Ardeca","Bardahl","Bel-Ray","BMW","Castrol","Champion","Denicol",
+  "Divinol","Dynamax","Elf","Eni","ESSO","Eurol","Exxon","Fanfaro","Febi Bilstein","Ford",
+  "Fuchs","Gazprom","GMC Oil","Havoline","Hemolub","Hexol","Honda","INA","Ipone","John Deere",
+  "Kia-Lotos","Liqui Moly","Lotos","Lubegard","Mannol","Maxima","Mazda","Mercedes-Benz","Mobil","MOL",
+  "Motorex","Motul","Nils","Nissan Motor Oil","Olma","OMV","Opel-GM","Pennzoil","Petrol","Power Oil",
+  "Putoline","Quaker State","Ravenol","Repsol","Rexoil","Rheinol","Rotech","SDF","Selenia","Shell",
+  "Stihl","STP","SWAG","Texaco","Total","Toyota","Vaico","Valvoline","Vatoil","Venol",
+  "Viskol","VW - original","Wolf Oil","Xado","Xcel","Yacco","Yamalube","Yanmar","Zollex","Ostalo",
+].map((n) => ({ value: n, label: n }));
 // ⚠️ Karlo 05.09.2026 (st.66-68): Vrste unutar Dijelovi/Gume i felge koje
 // dobivaju PUNU formu iz st.58-65 (Marka=proizvođači guma, Dimenzije iznad
 // Cijene, bez Model/OEM/Proizvođač dijela). Ljetne gume su bile prve (st.59);
@@ -958,8 +972,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               iste Vrste kao ostatak forme (bez "Za Marku"/felge-tretmana,
               samo Model nestaje).
               ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — Model
-              polje POTPUNO uklonjeno (izričito zatraženo), isti obrazac. */}
-          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori" || currentVrsta === "ulja-maziva-aditivi") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+              polje uklonjeno.
+              ⚠️ Karlo 08.09.2026 (st.102): ...pa VRAĆENO kao "Model" = popis
+              proizvođača ULJA (Agip/Aral/Castrol/.../Ostalo, 80 marki), NE
+              marka vozila iz `make`/modelOptions DB lanca — statičan popis. */}
+          {currentVrsta === "ulja-maziva-aditivi" ? (
+            <SelectField label="Model" value={model} onChange={setModel} options={ULJA_BRAND_OPTIONS} placeholder="Svi" />
+          ) : isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
