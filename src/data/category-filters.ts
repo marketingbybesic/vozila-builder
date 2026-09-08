@@ -1711,6 +1711,19 @@ const TIRE_GUME_VRSTE_NO_INDEX = [
   "quad-atv-utv-gume",
   "kompleti-gume-felge",
 ];
+// ⚠️ Karlo 08.09.2026 (st.95b): Ratkape isključene iz Indeks nosivosti/brzine
+// zajedno s ostalima — to prazni `TIRE_FULL_FORM_VRSTE` filtar u [] (SVE
+// Vrste isključene). Prazan `vrstaScope` u napredno-form.tsx `dynamicFields`
+// znači "bez ograničenja" (svugdje), NE "nigdje" — obrnuto od namjere! Ova
+// varijabla + `orNoneScope()` osiguravaju da prazan rezultat postane
+// `["__none__"]` (sentinel koji nijedna prava Vrsta nikad ne pogađa) umjesto
+// praznog niza.
+const TIRE_GUME_VRSTE_WITH_INDEX = TIRE_FULL_FORM_VRSTE.filter(
+  (v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape"
+);
+function orNoneScope(vrste: string[]): string[] {
+  return vrste.length ? vrste : ["__none__"];
+}
 
 // ── DIJELOVI (parts and accessories) ───────────────────────────────────
 const DIJELOVI_FIELDS: FilterField[] = [
@@ -1951,8 +1964,8 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge dobivaju VLASTITA polja
   // "Razmak rupa"/"ET Oznaka" niže (zamjena za Indeks nosivosti/brzine) — maknuta
   // iz vrstaScope ovdje.
-  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape") },
-  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: TIRE_FULL_FORM_VRSTE.filter((v) => !TIRE_GUME_VRSTE_NO_INDEX.includes(v) && v !== "aluminijske-felge" && v !== "celicne-felge" && v !== "ratkape"),
+  { key: "tireLoadIndex", label: "Indeks nosivosti", type: "text", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: orNoneScope(TIRE_GUME_VRSTE_WITH_INDEX) },
+  { key: "tireSpeedIndex", label: "Indeks brzine", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: orNoneScope(TIRE_GUME_VRSTE_WITH_INDEX),
     options: ["T","H","V","W","Y"].map(v) },
   // ⚠️ Karlo 07.09.2026 (st.86): Aluminijske felge nemaju Runflat (toggle nema
   // smisla za felge, samo za gume) — maknuta iz vrstaScope.
