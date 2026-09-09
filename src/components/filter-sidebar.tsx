@@ -17,7 +17,7 @@ import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelFie
 import { COUNTIES } from "@/data/locations";
 import { getFilterDefs, filterDynamicFields, extractStructuredGroups, type CategoryFilters, type FilterField } from "@/data/category-filters";
 import {
-  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, TogglePill, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
+  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, TogglePill, ColorPicker, RangeSelect, RangeInput, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { FilterPanel } from "@/components/napredno/filter-panel";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -260,10 +260,16 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             onMin={(v) => setRange(v, hi)} onMax={(v) => setRange(lo, v)} steps={f.steps} maxOnly={f.maxOnly} />
         );
       }
-      // ⚠️ Nema slobodan RangeInput ekvivalent u ovom fileu (kamperski "NDM"
-      // tip polja koji Dijelovi ne koristi) — Dijelovi Detalji/Dimenzije uvijek
-      // imaju `steps`, pa je ova grana ovdje samo za potpunost/buduće kategorije.
-      return null;
+      // ⚠️ Karlo 09.09.2026 (bugfix): polja BEZ `steps` (npr. e-skuteri/e-
+      // bicikli "Snaga motora"/"Kapacitet baterije"/"Doseg" — group
+      // "Električna") su bila POTPUNO nevidljiva u sidebaru — vraćalo se
+      // `null` umjesto slobodnog unosa. napredno-form.tsx za isti slučaj
+      // koristi RangeInput (dva broja, "min..max" u jednom URL ključu).
+      return (
+        <RangeInput key={f.key} label={f.label} unit={f.unit}
+          value={current[`a.${f.key}`] ?? undefined}
+          onSet={(v) => update({ [`a.${f.key}`]: v ?? null })} />
+      );
     }
     if (f.type === "select") {
       return (
@@ -551,8 +557,9 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           napredno-form.tsx (odmah IZA Motor sekcije/Gorivo/Mjenjač). */}
       {basicDynamic.flatMap((g) => g.fields).map(renderDynField)}
 
+      {/* ⚠️ Karlo 09.09.2026 (parity): "Boja" → "Boja vozila" — isti naziv kao napredna pretraga. */}
       {hasField("color") && (
-        <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
+        <ColorPicker label="Boja vozila" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
       )}
 
       {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): `advancedDynamic` MORA
