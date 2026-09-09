@@ -398,31 +398,44 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli.
           ⚠️ Karlo 09.09.2026 (st.59-107, sidebar-nastavak): Model potpuno
           uklonjen za neke Vrste (Ljetne gume/felge/Distancijeri/TPMS/Ulja
-          maziva/Autokozmetika) — `modelHiddenForVrsta`. */}
-      {!modelHiddenForVrsta(category, subcategory, currentVrsta) && showsModelField(category, subcategory) && freeTextModelField(category, subcategory) && (
-        <TextField
-          label="Model"
-          /* ⚠️ Karlo 26.08.2026: prije klika u polju PIŠE "Svi modeli" (prava
-             vrijednost, ne sivi placeholder); na fokus se isprazni za upis.
-             ⚠️ Tipkanje ide u LOKALNO stanje, a URL se ažurira tek 400 ms
-             nakon zadnjeg znaka — `update()` radi router.push, pa bi upis po
-             znaku remountao polje i gubio slova (uhvaćeno: "FH16" → "6"). */
-          value={modelFocus ? modelDraft : (current.model || SVI_MODELI)}
-          onChange={(v) => {
-            setModelDraft(v);
-            if (modelTimer.current) clearTimeout(modelTimer.current);
-            modelTimer.current = setTimeout(() => update({ model: v.trim() || null }), 400);
-          }}
-          onFocus={() => { setModelDraft(current.model ?? ""); setModelFocus(true); }}
-          onBlur={() => {
-            if (modelTimer.current) clearTimeout(modelTimer.current);
-            update({ model: modelDraft.trim() || null });
-            setModelFocus(false);
-          }}
-        />
-      )}
-      {!modelHiddenForVrsta(category, subcategory, currentVrsta) && modelOptions.length > 0 && showsModelField(category, subcategory) && !freeTextModelField(category, subcategory) && (
-        <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
+          maziva/Autokozmetika) — `modelHiddenForVrsta`.
+          ⚠️ Karlo 09.09.2026 (bugfix): "Model" je NESTAO za sve ostale Vrste
+          BEZ marke odabrane (npr. Auto dijelovi/"Motor, dijelovi motora i
+          brtve") — sidebar je imao DVA NEOVISNA uvjeta (select I text), pa
+          kad `modelOptions.length === 0` (nema marke) I `freeTextModelField`
+          false, NIJEDAN se nije okinuo. napredno-form.tsx ima JEDAN ternary:
+          select AKO ima opcija i nije free-text, INAČE text (uklj. baš ovaj
+          "još nema marke" slučaj) — isti obrazac ovdje. */}
+      {!modelHiddenForVrsta(category, subcategory, currentVrsta) && showsModelField(category, subcategory) && (
+        modelOptions.length > 0 && !freeTextModelField(category, subcategory) ? (
+          <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
+        ) : (
+          <TextField
+            label="Model"
+            /* ⚠️ Karlo 26.08.2026: prije klika u polju PIŠE "Svi modeli" (prava
+               vrijednost, ne sivi placeholder) SAMO kod slobodnog upisa
+               (kamioni/autobusi) — isti uvjet kao napredno-form.tsx `value`
+               (freeTextModelField && !focus && !model). Za "još nema marke"
+               slučaj (Auto dijelovi i sl.) polje ostaje prazno, "Svi modeli"
+               dolazi kroz `placeholder`.
+               ⚠️ Tipkanje ide u LOKALNO stanje, a URL se ažurira tek 400 ms
+               nakon zadnjeg znaka — `update()` radi router.push, pa bi upis po
+               znaku remountao polje i gubio slova (uhvaćeno: "FH16" → "6"). */
+            value={modelFocus ? modelDraft : freeTextModelField(category, subcategory) ? (current.model || SVI_MODELI) : (current.model ?? "")}
+            onChange={(v) => {
+              setModelDraft(v);
+              if (modelTimer.current) clearTimeout(modelTimer.current);
+              modelTimer.current = setTimeout(() => update({ model: v.trim() || null }), 400);
+            }}
+            onFocus={() => { setModelDraft(current.model ?? ""); setModelFocus(true); }}
+            onBlur={() => {
+              if (modelTimer.current) clearTimeout(modelTimer.current);
+              update({ model: modelDraft.trim() || null });
+              setModelFocus(false);
+            }}
+            placeholder={selectedMake ? "npr. Golf, A4, X3..." : SVI_MODELI}
+          />
+        )
       )}
 
       {/* ⚠️ Karlo 09.09.2026 (identičan redoslijed kao napredna pretraga):
