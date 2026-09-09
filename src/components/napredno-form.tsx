@@ -312,6 +312,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // slugovi ne bi svejedno pronašli ništa u ovom popisu, ali eksplicitno je
     // jasnije od oslanjanja na tu slučajnost — isti obrazac kao st.41-44).
     if (isLjetneGume) return list.map((m) => ({ value: m.slug, label: m.name }));
+    // ⚠️ Karlo 09.09.2026 (st.106): Ulja, maziva i aditivi — popis proizvođača
+    // ulja, plosnata lista bez grupe "Najpopularnije" (isti obrazac kao
+    // Ljetne gume gore — inače `isAutoDijelovi` niže pogrešno grupira ovaj
+    // popis kao da su auto marke).
+    if (currentVrsta === "ulja-maziva-aditivi") return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis
     // (isti kao Osobni auto) → i grupe kao auto, ne plosnata lista.
     // ⚠️ Karlo 01.09.2026 (st.38): SAMO auto-dijelovi — kamping-oprema od
