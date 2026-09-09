@@ -309,7 +309,24 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
 
       {/* Stil (moto) / Tip vozila (kamioni) — ODMAH ispod Podkategorije */}
       {vrstaFields.map((f) =>
-        // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih
+        // ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): kamping-oprema (i Gume
+        // i felge, kad im zatreba isti tretman) biraju Vrstu kroz slikoviti
+        // gate u naprednoj pretrazi (needsVrstaPick) — jednom kad je Vrsta
+        // odabrana, napredno-form.tsx je NE prikazuje kao multi-select
+        // checkbox listu nego kao SelectField single-select ("Sve vrste",
+        // vrijednost uvijek TOČNO jedna). Bez ove grane bočni filter je Vrstu
+        // (za kamping-opremu) renderirao kao MultiSelect — kriv widget/
+        // semantika, iako je opcijski popis identičan.
+        f.key === "vrsta" && isKampingOprema ? (
+          <SelectField
+            key={f.key}
+            label="Vrsta"
+            value={arr(`a.${f.key}`)[0] ?? current[`a.${f.key}`] ?? ""}
+            onChange={(v) => update({ [`a.${f.key}`]: v || null })}
+            options={f.options ?? []}
+            placeholder="Sve vrste"
+          />
+        ) : // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih
         // 5 opcija odmah vidljivo), ne padajući izbornik iza klika.
         f.key === "boatType" ? (
           <PillMultiSelect
@@ -356,12 +373,14 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
             predmeta" (Novo/Polovno/Obnovljeno). Svugdje drugdje nepromijenjeno.
             ⚠️ Karlo 09.09.2026 (st.100/107, sidebar-nastavak): Ulja, maziva i
-            aditivi + Autokozmetika — Stanje predmeta POTPUNO uklonjeno. */}
+            aditivi + Autokozmetika — Stanje predmeta POTPUNO uklonjeno.
+            ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): naziv "Stanje" nije
+            odgovarao naprednoj pretrazi ("Stanje vozila") — ispravljeno. */}
         {isUljaMazivaLike ? null : usesPartsLayout ? (
           <MultiSelect label="Stanje predmeta" values={arr("condition")} onChange={(v) => setMulti("condition", v)}
             options={toOpts(["Novo", "Polovno", "Obnovljeno"])} placeholder="Sve" />
         ) : (
-          <MultiSelect label="Stanje" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
+          <MultiSelect label="Stanje vozila" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
         )}
       </div>
 
@@ -487,25 +506,20 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
       )}
 
-      {/* ⚠️ Karlo 09.09.2026: `basicDynamic` grupe (npr. "Detalji" — OEM /
-          kataloški broj + Proizvođač dijela — za Vrste BEZ posebnog Dimenzije/
-          Detalji-iznad-Cijene tretmana, poput "Motor, dijelovi motora i
-          brtve") su nedostajale u bočnom filteru u potpunosti — ista pozicija
-          kao napredno-form.tsx (odmah ispod Cijena/Godina/km panela). */}
-      {basicDynamic.flatMap((g) => g.fields).map(renderDynField)}
-
+      {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): napredno-form.tsx
+          renderira "Motor" sekciju (Gorivo/Mjenjač/Karoserija) KAO ZASEBAN
+          panel PRIJE basicDynamic panela (linija ~1044/1048) — obrnut
+          redoslijed od prijašnje sidebar verzije uzrokovao je da su npr.
+          Kamperi "Vozilo oštećeno"/"Vozilo u kvaru" (basicDynamic) ispadali
+          PRIJE "Gorivo"/"Mjenjač", umjesto poslije. Redoslijed ovdje sad
+          prati taj isti obrazac.
+          ⚠️ Karlo 09.09.2026: "nepotrebno da imamo Više filtera, neka se
+          odmah pokazuju svi filteri na desktopu" — `compact` više NE skriva
+          ništa iza klika, cijeli bočni stupac (desktop) uvijek prikazuje SVE
+          filtere, identično naprednoj pretrazi. */}
       {hasField("fuel") && (
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
       )}
-
-      {/* ⚠️ Karlo 09.09.2026: "nepotrebno da imamo Više filtera, neka se odmah
-          pokazuju svi filteri na desktopu" — `compact` više NE skriva ništa
-          iza klika, cijeli bočni stupac (desktop) uvijek prikazuje SVE
-          filtere, identično naprednoj pretrazi. `sviFilteri`/"Svi filteri"
-          gumb uklonjeni; jedino "Više filtera" ostaje na MOBITELU (`!compact`
-          pop-up varijanta), gdje otvara puni napredni panel preko cijelog
-          ekrana — to je odvojen UX obrazac (bottom sheet), ne "skriveni
-          filteri na desktopu" koje je Karlo tražio da nestanu. */}
       {hasField("transmission") && (
         <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
       )}
@@ -515,17 +529,30 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
       )}
 
+      {/* ⚠️ Karlo 09.09.2026: `basicDynamic` grupe (npr. "Detalji" — OEM /
+          kataloški broj + Proizvođač dijela — za Vrste BEZ posebnog Dimenzije/
+          Detalji-iznad-Cijene tretmana, poput "Motor, dijelovi motora i
+          brtve"; ili "Vozilo oštećeno"/"Vozilo u kvaru" za Kamperi) su
+          nedostajale u bočnom filteru u potpunosti — ista pozicija kao
+          napredno-form.tsx (odmah IZA Motor sekcije/Gorivo/Mjenjač). */}
+      {basicDynamic.flatMap((g) => g.fields).map(renderDynField)}
+
       {hasField("color") && (
         <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
       )}
 
-      <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
-      <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
-      {/* ⚠️ Karlo 09.09.2026: `advancedDynamic` — sve preostale grupe koje
-          napredno-form.tsx skriva iza "Više filtera" (Specifikacije/
-          Oprema/Povijest/Pravno/itd. — kategorije izvan Dijelova), isti
-          obrazac kao Mjenjač/Karoserija/Boja iznad. */}
+      {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): `advancedDynamic` MORA
+          stajati PRIJE Lokacija/Prodavač — napredno-form.tsx redoslijed je
+          6. VIŠE FILTERA (advancedDynamic) → 7. LOKACIJA I PRODAVAČ (zadnje).
+          Sve preostale grupe koje napredna skriva iza "Više filtera"
+          (Specifikacije/Oprema/Povijest/Pravno/Vlasništvo/Broj vlasnika/itd.). */}
       {advancedDynamic.flatMap((g) => g.fields).map(renderDynField)}
+
+      {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): "Županija" → "Lokacija
+          (županija)" — isti naziv kao napredna pretraga; ZADNJE polje, isto
+          kao napredno-form.tsx "7. LOKACIJA I PRODAVAČ". */}
+      <SelectField label="Lokacija (županija)" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+      <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
 
       {/* ⚠️ Karlo 13.08.2026 (st. 2) → 09.09.2026: "Više filtera" ostaje SAMO
           za mobitel (`!compact` — otvara puni napredni panel preko cijelog
