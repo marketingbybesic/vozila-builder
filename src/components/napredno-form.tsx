@@ -1054,8 +1054,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
             nema godinu proizvodnje kao vozilo), pa naslov postaje "Cijena". */}
         <SectionHead icon={Tag} title={usesPartsLayout ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
+        {/* ⚠️ Karlo 09.09.2026 (st.105): Ulja, maziva i aditivi — ista gušća
+            ljestvica cijena kao Dijelovi/Gume i felge (izričito zatraženo),
+            SAMO za ovu Vrstu (ne cijela Ulja i tekućine podkategorija). */}
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax}
-          steps={category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume") ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
+          steps={category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume" || currentVrsta === "ulja-maziva-aditivi") ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           {!usesPartsLayout && (
             <div>
