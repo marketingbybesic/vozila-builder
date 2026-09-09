@@ -429,23 +429,30 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           "Prikaži oglase bez cijene" + Garancija + Ljetni/Zimski komplet
           (Kompleti gume+felge) — ista pozicija (ODMAH ispod Marka/Model,
           PRIJE Dimenzije/Cijena) kao u napredno-form.tsx. Ova 3 polja u
-          bočnom filteru prije NISU postojala uopće. */}
-      <div className="grid grid-cols-2 gap-2">
-        <TogglePill
-          on={current.hidePriceless !== "1"}
-          onClick={() => update({ hidePriceless: current.hidePriceless === "1" ? null : "1" })}
-          label="Prikaži oglase bez cijene"
-        />
-        {!isUljaMazivaLike && filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
-          <TogglePill on={current["a.warranty"] === "1"} onClick={() => update({ "a.warranty": current["a.warranty"] === "1" ? null : "1" })} label="Garancija" />
-        )}
-        {currentVrsta === "kompleti-gume-felge" && (
-          <>
-            <TogglePill on={current["a.kompletLjetni"] === "1"} onClick={() => update({ "a.kompletLjetni": current["a.kompletLjetni"] === "1" ? null : "1" })} label="Ljetni komplet" />
-            <TogglePill on={current["a.kompletZimski"] === "1"} onClick={() => update({ "a.kompletZimski": current["a.kompletZimski"] === "1" ? null : "1" })} label="Zimski komplet" />
-          </>
-        )}
-      </div>
+          bočnom filteru prije NISU postojala uopće.
+          ⚠️ Karlo 09.09.2026 (responsive fix): "Prikaži oglase bez cijene" u
+          uskom bočnom stupcu (2 stupca u ~260px) ne stane u pola širine bez
+          loma teksta u 3-4 retka — dobiva VLASTITI puni redak, Garancija/
+          Ljetni/Zimski komplet ostaju u 2-stupčanom retku ispod (ista logika
+          kao "grid-cols-2" napredno-form.tsx, samo prilagođena širini). */}
+      <TogglePill
+        on={current.hidePriceless !== "1"}
+        onClick={() => update({ hidePriceless: current.hidePriceless === "1" ? null : "1" })}
+        label="Prikaži oglase bez cijene"
+      />
+      {(!isUljaMazivaLike && filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) || currentVrsta === "kompleti-gume-felge") && (
+        <div className="grid grid-cols-2 gap-2">
+          {!isUljaMazivaLike && filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
+            <TogglePill on={current["a.warranty"] === "1"} onClick={() => update({ "a.warranty": current["a.warranty"] === "1" ? null : "1" })} label="Garancija" />
+          )}
+          {currentVrsta === "kompleti-gume-felge" && (
+            <>
+              <TogglePill on={current["a.kompletLjetni"] === "1"} onClick={() => update({ "a.kompletLjetni": current["a.kompletLjetni"] === "1" ? null : "1" })} label="Ljetni komplet" />
+              <TogglePill on={current["a.kompletZimski"] === "1"} onClick={() => update({ "a.kompletZimski": current["a.kompletZimski"] === "1" ? null : "1" })} label="Zimski komplet" />
+            </>
+          )}
+        </div>
+      )}
 
       {/* ⚠️ Karlo 09.09.2026 (st.108-nastavak, identičan redoslijed): "Dimenzije"
           (Ljetne gume/felge/Distancijeri...) i "Detalji" (Viskoznost ulja) —
