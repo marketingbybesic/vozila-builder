@@ -222,6 +222,16 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // odnose SAMO na jednu specifičnu Vrstu unutar podkategorije (vidi
   // vrstaScope na FilterField), ne na cijelu podkategoriju kao `scope`.
   const currentVrsta = Array.isArray(vrstaValue) ? vrstaValue[0] : vrstaValue;
+  // ⚠️ Karlo 09.09.2026 (st.104): Ulja i tekućine — kod ulaska u podkategoriju
+  // BEZ odabrane Vrste, automatski odaberi "Ulja, maziva i aditivi" (otvara
+  // taj izbornik/formu odmah, bez čekanja ručnog odabira). Ostale podkategorije
+  // nepromijenjene (samo ova, izričito zatraženo).
+  useEffect(() => {
+    if (subcategory === "ulja-tekucine" && !hasVrsta) {
+      setAttrs((a) => ({ ...a, vrsta: "ulja-maziva-aditivi" }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategory, hasVrsta]);
   // ⚠️ Karlo 05.09.2026 (st.66): Zimske gume dobivaju IDENTIČNU formu kao
   // Ljetne gume (st.58-65) — isti "Marka"/Dimenzije/bez Model obrazac, samo
   // druga Vrsta. Ime varijable ostaje `isLjetneGume` (širenje bi značilo
