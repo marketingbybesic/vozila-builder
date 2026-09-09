@@ -15,7 +15,7 @@ import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
-import { getFilterDefs, groupFields, type CategoryFilters, type FilterField } from "@/data/category-filters";
+import { getFilterDefs, filterDynamicFields, extractStructuredGroups, type CategoryFilters, type FilterField } from "@/data/category-filters";
 import {
   MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, TogglePill, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
@@ -25,7 +25,7 @@ import {
   isAutoDijeloviLayout, isTireFullFormVrsta, isUljaMazivaLikeVrsta,
   makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta,
   makeIsFreeTextForVrsta, makeFreeTextPlaceholderForVrsta,
-  modelHiddenForVrsta, oemBrandPartHiddenForVrsta,
+  modelHiddenForVrsta,
   usesDenseCijenaSteps,
 } from "@/lib/dijelovi-vrsta";
 
@@ -202,58 +202,26 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     .map((s) => ({ value: s.slug, label: s.name }));
 
   /**
-   * Karlo 29.07: sidebar je bio HARDKODIRAN za auto pa moto nije imao "Stil",
-   * a kamioni "Tip vozila" — iako oboje postoji u shemi i radi u naprednoj.
-   * Sad čita ista `group: "Vrsta"` attr polja i poštuje `scope`, pa stoje
-   * ODMAH ispod Podkategorije (isti redoslijed kao napredna pretraga).
+   * ⚠️ Karlo 09.09.2026: "identična polja kao u naprednoj pretrazi i istim
+   * redoslijedom" — bočni filter sad koristi ISTI `filterDynamicFields`/
+   * `extractStructuredGroups` izračun kao napredno-form.tsx (category-
+   * filters.ts, dijeljen izvor istine), umjesto vlastite pojednostavljene
+   * `vrstaFields`/Dimenzije-only verzije. `vrstaGroup` (Vrsta polje/a) i
+   * `dimenzijeGroup`/`detaljiAboveGroup` renderiraju se NIŽE u body-ju TOČNO
+   * istim redoslijedom kao napredna pretraga (Podkategorija → Vrsta → Tip
+   * ponude/Stanje → Marka/Model → Prikaži bez cijene/Garancija → Dimenzije →
+   * Detalji → Cijena...).
    */
-  const vrstaFields = useMemo(
-    () =>
-      filterDef.fields.filter((f) => {
-        if (f.group !== "Vrsta" || f.storage !== "attr") return false;
-        if (f.searchable === false) return false;
-        if (f.scope && f.scope.length > 0) {
-          return subcategory ? f.scope.includes(subcategory) : false;
-        }
-        return true;
-      }),
-    [filterDef, subcategory]
+  const isLjetneGumeSidebar = category === "dijelovi" && subcategory === "gume" && isTireFullForm;
+  const dynamicFields = useMemo(
+    () => filterDynamicFields(filterDef.fields, subcategory, currentVrsta, { isLjetneGume: isLjetneGumeSidebar, isUljaMazivaLike }),
+    [filterDef, subcategory, currentVrsta, isLjetneGumeSidebar, isUljaMazivaLike]
   );
-
-  /**
-   * ⚠️ Karlo 09.09.2026 (st.108-nastavak): "Dimenzije" (Ljetne gume/felge/...)
-   * i "Detalji" (Viskoznost ulja) grupe — isti `vrstaScope` mehanizam kao
-   * napredno-form.tsx dynamicFields, sad i u bočnom filteru. Bez ovoga bočni
-   * stupac nije uopće prikazivao polja poput "Promjer (col)"/"Širina felge"/
-   * "Viskoznost ulja" — jedini pristup do njih bio je "Više filtera".
-   */
-  const dimenzijeDetaljiFields = useMemo(
-    () =>
-      filterDef.fields.filter((f) => {
-        if (f.group !== "Dimenzije" && f.group !== "Detalji") return false;
-        if (f.storage !== "attr") return false;
-        if (f.searchable === false) return false;
-        if (f.key === "oem" || f.key === "brandPart") {
-          if (oemBrandPartHiddenForVrsta(category, subcategory, currentVrsta)) return false;
-        }
-        if (f.scope && f.scope.length > 0) {
-          if (!(subcategory && f.scope.includes(subcategory))) return false;
-        }
-        if (f.vrstaScope && f.vrstaScope.length > 0) {
-          return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
-        }
-        return true;
-      }),
-    [filterDef, subcategory, category, currentVrsta]
+  const { vrstaGroup, dimenzijeGroup, detaljiAboveGroup } = useMemo(
+    () => extractStructuredGroups(dynamicFields, currentVrsta),
+    [dynamicFields, currentVrsta]
   );
-  const dimenzijeGroup = useMemo(
-    () => groupFields(dimenzijeDetaljiFields).find((g) => g.name === "Dimenzije"),
-    [dimenzijeDetaljiFields]
-  );
-  const detaljiGroup = useMemo(
-    () => groupFields(dimenzijeDetaljiFields).find((g) => g.name === "Detalji"),
-    [dimenzijeDetaljiFields]
-  );
+  const vrstaFields = vrstaGroup?.fields ?? [];
   const renderDimDetField = (f: FilterField) => {
     if (f.type === "toggle") {
       return (
@@ -339,12 +307,6 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         )
       )}
 
-      {/* ⚠️ Karlo 09.09.2026 (st.108-nastavak): "Dimenzije" (Ljetne gume/felge/
-          Distancijeri...) i "Detalji" (Viskoznost ulja) — ODMAH ispod Vrste/
-          Marke, isti obrazac kao "iznad Cijene" panel u naprednoj pretrazi. */}
-      {dimenzijeGroup && dimenzijeGroup.fields.map(renderDimDetField)}
-      {detaljiGroup && detaljiGroup.fields.map(renderDimDetField)}
-
       <div className="grid grid-cols-2 gap-2">
         {/* Karlo 30.07: filter je bio MRTAV — pisao se kao goli `offerType`, a polje je
             `storage:"attr"`, pa ga `parseFilters` nikad nije uhvatio (nije ni u
@@ -425,6 +387,35 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {!modelHiddenForVrsta(category, subcategory, currentVrsta) && modelOptions.length > 0 && showsModelField(category, subcategory) && !freeTextModelField(category, subcategory) && (
         <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
       )}
+
+      {/* ⚠️ Karlo 09.09.2026 (identičan redoslijed kao napredna pretraga):
+          "Prikaži oglase bez cijene" + Garancija + Ljetni/Zimski komplet
+          (Kompleti gume+felge) — ista pozicija (ODMAH ispod Marka/Model,
+          PRIJE Dimenzije/Cijena) kao u napredno-form.tsx. Ova 3 polja u
+          bočnom filteru prije NISU postojala uopće. */}
+      <div className="grid grid-cols-2 gap-2">
+        <TogglePill
+          on={current.hidePriceless !== "1"}
+          onClick={() => update({ hidePriceless: current.hidePriceless === "1" ? null : "1" })}
+          label="Prikaži oglase bez cijene"
+        />
+        {!isUljaMazivaLike && filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
+          <TogglePill on={current["a.warranty"] === "1"} onClick={() => update({ "a.warranty": current["a.warranty"] === "1" ? null : "1" })} label="Garancija" />
+        )}
+        {currentVrsta === "kompleti-gume-felge" && (
+          <>
+            <TogglePill on={current["a.kompletLjetni"] === "1"} onClick={() => update({ "a.kompletLjetni": current["a.kompletLjetni"] === "1" ? null : "1" })} label="Ljetni komplet" />
+            <TogglePill on={current["a.kompletZimski"] === "1"} onClick={() => update({ "a.kompletZimski": current["a.kompletZimski"] === "1" ? null : "1" })} label="Zimski komplet" />
+          </>
+        )}
+      </div>
+
+      {/* ⚠️ Karlo 09.09.2026 (st.108-nastavak, identičan redoslijed): "Dimenzije"
+          (Ljetne gume/felge/Distancijeri...) i "Detalji" (Viskoznost ulja) —
+          isti obrazac kao "iznad Cijene" panel u naprednoj pretrazi, ODMAH
+          IZNAD Cijene (ne odmah ispod Vrste kao u prvoj verziji). */}
+      {dimenzijeGroup && dimenzijeGroup.fields.map(renderDimDetField)}
+      {detaljiAboveGroup && detaljiAboveGroup.fields.map(renderDimDetField)}
 
       {/* ⚠️ Karlo 09.09.2026 (st.57/105, sidebar-nastavak): gušća ljestvica
           (25€ koraci) za Multimedija/Gume i felge/Ulja maziva-slične Vrste. */}
