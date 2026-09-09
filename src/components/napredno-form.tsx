@@ -19,7 +19,7 @@ import type { ListingFilters } from "@/lib/types";
 import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES, QUAD_ATV_UTV_TIRE_BRAND_MAKES, ULJA_MAZIVA_BRAND_MAKES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
-  getFilterDefs, groupFields, type FilterField, type CategoryFilters,
+  getFilterDefs, filterDynamicFields, extractStructuredGroups, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
 import {
   Car, Gauge, Palette, ShieldCheck, Sofa, Tag, DoorOpen, ChevronRight,
@@ -83,11 +83,9 @@ const TERETNE_C_STYLE_VRSTE = ["teretne-c-gume", "agro-industrijske-gume"];
 
 type AttrValue = string | string[] | boolean | undefined;
 
-// Grupe koje su "osnovne" (uvijek vidljive). Ostalo ide iza "Više filtera".
-// Karlo 30.07: "Stanje vozila"/"Stanje mehanizacije" moraju biti ODMAH vidljivi —
-// odluka "prikaži oštećene?" je osnovna, ne napredna. Isto vrijedi za nosivost
-// viličara. Bez ovoga bi grupe završile skrivene iza gumba "Više filtera".
-const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost", "Nosivost, visina dizanja", "Dimenzije i upotrebljivost", "Stanje vozila", "Stanje mehanizacije"]);
+// ⚠️ Karlo 09.09.2026: BASIC_GROUPS/HARDCODED_GROUPS premješteni u
+// category-filters.ts (extractStructuredGroups) — dijeljeni izračun s
+// filter-sidebar.tsx.
 
 // Jedinstvena ikona po nazivu grupe (vizualni indikator koji vodi oko, bez ponavljanja).
 const GROUP_ICON: Record<string, LucideIcon> = {
@@ -350,91 +348,18 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
 
   const setAttr = (key: string, v: AttrValue) => setAttrs((a) => ({ ...a, [key]: v }));
 
-  // Polja koja su "column" storage i NISU već pokrivena hardkodiranim kontrolama
-  // renderiraju se generički; attr polja uvijek generički.
-  const HANDLED_COLUMNS = new Set([
-    "priceEur", "year", "km", "county", "sellerType", "condition",
-    "fuel", "transmission", "powerKw", "engineCc", "bodyType", "drive", "color",
-  ]);
-
-  // Grupiraj dinamička polja, izuzmi ona koja već imamo kao hardkodirana
-  // I poštuj `scope`: polje s scope-om prikaži samo za tu podkategoriju.
+  // ⚠️ Karlo 09.09.2026: `dynamicFields`-ov filter i grupiranje (Vrsta/
+  // Dimenzije/Detalji/basicDynamic/advancedDynamic izvlačenje) izvučeni su u
+  // category-filters.ts (`filterDynamicFields`/`extractStructuredGroups`) —
+  // jedan izvor istine dijeljen s filter-sidebar.tsx, da oba mjesta prikazuju
+  // BIT-IDENTIČAN skup i redoslijed polja. Ponašanje ovdje NEPROMIJENJENO.
   const dynamicFields = useMemo(
-    () => filterDef.fields.filter((f) => {
-      // Karlo 09.08. (st. 9): "Garancija" iz sheme se NE renderira ovdje —
-      // gornji osnovni panel već ima ručni TogglePill (isti a.warranty URL
-      // ključ), pa se polje pojavljivalo dvaput. Samo prikaz; objava netaknuta.
-      if (f.key === "warranty") return false;
-      // ⚠️ Karlo 26.08.2026 (screenshot 22:25): "Tip ponude" se pojavljivao
-      // DVAPUT — gore ručni MultiSelect ispod podkategorije + isti filtar iz
-      // sheme u rubrici "Ostalo". Donji (shemski) se ne renderira; gornji radi
-      // preko istog `a.offerType` ključa, pa filtriranje ostaje netaknuto.
-      if (f.key === "offerType") return false;
-      if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
-      if (f.searchable === false) return false;
-      // ⚠️ Karlo 03.09.2026 (st.59): OEM/Proizvođač dijela su bez `scope`
-      // (vrijede za sve Dijelovi podkategorije), ali izričito su maknuti SAMO
-      // za Ljetne gume — ne mogu se scope-ati na razini polja bez skrivanja
-      // svugdje drugdje, pa je izuzetak ovdje, uz Vrstu.
-      if (isLjetneGume && (f.key === "oem" || f.key === "brandPart")) return false;
-      // ⚠️ Karlo 08.09.2026 (st.100/101): Ulja, maziva i adetivi — OEM /
-      // kataloški broj potpuno uklonjen; "Proizvođač dijela" (brandPart, text)
-      // zamijenjen st.101 dediciranim select poljem `oilViscosityList` s
-      // Karlovim popisom viskoznosti, pa se stari tekst-brandPart ovdje skriva.
-      // ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila — CIJELA
-      // rubrika Detalji izbačena (izričito zatraženo), pa i OEM/brandPart
-      // (jedini kandidati za tu rubriku ovdje, `oilViscosityList` je već
-      // vrstaScope-an samo na Ulja, maziva) idu ovdje, isti obrazac.
-      if (isUljaMazivaLike && (f.key === "oem" || f.key === "brandPart")) return false;
-      if (f.scope && f.scope.length > 0) {
-        if (!(subcategory && f.scope.includes(subcategory))) return false;
-      }
-      // ⚠️ Karlo 03.09.2026 (st.59): `vrstaScope` — dublji filter od `scope`,
-      // po odabranoj "Vrsta" unutar podkategorije (ne po samoj podkategoriji).
-      // Prvi primjer: "Dimenzije" polja gume (Širina/Profil/Promjer/itd.) sad
-      // vrijede SAMO za Ljetne gume, ne za sve Vrste unutar Gume i felge.
-      if (f.vrstaScope && f.vrstaScope.length > 0) {
-        return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
-      }
-      return true;
-    }),
-    [filterDef, subcategory, isLjetneGume, currentVrsta]
+    () => filterDynamicFields(filterDef.fields, subcategory, currentVrsta, { isLjetneGume, isUljaMazivaLike }),
+    [filterDef, subcategory, isLjetneGume, currentVrsta, isUljaMazivaLike]
   );
-  const dynamicGroups = useMemo(() => groupFields(dynamicFields), [dynamicFields]);
-  // Grupe koje hardkodirane sekcije već pokrivaju (Motor/Karoserija/Boja/Cijena)
-  // ne smiju se duplicirati gore — njihovi dodatni attr specifični filteri
-  // (cilindri, takt, tip boje...) idu u "Više filtera".
-  const HARDCODED_GROUPS = new Set(["Motor", "Karoserija", "Boja", "Cijena"]);
-  // Karlo 27.07: grupa "Vrsta" (Vrsta vozila + Stil / Tip vozila) mora stajati
-  // ODMAH ispod podkategorije, a ne iza Cijene i Motora — zato se vadi iz
-  // basicDynamic i renderira zasebno u 1. panelu.
-  const vrstaGroup = dynamicGroups.find((g) => g.name === "Vrsta");
-  // Karlo 29.07: preostala polja grupe "Motor" idu U hardkodiranu Motor sekciju
-  // (motorSection), a iz "Više filtera" se izuzimaju — inače dvije rubrike MOTOR.
-  const motorRest = dynamicGroups.find((g) => g.name === "Motor")?.fields ?? [];
-  // Isto za "Cijena" (PDV) i "Boja" (Tip boje) — inače nastaju duple rubrike.
-  const cijenaRest = dynamicGroups.find((g) => g.name === "Cijena")?.fields ?? [];
-  const bojaRest = dynamicGroups.find((g) => g.name === "Boja")?.fields ?? [];
-  // ⚠️ Karlo 03.09.2026 (st.59): "Dimenzije" (bivša "Gume", Ljetne gume) mora
-  // stajati IZNAD Cijene — isti obrazac kao Gospodarska Motor+karoserija
-  // (`{isGospodarska && motorSection}`), izvučena iz basicDynamic/
-  // advancedDynamic i renderirana zasebno prije Cijena panela.
-  const dimenzijeGroup = dynamicGroups.find((g) => g.name === "Dimenzije");
-  // ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — "Detalji" (OEM/
-  // Proizvođač dijela) mora stajati IZNAD Cijene, isti obrazac kao Dimenzije
-  // (st.59) — SAMO za ovu Vrstu, svugdje drugdje Detalji ostaje na
-  // uobičajenom mjestu (ispod Cijene, preko basicDynamic).
-  const isUljaMazivaAditivi = currentVrsta === "ulja-maziva-aditivi";
-  const detaljiAboveGroup = isUljaMazivaAditivi ? dynamicGroups.find((g) => g.name === "Detalji") : undefined;
-  const basicDynamic = dynamicGroups.filter(
-    (g) => !["Vrsta", "Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
-           !(isUljaMazivaAditivi && g.name === "Detalji") &&
-           BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name)
-  );
-  const advancedDynamic = dynamicGroups.filter(
-    (g) => !["Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
-           (!BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name))
-  );
+  const {
+    vrstaGroup, dimenzijeGroup, detaljiAboveGroup, motorRest, cijenaRest, bojaRest, basicDynamic, advancedDynamic,
+  } = useMemo(() => extractStructuredGroups(dynamicFields, currentVrsta), [dynamicFields, currentVrsta]);
 
   // Broj aktivnih atributa (za badge na "Više filtera").
   const attrActiveCount = useMemo(() => {

@@ -2153,3 +2153,100 @@ export function groupFields(fields: FilterField[]): Array<{ name: string; fields
   for (const [name, fs] of groups) if (!order.includes(name)) sorted.push({ name, fields: fs });
   return sorted;
 }
+
+// ⚠️ Karlo 09.09.2026: polja koja su "column" storage i NISU već pokrivena
+// hardkodiranim kontrolama — ista lista kao HANDLED_COLUMNS u napredno-form.tsx.
+const HANDLED_COLUMNS = new Set([
+  "priceEur", "year", "km", "county", "sellerType", "condition",
+  "fuel", "transmission", "powerKw", "engineCc", "bodyType", "drive", "color",
+]);
+
+/**
+ * ⚠️ Karlo 09.09.2026: dinamički filter polja — izvučeno IZ napredno-form.tsx
+ * `dynamicFields` (jedan-za-jedan, bez promjene ponašanja) da bočni filter
+ * (filter-sidebar.tsx) može izračunati IDENTIČAN skup/redoslijed polja kao
+ * napredna pretraga. Bilo koja buduća izmjena ovog filtra vrijedi za OBA
+ * mjesta odjednom — jedan izvor istine.
+ */
+export function filterDynamicFields(
+  fields: FilterField[],
+  subcategory: string,
+  currentVrsta: string | string[] | boolean | undefined,
+  opts: { isLjetneGume: boolean; isUljaMazivaLike: boolean }
+): FilterField[] {
+  return fields.filter((f) => {
+    // Karlo 09.08. (st. 9): "Garancija" iz sheme se NE renderira ovdje —
+    // gornji osnovni panel već ima ručni TogglePill (isti a.warranty URL
+    // ključ), pa se polje pojavljivalo dvaput. Samo prikaz; objava netaknuta.
+    if (f.key === "warranty") return false;
+    // ⚠️ Karlo 26.08.2026: "Tip ponude" se pojavljivao DVAPUT — gore ručni
+    // MultiSelect ispod podkategorije + isti filtar iz sheme u rubrici
+    // "Ostalo". Donji (shemski) se ne renderira; gornji radi preko istog
+    // `a.offerType` ključa, pa filtriranje ostaje netaknuto.
+    if (f.key === "offerType") return false;
+    if (!(f.storage === "attr" || !HANDLED_COLUMNS.has(f.key))) return false;
+    if (f.searchable === false) return false;
+    // ⚠️ Karlo 03.09.2026 (st.59): OEM/Proizvođač dijela su bez `scope`
+    // (vrijede za sve Dijelovi podkategorije), ali izričito su maknuti SAMO
+    // za Ljetne gume — ne mogu se scope-ati na razini polja bez skrivanja
+    // svugdje drugdje, pa je izuzetak ovdje, uz Vrstu.
+    if (opts.isLjetneGume && (f.key === "oem" || f.key === "brandPart")) return false;
+    // ⚠️ Karlo 08.09.2026 (st.100/101/107): Ulja, maziva i adetivi + Auto-
+    // kozmetika — OEM/Proizvođač dijela potpuno uklonjeni.
+    if (opts.isUljaMazivaLike && (f.key === "oem" || f.key === "brandPart")) return false;
+    if (f.scope && f.scope.length > 0) {
+      if (!(subcategory && f.scope.includes(subcategory))) return false;
+    }
+    // ⚠️ Karlo 03.09.2026 (st.59): `vrstaScope` — dublji filter od `scope`,
+    // po odabranoj "Vrsta" unutar podkategorije (ne po samoj podkategoriji).
+    if (f.vrstaScope && f.vrstaScope.length > 0) {
+      return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
+    }
+    return true;
+  });
+}
+
+const BASIC_GROUPS = new Set(["Vrsta", "Motor", "Karoserija", "Vrata i sjedala", "Cijena", "Boja", "Specifikacije", "Detalji", "Osovine i nosivost", "Nosivost, visina dizanja", "Dimenzije i upotrebljivost", "Stanje vozila", "Stanje mehanizacije"]);
+const HARDCODED_GROUPS = new Set(["Motor", "Karoserija", "Boja", "Cijena"]);
+
+export type StructuredGroups = {
+  vrstaGroup: { name: string; fields: FilterField[] } | undefined;
+  dimenzijeGroup: { name: string; fields: FilterField[] } | undefined;
+  detaljiAboveGroup: { name: string; fields: FilterField[] } | undefined;
+  motorRest: FilterField[];
+  cijenaRest: FilterField[];
+  bojaRest: FilterField[];
+  basicDynamic: Array<{ name: string; fields: FilterField[] }>;
+  advancedDynamic: Array<{ name: string; fields: FilterField[] }>;
+};
+
+/**
+ * ⚠️ Karlo 09.09.2026: izvučeno IZ napredno-form.tsx (grupiranje nakon
+ * `dynamicFields`/`groupFields`) — isti "vrstaGroup/dimenzijeGroup/
+ * detaljiAboveGroup/basicDynamic/advancedDynamic" izračun, jedan izvor
+ * istine za oba mjesta koja ga trebaju (napredna pretraga + bočni filter).
+ * `isUljaMazivaAditivi` gate na `detaljiAboveGroup` je NAMJERNO uži od
+ * `isUljaMazivaLike` (samo prava Vrsta "ulja-maziva-aditivi", ne i
+ * Autokozmetika — Autokozmetika nema Detalji polja uopće nakon
+ * `filterDynamicFields`, pa bi joj ionako `detaljiAboveGroup` bio undefined).
+ */
+export function extractStructuredGroups(dynamicFields: FilterField[], currentVrsta: string | string[] | boolean | undefined): StructuredGroups {
+  const dynamicGroups = groupFields(dynamicFields);
+  const vrstaGroup = dynamicGroups.find((g) => g.name === "Vrsta");
+  const motorRest = dynamicGroups.find((g) => g.name === "Motor")?.fields ?? [];
+  const cijenaRest = dynamicGroups.find((g) => g.name === "Cijena")?.fields ?? [];
+  const bojaRest = dynamicGroups.find((g) => g.name === "Boja")?.fields ?? [];
+  const dimenzijeGroup = dynamicGroups.find((g) => g.name === "Dimenzije");
+  const isUljaMazivaAditivi = currentVrsta === "ulja-maziva-aditivi";
+  const detaljiAboveGroup = isUljaMazivaAditivi ? dynamicGroups.find((g) => g.name === "Detalji") : undefined;
+  const basicDynamic = dynamicGroups.filter(
+    (g) => !["Vrsta", "Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
+           !(isUljaMazivaAditivi && g.name === "Detalji") &&
+           BASIC_GROUPS.has(g.name) && !HARDCODED_GROUPS.has(g.name)
+  );
+  const advancedDynamic = dynamicGroups.filter(
+    (g) => !["Motor", "Cijena", "Boja", "Dimenzije"].includes(g.name) &&
+           (!BASIC_GROUPS.has(g.name) || HARDCODED_GROUPS.has(g.name))
+  );
+  return { vrstaGroup, dimenzijeGroup, detaljiAboveGroup, motorRest, cijenaRest, bojaRest, basicDynamic, advancedDynamic };
+}
