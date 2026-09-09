@@ -225,7 +225,7 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     () => filterDynamicFields(filterDef.fields, subcategory, currentVrsta, { isLjetneGume: isLjetneGumeSidebar, isUljaMazivaLike }),
     [filterDef, subcategory, currentVrsta, isLjetneGumeSidebar, isUljaMazivaLike]
   );
-  const { vrstaGroup, dimenzijeGroup, detaljiAboveGroup, basicDynamic, advancedDynamic } = useMemo(
+  const { vrstaGroup, dimenzijeGroup, detaljiAboveGroup, motorRest, cijenaRest, bojaRest, basicDynamic, advancedDynamic } = useMemo(
     () => extractStructuredGroups(dynamicFields, currentVrsta),
     [dynamicFields, currentVrsta]
   );
@@ -519,6 +519,12 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {hasField("km") && (
         <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
       )}
+      {/* ⚠️ Karlo 09.09.2026 ("nemoj izostavljati ništa"): `cijenaRest` (npr.
+          "PDV" za Gospodarska dostavna/kamioni/autobusi) — ista pozicija kao
+          napredno-form.tsx (zadnje u Cijena panelu). Prosti-cas trenutno
+          nema Cijena-grupe polje osim hardkodiranih, ali dijeljena funkcija
+          mora ostati potpuna za sve kategorije. */}
+      {cijenaRest.map(renderDynField)}
 
       {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): napredno-form.tsx
           renderira "Motor" sekciju (Gorivo/Mjenjač/Karoserija) KAO ZASEBAN
@@ -548,6 +554,12 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {hasField("bodyType") && (
         <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
       )}
+      {/* ⚠️ Karlo 09.09.2026: "nedostaje rubrika motor" — `motorRest` (preostala
+          Motor polja izvan hardkodiranih Obujam/Snaga/Gorivo/Mjenjač, npr.
+          Plovila "Broj motora"/"Snaga motora (HP)"/"Radni sati motora") su
+          bila potpuno izostavljena iz sidebara — ista pozicija kao napredno-
+          form.tsx (zadnje u Motor sekciji, odmah iza Karoserije). */}
+      {motorRest.map(renderDynField)}
 
       {/* ⚠️ Karlo 09.09.2026: `basicDynamic` grupe (npr. "Detalji" — OEM /
           kataloški broj + Proizvođač dijela — za Vrste BEZ posebnog Dimenzije/
@@ -561,6 +573,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {hasField("color") && (
         <ColorPicker label="Boja vozila" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
       )}
+      {/* ⚠️ Karlo 09.09.2026 ("nemoj izostavljati ništa"): `bojaRest` (npr.
+          "Tip boje" za Auto) — ista pozicija kao napredno-form.tsx (zadnje u
+          Boja panelu). */}
+      {bojaRest.map(renderDynField)}
 
       {/* ⚠️ Karlo 09.09.2026 (Slobodno vrijeme parity): `advancedDynamic` MORA
           stajati PRIJE Lokacija/Prodavač — napredno-form.tsx redoslijed je
