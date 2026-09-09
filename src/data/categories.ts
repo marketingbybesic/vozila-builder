@@ -816,6 +816,28 @@ export const QUAD_ATV_UTV_TIRE_BRAND_MAKES: CarMake[] = [
   { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
 ];
 
+/**
+ * ⚠️ Karlo 09.09.2026 (st.106): Dijelovi/Ulja i tekućine → Ulja, maziva i
+ * aditivi — "Za marku" → "Marka" (Model uklonjen st.106, ukida st.102 kad je
+ * popis proizvođača ulja bio na Model polju), sad Marka postaje popis
+ * proizvođača ulja/maziva (78 stavki, TOČNIM redoslijedom kako je diktirano
+ * — uklj. namjerne duplikate "Ipone" i "STP", zadržano doslovno kao u st.60).
+ */
+const ULJA_MAZIVA_BRAND_NAMES: string[] = [
+  "Agip","Amalie","Aral","Arexons","Bardahl","Bel-Ray","BMW","Castrol","Champion","Delphi",
+  "Divinol","Dynamax","Elf","Eni","ESSO","Eneos","Exxon","Fanfaro","Febi Bilstein","Ford",
+  "Fuchs","Gazprom","GMC Oil","Ipona","Ipone","Havoline","Hesol","Honda","INA","Ipone",
+  "John Deere","KROON-OIL","Liqui Moly","LUKOIL","Lubrigard","Mannol","Maxima","Mazda","Mercedes-Benz","Mobil",
+  "MOL","Motorcraft","Motul","Nils","Nissan Motor Oil","Oma","OMV","Opel GM","Pennzoil","Petronas",
+  "Power Oil","Polenis","Ravenol","Repsol","Rhein","Rhenus","Rosneft","Quaker State","STP","Seloia",
+  "Shell","Stihl","STP","SWAG","Texaco","Total","Toyota","Valar","Valvoline","Vat oil",
+  "Vento","Viskol","VW-Audi Group","Wolf Oil","Xado","Yamalube","Yanmar","Zeller",
+];
+export const ULJA_MAZIVA_BRAND_MAKES: CarMake[] = [
+  ...ULJA_MAZIVA_BRAND_NAMES.map((n, i) => ({ slug: `${SLUG(n)}-${i}`, name: n, country: "—", models: [] })),
+  { slug: "ostalo", name: "Ostalo", country: "—", models: [] },
+];
+
 export function makesForSub(categorySlug: string, subcategory?: string): CarMake[] | null {
   // ⚠️ Karlo 01.09.2026 (st.40/41/42): moraju stajati ISPRED "dijelovi" grane
   // niže (st.39, cijela kategorija → AUTO_MAKES) — inače bi opća grana

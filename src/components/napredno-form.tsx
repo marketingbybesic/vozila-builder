@@ -16,7 +16,7 @@ import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
-import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES, QUAD_ATV_UTV_TIRE_BRAND_MAKES } from "@/data/categories";
+import { getCategory, CATEGORIES, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField, TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES, QUAD_ATV_UTV_TIRE_BRAND_MAKES, ULJA_MAZIVA_BRAND_MAKES } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -56,19 +56,10 @@ const SVI_MODELI = "Svi modeli";
 // kao SVI_MODELI za free-text Model (kamioni/mehanizacija).
 const SVE_MARKE = "Sve marke";
 // ⚠️ Karlo 08.09.2026 (st.102): Ulja, maziva i adetivi — Model polje (uklonjeno
-// st.100) VRAĆENO, ali kao proizvođač ULJA (ne vozila) — "Za marku" gore
-// ostaje marka vozila (nepromijenjeno). Statični popis, izvan make/model
-// baze jer nema veze s markom vozila iz `make` state-a iznad.
-const ULJA_BRAND_OPTIONS = [
-  "Agip","Ambra","Aral","Ardeca","Bardahl","Bel-Ray","BMW","Castrol","Champion","Denicol",
-  "Divinol","Dynamax","Elf","Eni","ESSO","Eurol","Exxon","Fanfaro","Febi Bilstein","Ford",
-  "Fuchs","Gazprom","GMC Oil","Havoline","Hemolub","Hexol","Honda","INA","Ipone","John Deere",
-  "Kia-Lotos","Liqui Moly","Lotos","Lubegard","Mannol","Maxima","Mazda","Mercedes-Benz","Mobil","MOL",
-  "Motorex","Motul","Nils","Nissan Motor Oil","Olma","OMV","Opel-GM","Pennzoil","Petrol","Power Oil",
-  "Putoline","Quaker State","Ravenol","Repsol","Rexoil","Rheinol","Rotech","SDF","Selenia","Shell",
-  "Stihl","STP","SWAG","Texaco","Total","Toyota","Vaico","Valvoline","Vatoil","Venol",
-  "Viskol","VW - original","Wolf Oil","Xado","Xcel","Yacco","Yamalube","Yanmar","Zollex","Ostalo",
-].map((n) => ({ value: n, label: n }));
+// st.100) privremeno vraćeno kao popis proizvođača ulja; ⚠️ Karlo 09.09.2026
+// (st.106): taj popis premješten na "Marka" (ULJA_MAZIVA_BRAND_MAKES,
+// categories.ts), Model TRAJNO uklonjen za ovu Vrstu — ovaj lokalni popis
+// (ULJA_BRAND_OPTIONS) više se ne koristi, obrisan.
 // ⚠️ Karlo 05.09.2026 (st.66-68): Vrste unutar Dijelovi/Gume i felge koje
 // dobivaju PUNU formu iz st.58-65 (Marka=proizvođači guma, Dimenzije iznad
 // Cijene, bez Model/OEM/Proizvođač dijela). Ljetne gume su bile prve (st.59);
@@ -276,8 +267,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     // marki vozila kao Aluminijske felge, uključena u istu provjeru.
     // ⚠️ Karlo 08.09.2026 (st.95): Ratkape — "Za marku" isti popis marki vozila
     // kao Aluminijske felge, uključena u istu provjeru.
+    // ⚠️ Karlo 09.09.2026 (st.106): Ulja, maziva i aditivi — "Marka" postaje
+    // popis PROIZVOĐAČA ULJA (Agip/Aral/Castrol/.../Ostalo), ne marka vozila
+    // — mora stajati ISPRED opće grane, isti obrazac kao Ljetne gume/Moto
+    // gume/itd. gore.
     const list = currentVrsta === "moto-atv-gume" ? MOTO_GUME_TIRE_BRAND_MAKES
       : currentVrsta === "quad-atv-utv-gume" ? QUAD_ATV_UTV_TIRE_BRAND_MAKES
+      : currentVrsta === "ulja-maziva-aditivi" ? ULJA_MAZIVA_BRAND_MAKES
       : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? MAKES.map((m) => ({ slug: m.slug, name: m.name }))
       : TERETNE_C_STYLE_VRSTE.includes(currentVrsta as string) ? TERETNE_C_TIRE_BRAND_MAKES
       : isLjetneGume ? TIRE_BRAND_MAKES
@@ -976,7 +972,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // ⚠️ Karlo 08.09.2026 (st.95): Ratkape — "Za marku" (Karlo je diktirao
               // malim "m", zadržan pravopis dosljedan s ostalim felgama "Za Marku"
               // — vizualno identična oznaka, isti gumb).
-              label={currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
+              // ⚠️ Karlo 09.09.2026 (st.106): Ulja, maziva i aditivi — natrag na
+              // "Marka" (bira proizvođača ulja, ne markU vozila kojem odgovara).
+              label={currentVrsta === "ulja-maziva-aditivi" ? "Marka" : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).
@@ -987,13 +985,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               iste Vrste kao ostatak forme (bez "Za Marku"/felge-tretmana,
               samo Model nestaje).
               ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — Model
-              polje uklonjeno.
-              ⚠️ Karlo 08.09.2026 (st.102): ...pa VRAĆENO kao "Model" = popis
-              proizvođača ULJA (Agip/Aral/Castrol/.../Ostalo, 80 marki), NE
-              marka vozila iz `make`/modelOptions DB lanca — statičan popis. */}
-          {currentVrsta === "ulja-maziva-aditivi" ? (
-            <SelectField label="Model" value={model} onChange={setModel} options={ULJA_BRAND_OPTIONS} placeholder="Svi" />
-          ) : isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+              polje uklonjeno; ⚠️ st.102 ga vratilo kao popis proizvođača ulja;
+              ⚠️ Karlo 09.09.2026 (st.106): ...pa OPET uklonjeno — taj popis
+              premješten na "Marka" (gore, ULJA_MAZIVA_BRAND_MAKES), Model
+              ostaje trajno uklonjen za ovu Vrstu. */}
+          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori" || currentVrsta === "ulja-maziva-aditivi") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
