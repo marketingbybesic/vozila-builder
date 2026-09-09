@@ -38,6 +38,14 @@ const MULTIMEDIJA_PRICE_STEPS = [
   1500, 2000, 2500, 3000,
 ];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
+// ⚠️ Karlo 09.09.2026: "Obujam (cm³)"/"Snaga (kW)" — hardkodirana polja u
+// napredno-form.tsx Motor sekciji (motorSection), nikad nisu postojala u
+// bočnom filteru (nisu dio dynamicFields/basicDynamic/advancedDynamic
+// mašinerije). Isti step-ljestvice kao napredna pretraga.
+const POWER_STEPS = [44, 55, 66, 74, 85, 96, 110, 132, 150, 184, 220, 260, 300];
+const ENGINE_STEPS = [1000, 1200, 1400, 1600, 1800, 2000, 2500, 3000, 3500, 4000, 5000];
+const MOTO_ENGINE_STEPS = [50, 125, 250, 350, 500, 750, 1000, 1500];
+const MOTO_POWER_STEPS = [7.5, 15, 22, 30, 37, 56, 75, 93, 112];
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1990 + 1 }, (_, i) => YEAR_NOW - i);
 
@@ -517,6 +525,12 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           odmah pokazuju svi filteri na desktopu" — `compact` više NE skriva
           ništa iza klika, cijeli bočni stupac (desktop) uvijek prikazuje SVE
           filtere, identično naprednoj pretrazi. */}
+      {hasField("engineCc") && (
+        <RangeSelect label="Obujam (cm³)" unit="cm³" minValue={current.engineMin ?? ""} maxValue={current.engineMax ?? ""} onMin={(v) => update({ engineMin: v || null })} onMax={(v) => update({ engineMax: v || null })} steps={category === "moto" ? MOTO_ENGINE_STEPS : ENGINE_STEPS} />
+      )}
+      {hasField("powerKw") && (
+        <RangeSelect label="Snaga (kW)" unit="kW" minValue={current.powerMin ?? ""} maxValue={current.powerMax ?? ""} onMin={(v) => update({ powerMin: v || null })} onMax={(v) => update({ powerMax: v || null })} steps={category === "moto" ? MOTO_POWER_STEPS : POWER_STEPS} />
+      )}
       {hasField("fuel") && (
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
       )}

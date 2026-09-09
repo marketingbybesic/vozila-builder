@@ -24,11 +24,17 @@ SUBCATS = [
 
 
 def field_labels(page, selector):
+    # ⚠️ Bug found 2026-09-09: original selector (div.block > span > span,
+    # label > span > span) missed RangeSelect fields (Cijena/Godina/
+    # Kilometraža/Obujam/Snaga) — those wrap in a plain <div>, not
+    # div.block/label, so their <Label> span was invisible to this query.
+    # Matched directly on the Label component's own class signature instead
+    # (works regardless of parent wrapper: div.block, label, or plain div).
     return page.evaluate(f"""
         () => {{
           const root = document.querySelector("{selector}");
           if (!root) return [];
-          const nodes = Array.from(root.querySelectorAll('div.block > span > span, label > span > span'));
+          const nodes = Array.from(root.querySelectorAll('span.flex.items-center.gap-1\\\\.5.mb-1\\\\.5 > span:first-child'));
           return nodes.map(n => n.textContent.trim());
         }}
     """)
