@@ -220,10 +220,14 @@ const optionCls = (active: boolean) =>
  * Radio behavior: picking an option closes the menu.
  */
 export function SelectField({
-  label, required, optional, value, onChange, options, placeholder = "Sve", icon: Icon,
+  label, required, optional, value, onChange, options, placeholder = "Sve", icon: Icon, hideClear,
 }: {
   label?: string; required?: boolean; optional?: boolean; value: string; onChange: (v: string) => void;
   options: Opt[]; placeholder?: string; icon?: LucideIcon;
+  // ⚠️ Karlo 09.09.2026 (st.103): Dijelovi/Ulja i tekućine → Vrsta — nema
+  // "Sve" opciju za brisanje odabira (mora uvijek biti odabrana jedna Vrsta).
+  // Opt-in, default false, pa svi ostali SelectField pozivi ostaju nepromijenjeni.
+  hideClear?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -256,14 +260,16 @@ export function SelectField({
 
         {open && (
           <Popover id={id}>
-            <button
-              type="button"
-              onClick={() => { onChange(""); setOpen(false); }}
-              className={optionCls(!value)}
-            >
-              <span className="size-4.5 shrink-0" />
-              {placeholder}
-            </button>
+            {!hideClear && (
+              <button
+                type="button"
+                onClick={() => { onChange(""); setOpen(false); }}
+                className={optionCls(!value)}
+              >
+                <span className="size-4.5 shrink-0" />
+                {placeholder}
+              </button>
+            )}
             {options.map((o, i) => {
               const active = o.value === value;
               return (

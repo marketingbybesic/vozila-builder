@@ -665,6 +665,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       );
     }
     if (f.type === "select") {
+      // ⚠️ Karlo 09.09.2026 (st.103): Vrsta (Ulja i tekućine, single-select
+      // od st.99) izgubila "Sve" opciju za brisanje odabira — izričito
+      // zatraženo, isti obrazac kao ostatak forme (samo ova kombinacija).
+      const hideClear = f.key === "vrsta" && subcategory === "ulja-tekucine";
       return (
         <SelectField
           key={f.key}
@@ -672,6 +676,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           value={(attrs[f.key] as string) ?? ""}
           onChange={(v) => setAttr(f.key, v || undefined)}
           options={f.options ?? []}
+          hideClear={hideClear}
           {...(f.placeholder ? { placeholder: f.placeholder } : {})}
         />
       );
