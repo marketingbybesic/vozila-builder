@@ -230,6 +230,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // popis, provjera ovdje samo koristi taj popis).
   const isLjetneGume = category === "dijelovi" && subcategory === "gume" && TIRE_FULL_FORM_VRSTE.includes(currentVrsta as string);
   const needsVrstaPick = (isKampingOprema || isGumeFelge) && !hasVrsta;
+  // ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila dobiva ISTI
+  // izbornik kao Ulja, maziva i aditivi (bez Garancije/Tekućina/Model/OEM/
+  // Stanje predmeta, gušća Cijena ljestvica) — jedina razlika je Detalji
+  // rubrika (izbačena za Autokozmetiku) i Marka (slobodan upis za
+  // Autokozmetiku, umjesto fiksnog popisa proizvođača ulja). Ovaj flag
+  // pokriva SVE dijeljeno ponašanje; Marka/Detalji imaju svoje posebne grane.
+  const isUljaMazivaLike = currentVrsta === "ulja-maziva-aditivi" || currentVrsta === "autokozmetika-njega";
 
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 12.08.2026: puni auto popis (203 marke) dobiva grupe — popularne
@@ -374,7 +381,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       // kataloški broj potpuno uklonjen; "Proizvođač dijela" (brandPart, text)
       // zamijenjen st.101 dediciranim select poljem `oilViscosityList` s
       // Karlovim popisom viskoznosti, pa se stari tekst-brandPart ovdje skriva.
-      if (currentVrsta === "ulja-maziva-aditivi" && (f.key === "oem" || f.key === "brandPart")) return false;
+      // ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila — CIJELA
+      // rubrika Detalji izbačena (izričito zatraženo), pa i OEM/brandPart
+      // (jedini kandidati za tu rubriku ovdje, `oilViscosityList` je već
+      // vrstaScope-an samo na Ulja, maziva) idu ovdje, isti obrazac.
+      if (isUljaMazivaLike && (f.key === "oem" || f.key === "brandPart")) return false;
       if (f.scope && f.scope.length > 0) {
         if (!(subcategory && f.scope.includes(subcategory))) return false;
       }
@@ -934,8 +945,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               "Stanje predmeta" (Novo/Polovno/Obnovljeno umjesto Rabljeno/Novo).
               Svugdje drugdje ostaje nepromijenjeno.
               ⚠️ Karlo 08.09.2026 (st.100): Ulja, maziva i adetivi — Stanje
-              predmeta POTPUNO uklonjeno (izričito zatraženo). */}
-          {currentVrsta === "ulja-maziva-aditivi" ? null : usesPartsLayout ? (
+              predmeta POTPUNO uklonjeno (izričito zatraženo).
+              ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila —
+              isti izbornik kao Ulja, maziva i aditivi, uklj. ovo. */}
+          {isUljaMazivaLike ? null : usesPartsLayout ? (
             <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
               options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
           ) : (
@@ -945,8 +958,13 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
-              ponuđenog fiksnog popisa (isti obrazac kao free-text Model). */}
-          {freeTextMakeField(category, subcategory) ? (
+              ponuđenog fiksnog popisa (isti obrazac kao free-text Model).
+              ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila —
+              isto slobodan upis (Vrsta-razina, ne cijela `ulja-tekucine`
+              podkategorija — sestrinska Vrsta Ulja, maziva i dalje bira iz
+              fiksnog popisa), prazno polje ispisuje "Sve marke" (isti obrazac
+              kao SVE_MARKE gore). */}
+          {freeTextMakeField(category, subcategory) || currentVrsta === "autokozmetika-njega" ? (
             <TextField
               label="Marka"
               value={!makeFocus && !make ? SVE_MARKE : make}
@@ -959,6 +977,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               placeholder={
                 category === "dijelovi" && subcategory === "servisna-oprema"
                   ? "npr. Bosch, Facom, Snap-on..."
+                  : currentVrsta === "autokozmetika-njega"
+                  ? "npr. Sonax, Meguiar's, Turtle Wax..."
                   : "npr. Jeanneau, Bavaria..."
               }
             />
@@ -993,8 +1013,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               polje uklonjeno; ⚠️ st.102 ga vratilo kao popis proizvođača ulja;
               ⚠️ Karlo 09.09.2026 (st.106): ...pa OPET uklonjeno — taj popis
               premješten na "Marka" (gore, ULJA_MAZIVA_BRAND_MAKES), Model
-              ostaje trajno uklonjen za ovu Vrstu. */}
-          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori" || currentVrsta === "ulja-maziva-aditivi") ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
+              ostaje trajno uklonjen za ovu Vrstu.
+              ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila —
+              isto uklonjen (isti izbornik kao Ulja, maziva i aditivi). */}
+          {isLjetneGume ? null : (currentVrsta === "distancijeri-prstenovi" || currentVrsta === "tpms-senzori" || isUljaMazivaLike) ? null : !showsModelField(category, subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(category, subcategory)) ? (
             <SelectField label="Model" value={model} onChange={setModel} options={modelOptions} placeholder="Svi modeli" />
           ) : (
             <TextField
@@ -1018,8 +1040,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               (izvan sheme), pa ga se mora ovdje uvjetovati, inače ostane vidljiv
               iako je polje maknuto iz `PROSTI_CAS_FIELDS`.
               ⚠️ Karlo 08.09.2026 (st.101): Ulja, maziva i adetivi — Garancija
-              potpuno uklonjena (izričito zatraženo). */}
-          {currentVrsta !== "ulja-maziva-aditivi" &&
+              potpuno uklonjena (izričito zatraženo).
+              ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila —
+              isto uklonjena (isti izbornik kao Ulja, maziva i aditivi). */}
+          {!isUljaMazivaLike &&
             filterDef.fields.some((f) => f.key === "warranty" && (!f.scope?.length || f.scope.includes(subcategory))) && (
             <TogglePill on={warranty} onClick={() => setWarranty((s) => !s)} label="Garancija" />
           )}
@@ -1057,9 +1081,11 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
         <SectionHead icon={Tag} title={usesPartsLayout ? "Cijena" : hasField("km") ? "Cijena, godina, kilometraža" : "Cijena i godina"} />
         {/* ⚠️ Karlo 09.09.2026 (st.105): Ulja, maziva i aditivi — ista gušća
             ljestvica cijena kao Dijelovi/Gume i felge (izričito zatraženo),
-            SAMO za ovu Vrstu (ne cijela Ulja i tekućine podkategorija). */}
+            SAMO za ovu Vrstu (ne cijela Ulja i tekućine podkategorija).
+            ⚠️ Karlo 09.09.2026 (st.107): Autokozmetika i njega vozila — isti
+            izbornik kao Ulja, maziva i aditivi, uklj. ovu ljestvicu. */}
         <RangeSelect label="Cijena (€)" unit="€" minValue={priceMin} maxValue={priceMax} onMin={setPriceMin} onMax={setPriceMax}
-          steps={category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume" || currentVrsta === "ulja-maziva-aditivi") ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
+          steps={category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume" || isUljaMazivaLike) ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
         <div className="grid sm:grid-cols-2 gap-3">
           {!usesPartsLayout && (
             <div>
