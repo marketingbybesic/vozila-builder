@@ -15,14 +15,28 @@ import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
 import { getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
 import { COUNTIES } from "@/data/locations";
-import { getFilterDefs, type CategoryFilters } from "@/data/category-filters";
+import { getFilterDefs, groupFields, type CategoryFilters, type FilterField } from "@/data/category-filters";
 import {
-  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
+  MultiSelect, PillMultiSelect, BOAT_TYPE_ICON, SelectField, TextField, TogglePill, ColorPicker, RangeSelect, BodyTypePicker, type Opt,
 } from "@/components/napredno/controls";
 import { FilterPanel } from "@/components/napredno/filter-panel";
 import { SlidersHorizontal, X } from "lucide-react";
+import {
+  isAutoDijeloviLayout, isTireFullFormVrsta, isUljaMazivaLikeVrsta,
+  makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta,
+  makeIsFreeTextForVrsta, makeFreeTextPlaceholderForVrsta,
+  modelHiddenForVrsta, oemBrandPartHiddenForVrsta,
+  usesDenseCijenaSteps,
+} from "@/lib/dijelovi-vrsta";
 
 const PRICE_STEPS = [500, 1000, 2000, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000];
+// ⚠️ Karlo 09.09.2026 (st.108-nastavak): ista gušća ljestvica kao napredno-form.tsx
+// (st.57/105) — Dijelovi/Multimedija i Gume i felge, sad i sidebar ima paritet.
+const MULTIMEDIJA_PRICE_STEPS = [
+  25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500,
+  600, 700, 800, 900, 1000,
+  1500, 2000, 2500, 3000,
+];
 const KM_STEPS = [5000, 10000, 25000, 50000, 75000, 100000, 150000, 200000, 250000];
 const YEAR_NOW = new Date().getFullYear();
 const YEARS = Array.from({ length: YEAR_NOW - 1990 + 1 }, (_, i) => YEAR_NOW - i);
@@ -106,18 +120,39 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const category = current.category ?? "auto";
   const categoryDef = getCategory(category === "" ? "auto" : category);
   const selectedMake = current.make ?? "";
-  /** Karlo 31.08.2026 (st.26/27): isto kao napredno-form.tsx — jedna zastavica
-   * za "Auto dijelovi" umjesto ponovljene provjere na više mjesta. */
-  const isAutoDijelovi = category === "dijelovi" && current.subcategory === "auto-dijelovi";
+  const subcategory = current.subcategory ?? "";
+  /** Karlo 31.08.2026 (st.26/27), prošireno 01.09.2026 (st.46, kao
+   * napredno-form.tsx): "Auto dijelovi"-stil sad vrijedi za CIJELU
+   * kategoriju Dijelovi i oprema, ne samo podkategoriju "Auto dijelovi". */
+  const isAutoDijelovi = isAutoDijeloviLayout(category);
   /** Karlo 31.08.2026 (st.30): "Oprema za kampere i kamping" dobiva IDENTIČNU
    * pretragu kao Auto dijelovi (samo Vrsta ostaje njena postojeća lista). */
-  const isKampingOprema = category === "prosti-cas" && current.subcategory === "kamping-oprema";
+  const isKampingOprema = category === "prosti-cas" && subcategory === "kamping-oprema";
   const usesPartsLayout = isAutoDijelovi || isKampingOprema;
+  // ⚠️ Karlo 09.09.2026 (st.108-nastavak): trenutna Vrsta (za Dijelovi/Gume i
+  // felge i Dijelovi/Ulja i tekućine — obje mogu biti multi ILI select, isti
+  // "goli string ili niz" oblik kao napredno-form.tsx currentVrsta). Odabir
+  // iz sheme: multi Vrsta polja spremaju "a.vrsta" kao zarezom odvojen niz,
+  // select Vrsta polja (Ulja i tekućine, st.99) golu vrijednost.
+  const vrstaRaw = current["a.vrsta"] ?? "";
+  const currentVrsta = vrstaRaw.includes(",") ? vrstaRaw.split(",")[0] : vrstaRaw;
+  const isTireFullForm = isTireFullFormVrsta(category, subcategory, currentVrsta);
+  const isUljaMazivaLike = isUljaMazivaLikeVrsta(currentVrsta);
   const makeOptions: Opt[] = useMemo(() => {
     // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE
     // popise marki s avto.neta — override ispred popisa kategorije.
-    const subList = makesForSub(category, current.subcategory ?? "");
+    // ⚠️ Karlo 09.09.2026 (st.108-nastavak): Vrsta-specifični popis (Ljetne
+    // gume/Moto gume/Ulja maziva/felge-za-marku/itd., iz dijelovi-vrsta.ts)
+    // MORA stajati ispred podkategorijskog popisa — ista logika kao
+    // napredno-form.tsx (vidi taj file za puno obrazloženje po Vrsti).
+    const vrstaList = makeListForVrsta(currentVrsta);
+    const subList = vrstaList ?? makesForSub(category, subcategory);
     const list = subList ?? ((!category || category === "auto") ? MAKES.map((m) => ({ slug: m.slug, name: m.name })) : (categoryDef?.makes ?? []));
+    // ⚠️ Karlo 09.09.2026 (st.108-nastavak): neke Vrste (Ljetne gume, Ulja
+    // maziva...) traže PLOSNATU listu čak i unutar Dijelovi kategorije koja
+    // inače grupira — isti obrazac kao napredno-form.tsx isLjetneGume/
+    // ulja-maziva-aditivi grane.
+    if (makeListIsFlatForVrsta(category, subcategory, currentVrsta)) return list.map((m) => ({ value: m.slug, label: m.name }));
     // ⚠️ Karlo 12.08.2026: auto → popularne na vrhu pa cijela abeceda.
     // Ostale kategorije (moto/gospodarska/…) imaju vlastite, kratke popise —
     // ondje grupiranje nema smisla, ide plosnato kao i prije.
@@ -125,15 +160,15 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     if (!category || category === "auto") return makeOptionsGrouped(list);
     // ⚠️ Karlo 17.08.2026: SKUTERI imaju vlastite popularne marke (Kymco/Piaggio/Sym),
     // razlicite od motocikala → biraj po podkategoriji.
-    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(current.subcategory ?? ""));
+    if (category === "moto") return makeOptionsGrouped(list, popularMotoSlugsFor(subcategory));
     // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi koristi puni auto popis →
     // grupe kao auto, ne plosnata lista.
     if (usesPartsLayout) return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
-    // ⚠️ Karlo 18.08.2026: `current.subcategory` MORA biti u ovisnostima — bez
+    // ⚠️ Karlo 18.08.2026: `subcategory` MORA biti u ovisnostima — bez
     // toga promjena podkategorije u sidebaru (skuter→moped) zadrži staru grupu
     // "Najpopularnije" jer se memo ne preračuna (kategorija se nije mijenjala).
-  }, [category, categoryDef, current.subcategory]);
+  }, [category, categoryDef, subcategory, currentVrsta, usesPartsLayout]);
   // Karlo 29.07: modeli iz baze TE kategorije (prije samo auto → moto i
   // gospodarska marke nisu imale nijedan model ni ovdje u sidebaru).
   const modelOptions: Opt[] = useMemo(() => {
@@ -172,7 +207,6 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
    * Sad čita ista `group: "Vrsta"` attr polja i poštuje `scope`, pa stoje
    * ODMAH ispod Podkategorije (isti redoslijed kao napredna pretraga).
    */
-  const subcategory = current.subcategory ?? "";
   const vrstaFields = useMemo(
     () =>
       filterDef.fields.filter((f) => {
@@ -185,6 +219,64 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       }),
     [filterDef, subcategory]
   );
+
+  /**
+   * ⚠️ Karlo 09.09.2026 (st.108-nastavak): "Dimenzije" (Ljetne gume/felge/...)
+   * i "Detalji" (Viskoznost ulja) grupe — isti `vrstaScope` mehanizam kao
+   * napredno-form.tsx dynamicFields, sad i u bočnom filteru. Bez ovoga bočni
+   * stupac nije uopće prikazivao polja poput "Promjer (col)"/"Širina felge"/
+   * "Viskoznost ulja" — jedini pristup do njih bio je "Više filtera".
+   */
+  const dimenzijeDetaljiFields = useMemo(
+    () =>
+      filterDef.fields.filter((f) => {
+        if (f.group !== "Dimenzije" && f.group !== "Detalji") return false;
+        if (f.storage !== "attr") return false;
+        if (f.searchable === false) return false;
+        if (f.key === "oem" || f.key === "brandPart") {
+          if (oemBrandPartHiddenForVrsta(category, subcategory, currentVrsta)) return false;
+        }
+        if (f.scope && f.scope.length > 0) {
+          if (!(subcategory && f.scope.includes(subcategory))) return false;
+        }
+        if (f.vrstaScope && f.vrstaScope.length > 0) {
+          return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
+        }
+        return true;
+      }),
+    [filterDef, subcategory, category, currentVrsta]
+  );
+  const dimenzijeGroup = useMemo(
+    () => groupFields(dimenzijeDetaljiFields).find((g) => g.name === "Dimenzije"),
+    [dimenzijeDetaljiFields]
+  );
+  const detaljiGroup = useMemo(
+    () => groupFields(dimenzijeDetaljiFields).find((g) => g.name === "Detalji"),
+    [dimenzijeDetaljiFields]
+  );
+  const renderDimDetField = (f: FilterField) => {
+    if (f.type === "toggle") {
+      return (
+        <TogglePill
+          key={f.key}
+          on={arr(`a.${f.key}`).includes("1") || current[`a.${f.key}`] === "1"}
+          onClick={() => update({ [`a.${f.key}`]: current[`a.${f.key}`] === "1" ? null : "1" })}
+          label={f.label}
+        />
+      );
+    }
+    if (f.type === "text") {
+      return (
+        <TextField key={f.key} label={f.label} value={current[`a.${f.key}`] ?? ""}
+          onChange={(v) => update({ [`a.${f.key}`]: v || null })} placeholder={f.label} />
+      );
+    }
+    // select (jedini preostali tip u Dimenzije/Detalji za Dijelovi, vidi grep provjeru)
+    return (
+      <SelectField key={f.key} label={f.label} value={current[`a.${f.key}`] ?? ""}
+        onChange={(v) => update({ [`a.${f.key}`]: v || null })} options={f.options ?? []} placeholder="Sve" />
+    );
+  };
 
   // Isti gating kao napredna/objava: polje postoji samo ako ga kategorija ima
   // I ako scope dopušta trenutnu podkategoriju.
@@ -240,9 +332,18 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             onChange={(v) => update({ [`a.${f.key}`]: v || null })}
             options={f.options ?? []}
             placeholder="Sve"
+            // ⚠️ Karlo 09.09.2026 (st.103, sidebar-nastavak): Ulja i tekućine
+            // → Vrsta nema "Sve" opciju za brisanje odabira.
+            hideClear={f.key === "vrsta" && subcategory === "ulja-tekucine"}
           />
         )
       )}
+
+      {/* ⚠️ Karlo 09.09.2026 (st.108-nastavak): "Dimenzije" (Ljetne gume/felge/
+          Distancijeri...) i "Detalji" (Viskoznost ulja) — ODMAH ispod Vrste/
+          Marke, isti obrazac kao "iznad Cijene" panel u naprednoj pretrazi. */}
+      {dimenzijeGroup && dimenzijeGroup.fields.map(renderDimDetField)}
+      {detaljiGroup && detaljiGroup.fields.map(renderDimDetField)}
 
       <div className="grid grid-cols-2 gap-2">
         {/* Karlo 30.07: filter je bio MRTAV — pisao se kao goli `offerType`, a polje je
@@ -254,8 +355,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           <MultiSelect label="Tip ponude" values={arr("a.offerType").length ? arr("a.offerType") : arr("offerType")} onChange={(v) => setMulti("a.offerType", v)} options={[{ value: "Prodaja", label: "Prodaja" }, { value: "Najam", label: "Najam" }]} placeholder="Sve" />
         )}
         {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
-            predmeta" (Novo/Polovno/Obnovljeno). Svugdje drugdje nepromijenjeno. */}
-        {usesPartsLayout ? (
+            predmeta" (Novo/Polovno/Obnovljeno). Svugdje drugdje nepromijenjeno.
+            ⚠️ Karlo 09.09.2026 (st.100/107, sidebar-nastavak): Ulja, maziva i
+            aditivi + Autokozmetika — Stanje predmeta POTPUNO uklonjeno. */}
+        {isUljaMazivaLike ? null : usesPartsLayout ? (
           <MultiSelect label="Stanje predmeta" values={arr("condition")} onChange={(v) => setMulti("condition", v)}
             options={toOpts(["Novo", "Polovno", "Obnovljeno"])} placeholder="Sve" />
         ) : (
@@ -265,8 +368,10 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
 
       {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — Marka slobodan upis, bez
           ponuđenog fiksnog popisa. Isti debounce obrazac kao Model (upis po
-          znaku bi remountao polje i gubio slova — vidi komentar niže). */}
-      {freeTextMakeField(category, current.subcategory ?? "") ? (
+          znaku bi remountao polje i gubio slova — vidi komentar niže).
+          ⚠️ Karlo 09.09.2026 (st.107, sidebar-nastavak): Autokozmetika i njega
+          vozila — isto slobodan upis, Vrsta-razina uvjet (`makeIsFreeTextForVrsta`). */}
+      {freeTextMakeField(category, subcategory) || makeIsFreeTextForVrsta(currentVrsta) ? (
         <TextField
           label="Marka"
           value={makeFocus ? makeDraft : (current.make || SVE_MARKE)}
@@ -281,15 +386,21 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             update({ make: makeDraft.trim() || null, model: null });
             setMakeFocus(false);
           }}
+          placeholder={makeFreeTextPlaceholderForVrsta(category, subcategory, currentVrsta)}
         />
       ) : (
         <SelectField
           // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
-          label={usesPartsLayout ? "Za marku" : "Marka"}
+          // ⚠️ Karlo 09.09.2026 (st.86-106, sidebar-nastavak): Vrsta-specifični
+          // nazivi (Za Marku/Marka za felge/ulja) — `makeLabelForVrsta`.
+          label={makeLabelForVrsta(usesPartsLayout, isTireFullForm, currentVrsta)}
           value={selectedMake} onChange={(v) => update({ make: v || null, model: null })} options={makeOptions} placeholder="Sve marke" />
       )}
-      {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli. */}
-      {showsModelField(category, current.subcategory ?? "") && freeTextModelField(category, current.subcategory ?? "") && (
+      {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela; prazno = svi modeli.
+          ⚠️ Karlo 09.09.2026 (st.59-107, sidebar-nastavak): Model potpuno
+          uklonjen za neke Vrste (Ljetne gume/felge/Distancijeri/TPMS/Ulja
+          maziva/Autokozmetika) — `modelHiddenForVrsta`. */}
+      {!modelHiddenForVrsta(category, subcategory, currentVrsta) && showsModelField(category, subcategory) && freeTextModelField(category, subcategory) && (
         <TextField
           label="Model"
           /* ⚠️ Karlo 26.08.2026: prije klika u polju PIŠE "Svi modeli" (prava
@@ -311,11 +422,14 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           }}
         />
       )}
-      {modelOptions.length > 0 && showsModelField(category, current.subcategory ?? "") && !freeTextModelField(category, current.subcategory ?? "") && (
+      {!modelHiddenForVrsta(category, subcategory, currentVrsta) && modelOptions.length > 0 && showsModelField(category, subcategory) && !freeTextModelField(category, subcategory) && (
         <SelectField label="Model" value={current.model ?? ""} onChange={(v) => update({ model: v || null })} options={modelOptions} placeholder="Svi modeli" />
       )}
 
-      <RangeSelect label="Cijena (€)" unit="€" minValue={current.priceMin ?? ""} maxValue={current.priceMax ?? ""} onMin={(v) => update({ priceMin: v || null })} onMax={(v) => update({ priceMax: v || null })} steps={PRICE_STEPS} />
+      {/* ⚠️ Karlo 09.09.2026 (st.57/105, sidebar-nastavak): gušća ljestvica
+          (25€ koraci) za Multimedija/Gume i felge/Ulja maziva-slične Vrste. */}
+      <RangeSelect label="Cijena (€)" unit="€" minValue={current.priceMin ?? ""} maxValue={current.priceMax ?? ""} onMin={(v) => update({ priceMin: v || null })} onMax={(v) => update({ priceMax: v || null })}
+        steps={usesDenseCijenaSteps(category, subcategory, currentVrsta) ? MULTIMEDIJA_PRICE_STEPS : PRICE_STEPS} />
       {/* ⚠️ Karlo 31.08.2026 (st.27): Auto dijelovi — "Godina" maknuta (dio
           nema godinu proizvodnje kao vozilo). */}
       {!usesPartsLayout && (
