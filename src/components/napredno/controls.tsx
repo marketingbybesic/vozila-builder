@@ -592,13 +592,18 @@ export function TogglePill({
       onClick={onClick}
       aria-pressed={on}
       className={
-        "h-12 px-4 rounded-xl border text-sm font-medium flex items-center justify-between gap-2 transition-colors " +
+        // ⚠️ Karlo 09.09.2026: bio `h-12` (fiksna visina) — u uskom bočnom
+        // filteru (2 stupca u ~260px) tekst poput "Prikaži oglase bez cijene"
+        // se lomio u 2 retka i rezao na fiksnoj visini. `min-h-12` + `py-2`
+        // pušta gumb da naraste kad treba, bez utjecaja na standardni
+        // jednoretčani izgled (Garancija, itd.) gdje ostaje ista visina.
+        "min-h-12 px-4 py-2.5 rounded-xl border text-sm font-medium flex items-center justify-between gap-2 transition-colors " +
         (on
           ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
           : "bg-[var(--color-surface)] text-[var(--color-ink-soft)] border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")
       }
     >
-      <span>{label}</span>
+      <span className="text-left">{label}</span>
       {/* Karlo st. 16 (05.08.2026): ugašeni kružić je bio bg-line — na bijeloj
           plohi nevidljiv, "ne vidi se gdje birati". Sad svijetlo narančast s
           tankim rubom; upaljeno stanje NEDIRANO (puni accent). */}

@@ -217,20 +217,51 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     () => filterDynamicFields(filterDef.fields, subcategory, currentVrsta, { isLjetneGume: isLjetneGumeSidebar, isUljaMazivaLike }),
     [filterDef, subcategory, currentVrsta, isLjetneGumeSidebar, isUljaMazivaLike]
   );
-  const { vrstaGroup, dimenzijeGroup, detaljiAboveGroup } = useMemo(
+  const { vrstaGroup, dimenzijeGroup, detaljiAboveGroup, basicDynamic, advancedDynamic } = useMemo(
     () => extractStructuredGroups(dynamicFields, currentVrsta),
     [dynamicFields, currentVrsta]
   );
   const vrstaFields = vrstaGroup?.fields ?? [];
-  const renderDimDetField = (f: FilterField) => {
+  /**
+   * ⚠️ Karlo 09.09.2026: generički renderer za dynamicFields grupe (Dimenzije/
+   * Detalji IZNAD Cijene + basicDynamic/advancedDynamic ISPOD Cijene) — isti
+   * skup tipova kao napredno-form.tsx `renderField` (toggle/range/select/
+   * text/boatType/multi), da NIJEDNO polje ne izostane samo zato što bočni
+   * filter nije znao taj tip renderirati (npr. "OEM / kataloški broj" i
+   * "Proizvođač dijela" su bili nevidljivi u sidebaru za sve Dijelovi Vrste
+   * BEZ posebnog Dimenzije/Detalji-iznad-Cijene tretmana).
+   */
+  const renderDynField = (f: FilterField) => {
     if (f.type === "toggle") {
       return (
         <TogglePill
           key={f.key}
-          on={arr(`a.${f.key}`).includes("1") || current[`a.${f.key}`] === "1"}
+          on={current[`a.${f.key}`] === "1"}
           onClick={() => update({ [`a.${f.key}`]: current[`a.${f.key}`] === "1" ? null : "1" })}
           label={f.label}
         />
+      );
+    }
+    if (f.type === "range") {
+      if (f.steps && f.steps.length > 0) {
+        const raw = current[`a.${f.key}`] ?? "";
+        const [lo, hi] = raw.includes("..") ? raw.split("..") : ["", ""];
+        const setRange = (min: string, max: string) => update({ [`a.${f.key}`]: min || max ? `${min}..${max}` : null });
+        return (
+          <RangeSelect key={f.key} label={f.label} unit={f.unit} minValue={lo} maxValue={hi}
+            onMin={(v) => setRange(v, hi)} onMax={(v) => setRange(lo, v)} steps={f.steps} maxOnly={f.maxOnly} />
+        );
+      }
+      // ⚠️ Nema slobodan RangeInput ekvivalent u ovom fileu (kamperski "NDM"
+      // tip polja koji Dijelovi ne koristi) — Dijelovi Detalji/Dimenzije uvijek
+      // imaju `steps`, pa je ova grana ovdje samo za potpunost/buduće kategorije.
+      return null;
+    }
+    if (f.type === "select") {
+      return (
+        <SelectField key={f.key} label={f.label} value={current[`a.${f.key}`] ?? ""}
+          onChange={(v) => update({ [`a.${f.key}`]: v || null })} options={f.options ?? []} placeholder="Sve"
+          hideClear={f.key === "vrsta" && subcategory === "ulja-tekucine"} />
       );
     }
     if (f.type === "text") {
@@ -239,10 +270,16 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           onChange={(v) => update({ [`a.${f.key}`]: v || null })} placeholder={f.label} />
       );
     }
-    // select (jedini preostali tip u Dimenzije/Detalji za Dijelovi, vidi grep provjeru)
+    if (f.key === "boatType") {
+      return (
+        <PillMultiSelect key={f.key} label={f.label} values={arr(`a.${f.key}`)} onChange={(v) => setMulti(`a.${f.key}`, v)}
+          options={f.options ?? []} iconFor={(v) => BOAT_TYPE_ICON[v]} />
+      );
+    }
+    // multi
     return (
-      <SelectField key={f.key} label={f.label} value={current[`a.${f.key}`] ?? ""}
-        onChange={(v) => update({ [`a.${f.key}`]: v || null })} options={f.options ?? []} placeholder="Sve" />
+      <MultiSelect key={f.key} label={f.label} values={arr(`a.${f.key}`)} onChange={(v) => setMulti(`a.${f.key}`, v)}
+        options={f.options ?? []} placeholder="Sve" />
     );
   };
 
@@ -414,8 +451,8 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           (Ljetne gume/felge/Distancijeri...) i "Detalji" (Viskoznost ulja) —
           isti obrazac kao "iznad Cijene" panel u naprednoj pretrazi, ODMAH
           IZNAD Cijene (ne odmah ispod Vrste kao u prvoj verziji). */}
-      {dimenzijeGroup && dimenzijeGroup.fields.map(renderDimDetField)}
-      {detaljiAboveGroup && detaljiAboveGroup.fields.map(renderDimDetField)}
+      {dimenzijeGroup && dimenzijeGroup.fields.map(renderDynField)}
+      {detaljiAboveGroup && detaljiAboveGroup.fields.map(renderDynField)}
 
       {/* ⚠️ Karlo 09.09.2026 (st.57/105, sidebar-nastavak): gušća ljestvica
           (25€ koraci) za Multimedija/Gume i felge/Ulja maziva-slične Vrste. */}
@@ -429,6 +466,13 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
       {hasField("km") && (
         <RangeSelect label="Kilometraža" unit="km" minValue={current.kmMin ?? ""} maxValue={current.kmMax ?? ""} onMin={(v) => update({ kmMin: v || null })} onMax={(v) => update({ kmMax: v || null })} steps={KM_STEPS} />
       )}
+
+      {/* ⚠️ Karlo 09.09.2026: `basicDynamic` grupe (npr. "Detalji" — OEM /
+          kataloški broj + Proizvođač dijela — za Vrste BEZ posebnog Dimenzije/
+          Detalji-iznad-Cijene tretmana, poput "Motor, dijelovi motora i
+          brtve") su nedostajale u bočnom filteru u potpunosti — ista pozicija
+          kao napredno-form.tsx (odmah ispod Cijena/Godina/km panela). */}
+      {basicDynamic.flatMap((g) => g.fields).map(renderDynField)}
 
       {hasField("fuel") && (
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
@@ -473,6 +517,11 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
             <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
           )}
           <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
+          {/* ⚠️ Karlo 09.09.2026: `advancedDynamic` — sve preostale grupe koje
+              napredno-form.tsx skriva iza "Više filtera" (Specifikacije/
+              Oprema/Povijest/Pravno/itd. — kategorije izvan Dijelova), isti
+              obrazac kao Mjenjač/Karoserija/Boja iznad. */}
+          {advancedDynamic.flatMap((g) => g.fields).map(renderDynField)}
         </>
       )}
 
