@@ -641,12 +641,20 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
     }
     // ⚠️ Karlo 30.08.2026 (st.22a): "Tip plovila" nacrtan kao izbor (svih 5
     // opcija odmah vidljivo), ne padajući izbornik iza klika.
+    // ⚠️ Karlo 09.09.2026 (bugfix): `attrs[key]` iz URL-a je GOLI STRING kad
+    // polje ima TOČNO JEDNU odabranu vrijednost bez zareza (parsing gore,
+    // `v.includes(",") ? v.split(",") : v`) — MultiSelect/PillMultiSelect
+    // očekuju niz i padaju na `values.map is not a function` kad je vrijednost
+    // string (npr. Dijelovi/Auto dijelovi/"Motor, dijelovi motora i brtve",
+    // jedina Vrsta odabrana). Normaliziraj na niz ovdje, isti obrazac kao
+    // `currentVrsta`/`vrstaValue` (Array.isArray provjera) gore u fileu.
+    const multiValues = (v: AttrValue): string[] => (Array.isArray(v) ? v : typeof v === "string" && v ? [v] : []);
     if (f.key === "boatType") {
       return (
         <PillMultiSelect
           key={f.key}
           label={f.label}
-          values={(attrs[f.key] as string[] | undefined) ?? []}
+          values={multiValues(attrs[f.key])}
           onChange={(v) => setAttr(f.key, v)}
           options={f.options ?? []}
           iconFor={(v) => BOAT_TYPE_ICON[v]}
@@ -658,7 +666,7 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
       <MultiSelect
         key={f.key}
         label={f.label}
-        values={(attrs[f.key] as string[] | undefined) ?? []}
+        values={multiValues(attrs[f.key])}
         onChange={(v) => setAttr(f.key, v)}
         options={f.options ?? []}
         placeholder="Sve"
