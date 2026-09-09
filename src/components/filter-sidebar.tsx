@@ -50,10 +50,12 @@ type Props = {
   mobile?: boolean;
   onClose?: () => void;
   /**
-   * `compact` = uži set filtera za BOČNI STUPAC na desktopu (Karlo 05.08.2026).
-   * Prikazuje samo osnovna polja koja stanu u visinu ekrana bez scrollanja;
-   * ostatak se otvara gumbom "Svi filteri". Pop-up (mobilni) i napredni panel
-   * uvijek prikazuju SVE.
+   * `compact` = bočni stupac na desktopu (Karlo 05.08.2026), uski jednostupčani
+   * layout umjesto punog dvostupčanog panela. ⚠️ Karlo 09.09.2026: NIJE više
+   * "uži skup polja iza klika" — bočni stupac uvijek prikazuje SVE filtere,
+   * identično naprednoj pretrazi, samo u užem rasporedu (nema "Svi filteri"
+   * gumba na desktopu). "Više filtera" ostaje SAMO na mobitelu (`!compact`),
+   * gdje otvara puni napredni panel preko cijelog ekrana.
    */
   compact?: boolean;
 };
@@ -64,8 +66,6 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [panelOpen, setPanelOpen] = useState(false);
-  /** Karlo 13.08.2026 (st. 2): je li bočni stupac proširen na SVE filtere. */
-  const [sviFilteri, setSviFilteri] = useState(false);
   /** Karlo 26.08.2026: je li Model polje fokusirano (tada je prazno za upis). */
   const [modelFocus, setModelFocus] = useState(false);
   const [modelDraft, setModelDraft] = useState("");
@@ -498,67 +498,49 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
         <MultiSelect label={fuelLabel} values={arr("fuel")} onChange={(v) => setMulti("fuel", v)} options={fuelOptions} placeholder="Sve" />
       )}
 
-      {/* ⚠️ Karlo 05.08.2026: lokacija pripada u BRZE filtere — kupci najčešće
-          traže vozilo u svojoj županiji. U punom prikazu stoji niže (uz
-          Prodavača), pa se ovdje renderira samo u `compact` načinu. */}
-      {compact && (
-        <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+      {/* ⚠️ Karlo 09.09.2026: "nepotrebno da imamo Više filtera, neka se odmah
+          pokazuju svi filteri na desktopu" — `compact` više NE skriva ništa
+          iza klika, cijeli bočni stupac (desktop) uvijek prikazuje SVE
+          filtere, identično naprednoj pretrazi. `sviFilteri`/"Svi filteri"
+          gumb uklonjeni; jedino "Više filtera" ostaje na MOBITELU (`!compact`
+          pop-up varijanta), gdje otvara puni napredni panel preko cijelog
+          ekrana — to je odvojen UX obrazac (bottom sheet), ne "skriveni
+          filteri na desktopu" koje je Karlo tražio da nestanu. */}
+      {hasField("transmission") && (
+        <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
+      )}
+      {/* Karlo 29.07: Karoserija se prikazuje samo ako je kategorija/podkategorija
+          stvarno ima — motocikl je nema, a prije je visjela svugdje. */}
+      {hasField("bodyType") && (
+        <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
       )}
 
-      {/**
-       * ⚠️ Karlo 05.08.2026: "ne stanu svi filteri, napravi osnovni set koji
-       * stane punom visinom, a napredni u pop-upu."
-       *
-       * U SIDEBARU (`compact`) staju samo polja iznad — Podkategorija, Tip
-       * ponude, Stanje, Marka/Model, Cijena, Godina, Kilometraža, Gorivo.
-       * Sve ispod (Mjenjač, Karoserija s ikonama, Boja s uzorcima, Županija,
-       * Prodavač) je visoko i gura panel izvan ekrana → ide u "Više filtera".
-       *
-       * U pop-upu (mobilni i "Više filtera") prikazuje se SVE, kao dosad.
-       */}
-      {(!compact || sviFilteri) && (
-        <>
-          {hasField("transmission") && (
-            <MultiSelect label="Mjenjač" values={arr("transmission")} onChange={(v) => setMulti("transmission", v)} options={toOpts(TRANSMISSIONS)} placeholder="Sve" />
-          )}
-          {/* Karlo 29.07: Karoserija se prikazuje samo ako je kategorija/podkategorija
-              stvarno ima — motocikl je nema, a prije je visjela svugdje. */}
-          {hasField("bodyType") && (
-            <BodyTypePicker label="Karoserija" values={arr("bodyType")} onChange={(v) => setMulti("bodyType", v)} options={bodyOptions} />
-          )}
-
-          {hasField("color") && (
-            <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
-          )}
-
-          {/* U `compact` je Županija već gore među brzim filterima — bez ovog
-              uvjeta bi se u proširenom stupcu pojavila DVAPUT. */}
-          {!compact && (
-            <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
-          )}
-          <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
-          {/* ⚠️ Karlo 09.09.2026: `advancedDynamic` — sve preostale grupe koje
-              napredno-form.tsx skriva iza "Više filtera" (Specifikacije/
-              Oprema/Povijest/Pravno/itd. — kategorije izvan Dijelova), isti
-              obrazac kao Mjenjač/Karoserija/Boja iznad. */}
-          {advancedDynamic.flatMap((g) => g.fields).map(renderDynField)}
-        </>
+      {hasField("color") && (
+        <ColorPicker label="Boja" values={arr("color")} onChange={(v) => setMulti("color", v)} options={(poljeZa("color")?.options?.map((o) => o.label) ?? [...COLORS]) as string[]} />
       )}
 
-      {/**
-       * ⚠️ Karlo 13.08.2026 (st. 2): "Svi filteri" je BACAO na naprednu pretragu
-       * (full-screen panel) umjesto da izlista ostatak filtera u stupcu.
-       * Sad u bočnom stupcu (`compact`) samo proširuje stupac na licu mjesta;
-       * puni panel ostaje samo za pop-up varijantu ("Više filtera").
-       */}
-      <button
-        type="button"
-        onClick={() => (compact ? setSviFilteri((s) => !s) : setPanelOpen(true))}
-        className="w-full h-11 px-4 rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
-      >
-        <SlidersHorizontal className="size-4" />
-        {compact ? (sviFilteri ? "Manje filtera" : "Svi filteri") : "Više filtera"}
-      </button>
+      <SelectField label="Županija" value={current.county ?? ""} onChange={(v) => update({ county: v || null })} options={COUNTIES.map((c) => ({ value: c, label: c }))} placeholder="Sve županije" />
+      <MultiSelect label="Prodavač" values={arr("sellerType")} onChange={(v) => setMulti("sellerType", v)} options={toOpts(SELLER_TYPES)} placeholder="Svi" />
+      {/* ⚠️ Karlo 09.09.2026: `advancedDynamic` — sve preostale grupe koje
+          napredno-form.tsx skriva iza "Više filtera" (Specifikacije/
+          Oprema/Povijest/Pravno/itd. — kategorije izvan Dijelova), isti
+          obrazac kao Mjenjač/Karoserija/Boja iznad. */}
+      {advancedDynamic.flatMap((g) => g.fields).map(renderDynField)}
+
+      {/* ⚠️ Karlo 13.08.2026 (st. 2) → 09.09.2026: "Više filtera" ostaje SAMO
+          za mobitel (`!compact` — otvara puni napredni panel preko cijelog
+          ekrana, gdje uski jednostupčani prikaz nema smisla). Desktop
+          (`compact`) gumb je uklonjen — sve je već vidljivo iznad. */}
+      {!compact && (
+        <button
+          type="button"
+          onClick={() => setPanelOpen(true)}
+          className="w-full h-11 px-4 rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-surface)] flex items-center justify-center gap-2 text-sm font-medium text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)] transition-colors"
+        >
+          <SlidersHorizontal className="size-4" />
+          Više filtera
+        </button>
+      )}
     </div>
   );
 
