@@ -566,6 +566,11 @@ export function freeTextModelField(categorySlug: string, subcategory?: string): 
   // Karlo 26.08.2026: nakon građevinskih, SVE rubrike mehanizacije imaju
   // slobodan upis — jednostavnije od nabrajanja svih pet.
   if (categorySlug === "mehanizacija") return true;
+  // ⚠️ Karlo 14.09.2026 (st.114): CIJELA Moto kategorija (sve podkategorije
+  // i Vrste) — Model postaje slobodan upis, bez ponuđenog popisa. Isto
+  // obrazloženje kao Mehanizacija: previše varijanti modela po marki da bi
+  // fiksni popis imao smisla, i korisnik mora znati točan model svog vozila.
+  if (categorySlug === "moto") return true;
   // ⚠️ Karlo 30.08.2026 (st.23): PLOVILA — klijent sam upisuje marku i model,
   // bez ponuđenih limitiranih popisa (previše proizvođača/varijanti da bi
   // fiksni popis pokrio sve).

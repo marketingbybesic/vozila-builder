@@ -250,7 +250,10 @@ export function applyFilters(
     if (f.model === MODEL_NOT_LISTED) {
       const known = getMake(slugify(l.make))?.models ?? [];
       if (known.includes(l.model)) return false;
-    } else if (f.model && l.model !== f.model) return false;
+    // ⚠️ Karlo 14.09.2026 (st.114): cijeli Moto se pridružuje slobodnom upisu
+    // Modela (uz Mehanizaciju/Plovila) — isti slugify obrazac kao f.make gore,
+    // idempotentan za postojeće dropdown vrijednosti.
+    } else if (f.model && slugify(l.model) !== slugify(f.model)) return false;
     if (f.hidePriceless && !(l.priceEur > 0)) return false;
     if (f.priceMin !== undefined && l.priceEur < f.priceMin) return false;
     if (f.priceMax !== undefined && l.priceEur > f.priceMax) return false;
