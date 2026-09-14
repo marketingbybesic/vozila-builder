@@ -188,6 +188,20 @@ function attrMatches(
   return true;
 }
 
+/**
+ * ⚠️ Karlo 14.09.2026 (st.112): Oldtimer/Trkaći auti/Eko/Luksuzni/Oštećeni i u
+ * kvaru su "specijalne" podkategorije Auto kategorije — svaka je i dalje
+ * "Osobno vozilo", samo s dodatnom (drugom) svrhom pronalaska. Oglas objavljen
+ * pod bilo kojom od njih MORA se pojaviti i pod "Osobni auto" (auto-oglasi),
+ * ne samo pod svojom specijalnom podkategorijom — "uvijek na dva mjesta
+ * sinhronizirano". `subcategory` na oglasu ostaje TOČNO onaj koji je prodavač
+ * odabrao (Oldtimer i dalje ostaje Oldtimer za svoju rubriku) — spajanje se
+ * radi ovdje, u filteru, ne mijenjanjem podataka.
+ */
+const AUTO_OGLASI_INCLUDES = new Set([
+  "auto-oglasi", "trkaci", "eko", "luksuzni", "oldtimer", "ostecen-u-kvaru",
+]);
+
 function compare(sort: SortOption, a: Listing, b: Listing): number {
   switch (sort) {
     case "price-asc":
@@ -215,7 +229,16 @@ export function applyFilters(
       if (!hay.includes(q)) return false;
     }
     if (f.category && l.category !== f.category) return false;
-    if (f.subcategory && l.subcategory !== f.subcategory) return false;
+    // ⚠️ Karlo 14.09.2026 (st.112): "Osobni auto" (auto-oglasi) mora uključiti
+    // i Oldtimer/Trkaći/Eko/Luksuzni/Oštećeni i u kvaru — te podkategorije su
+    // i dalje "Osobna vozila", samo s drugom svrhom pronalaska. Sve OSTALE
+    // podkategorije/kategorije (i dalje) traže TOČNO podudaranje.
+    if (f.subcategory) {
+      const matches = f.subcategory === "auto-oglasi"
+        ? l.category === "auto" && AUTO_OGLASI_INCLUDES.has(l.subcategory ?? "")
+        : l.subcategory === f.subcategory;
+      if (!matches) return false;
+    }
     // ⚠️ Karlo 30.08.2026 (st.23): `f.make` sad može doći iz slobodnog upisa
     // (Plovila) umjesto dropdowna — slugify na OBJE strane drži usporedbu
     // ispravnom bez obzira na velika slova/dijakritike u upisanom tekstu.
