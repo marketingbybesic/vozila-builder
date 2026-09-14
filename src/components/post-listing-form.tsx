@@ -992,7 +992,15 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 value={s.year}
                 onChange={(v) => set("year", v)}
                 placeholder="Odaberi godinu"
-                options={Array.from({ length: 37 }, (_, i) => 2026 - i).map((y) => ({ value: String(y), label: `${y}.` }))}
+                /* ⚠️ Karlo 14.09.2026 (st.110): popis je stao na 1990 (bilo
+                   hardkodirano "length: 37" od tvrde 2026) — stariji/oldtimer
+                   oglasi (Auto ima kategoriju "Oldtimer") nisu mogli upisati
+                   pravu godinu. Sad ide do 1900, i godina se računa iz
+                   trenutne (`getFullYear()`), ne iz zabijenog broja 2026. */
+                options={(() => {
+                  const now = new Date().getFullYear();
+                  return Array.from({ length: now - 1900 + 1 }, (_, i) => now - i).map((y) => ({ value: String(y), label: `${y}.` }));
+                })()}
               />
               {/* Karlo 31.07: prva registracija ide ODMAH ISPOD godine proizvodnje —
                   mjesec iz padajućeg, godina ručno. */}
