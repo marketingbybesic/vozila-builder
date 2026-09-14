@@ -15,7 +15,7 @@ const sortHr = (list: CarMake[]): CarMake[] =>
 
 // --- Dostavna vozila (avto.net SID=20000, 55 marki) ---------------------
 const DOSTAVNA_RAW: CarMake[] = [
-  M("alke", "Alke", "Italija"),
+  M("alke", "Alke", "Italija", ["ATX", "ATEX"]),
   M("baw", "BAW", "Kina"),
   M("bellier", "Bellier", "Francuska"),
   M("bonetti", "Bonetti", "Italija", ["F80"]),
