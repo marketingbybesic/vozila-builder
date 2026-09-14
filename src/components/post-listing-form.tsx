@@ -25,7 +25,7 @@ import {
   CONDITIONS,
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
-import { MODEL_NOT_LISTED, modelOptionsFor } from "@/data/makes";
+import { MODEL_NOT_LISTED, modelOptionsFor, makeOptionsGrouped } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
 } from "@/data/category-filters";
@@ -288,11 +288,17 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise
   // marki — prodavač ATV-a mora moći odabrati npr. Arctic Cat / John Deere,
   // kojih u moto popisu nema. `s.subcategory` MORA biti u ovisnostima.
-  const makeOptions: Opt[] = useMemo(
-    () => (makesForSub(s.category, s.subcategory) ?? categoryDef?.makes ?? [])
-      .map((m) => ({ value: m.slug, label: m.name })),
-    [categoryDef, s.category, s.subcategory]
-  );
+  const makeOptions: Opt[] = useMemo(() => {
+    const list = makesForSub(s.category, s.subcategory) ?? categoryDef?.makes ?? [];
+    // ⚠️ Karlo 14.09.2026 (st.111): Osobna vozila (kategorija "auto") — Marka
+    // mora imati "Najpopularnije marke" grupu na vrhu, ISTO kao "Marka" u
+    // Brza pretraga auta (hero-search.tsx) i napredna pretraga
+    // (napredno-form.tsx, `category === "auto" ? makeOptionsGrouped(list)`).
+    // Popis marki je isti izvor (MAKES/POPULAR_MAKE_SLUGS iz data/makes.ts) —
+    // ovime se i grupiranje izjednačava, ne samo sadržaj popisa.
+    if (s.category === "auto") return makeOptionsGrouped(list);
+    return list.map((m) => ({ value: m.slug, label: m.name }));
+  }, [categoryDef, s.category, s.subcategory]);
   // Karlo 31.07: "Osobni auto" je sad PRAVA podkategorija — više se ne izuzima.
   const subcatOptions: Opt[] = useMemo(
     () => (categoryDef?.subcategories ?? [])
