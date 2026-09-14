@@ -702,6 +702,12 @@ const AUTO_FIELDS: FilterField[] = [
 const MOTO_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_YEAR, COMMON_KM, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
+  // ⚠️ Karlo 14.09.2026 (st.115): "Garancija" pokraj Kilometara (isti obrazac
+  // kao Auto — vidi COMMON_KM komentar niže: bez `group` pada u "Osnovno",
+  // isto gdje je i Kilometri). Sve Moto podkategorije OSIM "Ponude za najam".
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr",
+    scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-skuter", "e-bicikl", "moto-ostalo"] },
+
   // Karlo 29.07: "Vrsta vozila" izbačena — duplicirala je gornji izbornik
   // Podkategorije (isti popis, isti URL param).
   // Karlo 27.07: Stil stoji ODMAH ispod podkategorije i mijenja se po njoj.
