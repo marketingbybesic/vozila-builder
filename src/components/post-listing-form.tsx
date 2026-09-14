@@ -374,13 +374,25 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
    * ⚠️ Samo ako je vrijednost još ZADANA — ručni odabir prodavača se NE gazi.
    * Bez te provjere bi prodavač koji je stavio "1" (pa se predomislio oko
    * stanja) tiho izgubio svoj unos.
+   *
+   * ⚠️ Karlo 14.09.2026: "Oldtimer" u Stanju vozila je odvojeno polje od
+   * Podkategorije "Oldtimer" — prodavač je odabrao samo Stanje pa mu se oglas
+   * nije pojavio među Oldtimerima (subcategory ostao "auto-oglasi"). Ako je
+   * kategorija Auto i Podkategorija još nije jedna od ostalih posebnih
+   * (trkaci/eko/luksuzni/ostecen-u-kvaru — te ostaju prodavačev izbor), bira
+   * "Oldtimer" i ovdje, automatski. Skip za druge kategorije (Moto ima
+   * subcategory "oldtimer" ali svoju posebnu listu marki — ne diramo).
    */
   const setCondition = (c: string) =>
     setS((p) => {
       const cur = p.attributes.numOwners;
       const wasDefault = cur === undefined || cur === "" || cur === numOwnersDefaultFor(p.condition);
-      if (!wasDefault) return { ...p, condition: c };
-      return { ...p, condition: c, attributes: { ...p.attributes, numOwners: numOwnersDefaultFor(c) } };
+      const subcategory =
+        c === "Oldtimer" && p.category === "auto" && (p.subcategory === "" || p.subcategory === "auto-oglasi")
+          ? "oldtimer"
+          : p.subcategory;
+      if (!wasDefault) return { ...p, condition: c, subcategory };
+      return { ...p, condition: c, subcategory, attributes: { ...p.attributes, numOwners: numOwnersDefaultFor(c) } };
     });
 
   // Promjena kategorije → reset kategorija-ovisnih polja.
@@ -898,6 +910,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                     // s markom koju pretraga te podkategorije ne nudi.
                     const list = makesForSub(s.category, v) ?? categoryDef?.makes ?? [];
                     if (s.make && !list.some((m) => m.slug === s.make)) { set("make", ""); set("model", ""); }
+                    // ⚠️ Karlo 14.09.2026: obrnuti smjer veze sa setCondition —
+                    // ako prodavač bira Podkategoriju "Oldtimer" ručno, Stanje
+                    // vozila prati (ista svrha, dva mjesta, uvijek sinkronizirano).
+                    if (s.category === "auto" && v === "oldtimer") set("condition", "Oldtimer");
                   }}
                 />
               </div>
