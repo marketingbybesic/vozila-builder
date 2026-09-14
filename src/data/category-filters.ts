@@ -866,8 +866,10 @@ const MOTO_FIELDS: FilterField[] = [
     scope: ["motocikl", "skuter", "moped", "atv-utv", "minimoto", "oldtimer", "gokart", "motorne-sanke", "e-moto", "najam", "moto-ostalo"] },
 
   // Karlo 30.07: nova rubrika "Stanje vozila" (motocikl/skuter/ATV — sve podkat.).
+  // ⚠️ Karlo 14.09.2026 (st.113): "Trkaći auto" izbačen — copy-paste iz Auto
+  // kategorije (SELLER_STATE_FIELDS dijeljen), na motociklu nema smisla.
   ...VEHICLE_STATE_FIELDS,
-  ...SELLER_STATE_FIELDS,
+  ...SELLER_STATE_FIELDS.filter((f) => f.key !== "raceCar"),
 
   // Karlo 31.07: dokumenti samo za vozila koja se REGISTRIRAJU. Minimoto,
   // go-kart, motorne sanke, e-bicikl i e-skuter nemaju ni VIN ni tehnički.
