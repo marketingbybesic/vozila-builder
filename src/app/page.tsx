@@ -27,6 +27,18 @@ import type { Listing } from "@/lib/types";
  */
 const SHOW_HERO_BANNER = false;
 
+/**
+ * ⚠️ Karlo 14.09.2026 (st.109): "Najnoviji auto oglasi" nije odmah izbacivao
+ * tek objavljen oglas — homepage nema `searchParams`/druge dinamičke ulaze
+ * pa ju je Next.js po defaultu statički generirao JEDNOM (Full Route Cache)
+ * i služio tu istu zamrznutu verziju svim posjetiteljima do sljedećeg
+ * deploya. `/oglasi` nema ovaj problem jer čitanje `searchParams` ondje
+ * automatski uključuje dinamičko renderiranje. `revalidate = 0` prisiljava
+ * homepage da se renderira iznova na SVAKI zahtjev (isti obrazac kao
+ * `dynamic = "force-dynamic"`), pa novi oglas izlazi odmah.
+ */
+export const revalidate = 0;
+
 export default async function HomePage() {
   const popularMakes = POPULAR_MAKE_SLUGS.map(
     (slug) => MAKES.find((m) => m.slug === slug)!
