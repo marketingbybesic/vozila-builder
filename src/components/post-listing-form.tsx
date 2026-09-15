@@ -125,10 +125,15 @@ const numOwnersDefaultFor = (condition: string) => (condition === "Novo" ? "1" :
 
 const empty: State = {
   category: "auto", subcategory: "",
-  make: "", model: "", variant: "", year: "", condition: "Rabljeno",
+  /* ⚠️ Karlo 15.09.2026 (st.127): Stanje više NEMA zadanu vrijednost —
+     prodavač ga mora svjesno odabrati u 1. koraku. Prije je bilo predodabrano
+     "Rabljeno", pa provjera "odaberi stanje" nikad nije mogla okinuti. Usput:
+     kod Dijelova su opcije Novo/Polovno/Obnovljeno, pa "Rabljeno" ondje nije
+     odgovaralo nijednom gumbu (nijedan nije izgledao odabran). */
+  make: "", model: "", variant: "", year: "", condition: "",
   fuel: "", transmission: "", bodyType: "", drive: "", color: "",
   km: "", engineCc: "", powerKw: "", doors: "5", seats: "5",
-  attributes: { ...STATE_DEFAULTS, numOwners: "2" }, // condition je "Rabljeno"
+  attributes: { ...STATE_DEFAULTS, numOwners: "2" },
   photos: [],
   priceEur: "", description: "",
   county: "", city: "",
