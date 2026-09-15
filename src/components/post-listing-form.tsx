@@ -25,7 +25,7 @@ import {
   CONDITIONS,
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
-import { oemBrandPartHiddenForVrsta } from "@/lib/dijelovi-vrsta";
+import { oemBrandPartHiddenForVrsta, makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta, isTireFullFormVrsta } from "@/lib/dijelovi-vrsta";
 import { MODEL_NOT_LISTED, modelOptionsFor, makeOptionsGrouped } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -294,8 +294,34 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   // ⚠️ Karlo 18.08.2026: ATV (moto) i UTV (gospodarska) imaju VLASTITE popise
   // marki — prodavač ATV-a mora moći odabrati npr. Arctic Cat / John Deere,
   // kojih u moto popisu nema. `s.subcategory` MORA biti u ovisnostima.
+  /**
+   * ⚠️ Karlo 15.09.2026 (st.119): "Vrsta" nije svugdje isti atribut.
+   * - Podkategorije s djecom u taksonomiji (Dijelovi, Oprema za kampere)
+   *   biraju Vrstu u KORAKU 1 → `attributes.vrsta` (jedna vrijednost).
+   * - PLOVILA nemaju `children`, pa nemaju taj izbornik; njihova Vrsta je
+   *   `boatType` (multi-select u koraku 3, vrijednost je NIZ).
+   * Uzimamo prvu odabranu vrijednost jer `vrstaScope` radi nad jednom.
+   */
+  const currentVrsta = ((): string | undefined => {
+    const raw = s.subcategory === "plovila" ? s.attributes.boatType : s.attributes.vrsta;
+    if (Array.isArray(raw)) return raw[0];
+    return typeof raw === "string" ? raw : undefined;
+  })();
+
   const makeOptions: Opt[] = useMemo(() => {
-    const list = makesForSub(s.category, s.subcategory) ?? categoryDef?.makes ?? [];
+    /**
+     * ⚠️ Karlo 15.09.2026 (st.127): Vrsta-specifični popis marki MORA stajati
+     * ISPRED podkategorijskog. Bez toga je npr. Gume i felge / Ljetne gume
+     * nudila marke VOZILA (Audi, BMW…) umjesto proizvođača guma (Michelin,
+     * Continental…) — Karlo to prijavio. Isti obrazac kao filter-sidebar.tsx
+     * i napredno-form.tsx.
+     */
+    const vrstaList = makeListForVrsta(currentVrsta);
+    const list = vrstaList ?? makesForSub(s.category, s.subcategory) ?? categoryDef?.makes ?? [];
+    // Neke Vrste traže PLOSNATU listu i unutar Dijelova koji inače grupiraju.
+    if (makeListIsFlatForVrsta(s.category, s.subcategory, currentVrsta)) {
+      return list.map((m) => ({ value: m.slug, label: m.name }));
+    }
     // ⚠️ Karlo 14.09.2026 (st.111): Osobna vozila (kategorija "auto") — Marka
     // mora imati "Najpopularnije marke" grupu na vrhu, ISTO kao "Marka" u
     // Brza pretraga auta (hero-search.tsx) i napredna pretraga
@@ -304,7 +330,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     // ovime se i grupiranje izjednačava, ne samo sadržaj popisa.
     if (s.category === "auto") return makeOptionsGrouped(list);
     return list.map((m) => ({ value: m.slug, label: m.name }));
-  }, [categoryDef, s.category, s.subcategory]);
+  }, [categoryDef, s.category, s.subcategory, currentVrsta]);
   // Karlo 31.07: "Osobni auto" je sad PRAVA podkategorija — više se ne izuzima.
   const subcatOptions: Opt[] = useMemo(
     () => (categoryDef?.subcategories ?? [])
@@ -380,20 +406,6 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const hasField = (key: string) => fieldDef(key) !== undefined;
   /** Oznaka iz sheme (mehanizacija zove VIN "Broj šasije / serijski broj"). */
   const labelOf = (key: string, fallback: string) => fieldDef(key)?.label ?? fallback;
-
-  /**
-   * ⚠️ Karlo 15.09.2026 (st.119): "Vrsta" nije svugdje isti atribut.
-   * - Podkategorije s djecom u taksonomiji (Dijelovi, Oprema za kampere)
-   *   biraju Vrstu u KORAKU 1 → `attributes.vrsta` (jedna vrijednost).
-   * - PLOVILA nemaju `children`, pa nemaju taj izbornik; njihova Vrsta je
-   *   `boatType` (multi-select u koraku 3, vrijednost je NIZ).
-   * Uzimamo prvu odabranu vrijednost jer `vrstaScope` radi nad jednom.
-   */
-  const currentVrsta = ((): string | undefined => {
-    const raw = s.subcategory === "plovila" ? s.attributes.boatType : s.attributes.vrsta;
-    if (Array.isArray(raw)) return raw[0];
-    return typeof raw === "string" ? raw : undefined;
-  })();
 
   // Spec polja koja se renderiraju u koraku 2 (schema-driven), uz scope filtriranje.
   const specFields = useMemo(
@@ -530,6 +542,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // st.120: Plovila — Tip plovila je obavezan u koraku 1 (isti razlog kao
       // Vrsta artikla: bez njega oglas ne ulazi u svoju podrubriku pretrage).
       if (boatTypeOptions.length > 0 && !s.attributes.boatType) m.push("Tip plovila");
+      // st.127: Stanje je od sada obavezan odabir u KORAKU 1.
+      if (!s.condition) m.push("Stanje");
       return m;
     }
     if (step === 2) {
@@ -550,7 +564,6 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         m.push("Izvedba");
       }
       if (!s.year) m.push("Godina proizvodnje");
-      if (!s.condition) m.push("Stanje");
       return m;
     }
     if (step === 3) {
@@ -1085,6 +1098,31 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               </div>
             )}
+
+            {/* ⚠️ Karlo 15.09.2026 (st.127): Stanje (Novo/Rabljeno/Obnovljeno)
+                premješteno iz koraka 2 u KORAK 1 i obavezno je za nastavak —
+                izričito zatraženo. Nazivi i dalje ovise o kategoriji/Vrsti
+                (Stanje predmeta za dijelove, Stanje opreme za opremu plovila). */}
+            {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
+                predmeta" (Novo/Polovno/Obnovljeno umjesto CONDITIONS). */}
+            {/* ⚠️ Karlo 15.09.2026 (st.119): Oprema za plovila → "Stanje opreme". */}
+            <Field label={usesPartsLayout ? "Stanje predmeta" : currentVrsta === "oprema-za-plovila" ? "Stanje opreme" : "Stanje"}>
+              <div className="grid grid-cols-3 gap-2">
+                {(usesPartsLayout
+                  ? (["Novo", "Polovno", "Obnovljeno"] as const)
+                  : CONDITIONS
+                ).map((c) => (
+                  <button
+                    type="button"
+                    key={c}
+                    onClick={() => setCondition(c)}
+                    className={"h-11 rounded-xl border text-sm transition-all " + (s.condition === c ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </Field>
           </div>
         )}
 
@@ -1124,7 +1162,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               ) : (
                 <SelectField
                   // ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Marka" → "Za marku".
-                  label={usesPartsLayout ? "Za marku" : "Marka"}
+                  /* ⚠️ Karlo 15.09.2026 (st.127): naziv ovisi i o VRSTI, ne
+                     samo o kategoriji — Ljetne gume su "Marka" (proizvođači
+                     guma), felge "Za Marku", obični dijelovi "Za marku". */
+                  label={makeLabelForVrsta(usesPartsLayout, isTireFullFormVrsta(s.category, s.subcategory, currentVrsta), currentVrsta)}
                   value={s.make}
                   onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
                   placeholder="Odaberi marku"
@@ -1233,26 +1274,6 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               )}
             </div>
-            {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
-                predmeta" (Novo/Polovno/Obnovljeno umjesto CONDITIONS). */}
-            {/* ⚠️ Karlo 15.09.2026 (st.119): Oprema za plovila → "Stanje opreme". */}
-            <Field label={usesPartsLayout ? "Stanje predmeta" : currentVrsta === "oprema-za-plovila" ? "Stanje opreme" : "Stanje"}>
-              <div className="grid grid-cols-3 gap-2">
-                {(usesPartsLayout
-                  ? (["Novo", "Polovno", "Obnovljeno"] as const)
-                  : CONDITIONS
-                ).map((c) => (
-                  <button
-                    type="button"
-                    key={c}
-                    onClick={() => setCondition(c)}
-                    className={"h-11 rounded-xl border text-sm transition-all " + (s.condition === c ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]" : "border-[var(--color-line)] hover:border-[var(--color-ink-soft)]")}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </Field>
           </div>
         )}
 

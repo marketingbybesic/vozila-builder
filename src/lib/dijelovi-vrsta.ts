@@ -64,6 +64,13 @@ export function makeListForVrsta(currentVrsta: string | undefined): CarMake[] | 
   if (currentVrsta === "ulja-maziva-aditivi") return ULJA_MAZIVA_BRAND_MAKES;
   if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return MAKES;
   if (TERETNE_C_STYLE_VRSTE.includes(currentVrsta ?? "")) return TERETNE_C_TIRE_BRAND_MAKES;
+  // ⚠️ Karlo 15.09.2026 (st.127): preostale "pune forme" gume (Ljetne, Zimske,
+  // Cjelogodišnje) dobivaju opći popis PROIZVOĐAČA GUMA (228 brendova). Bez
+  // ovoga su padale na podkategorijski popis = marke VOZILA (Abarth, Audi…),
+  // 204 stavke — Karlo prijavio za Ljetne gume.
+  // Felge NAMJERNO nisu ovdje: njihovo "Za Marku" znači marku VOZILA za koje
+  // felge pašu, pa im `MAKES` iz grane gore ostaje ispravan.
+  if (TIRE_FULL_FORM_VRSTE.includes(currentVrsta ?? "")) return TIRE_BRAND_MAKES;
   return null;
 }
 
