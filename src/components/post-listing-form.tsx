@@ -25,6 +25,7 @@ import {
   CONDITIONS,
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
+import { oemBrandPartHiddenForVrsta } from "@/lib/dijelovi-vrsta";
 import { MODEL_NOT_LISTED, modelOptionsFor, makeOptionsGrouped } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -404,6 +405,15 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       if (f.scope && f.scope.length > 0) {
         if (!(s.subcategory && f.scope.includes(s.subcategory))) return false;
       }
+      /**
+       * ⚠️ Karlo 15.09.2026 (st.126): OEM / Proizvođač dijela su izričito
+       * maknuti za Ljetne/Zimske gume (st.59), Ulja-maziva-aditivi (st.100/101)
+       * i Autokozmetiku (st.107) — ali SAMO u pretrazi (zastavice u
+       * `filterDynamicFields`). Objava ih je i dalje tražila od prodavača.
+       * Ista pravila žive u `oemBrandPartHiddenForVrsta`.
+       */
+      if ((f.key === "oem" || f.key === "brandPart")
+          && oemBrandPartHiddenForVrsta(s.category, s.subcategory, currentVrsta)) return false;
       // ⚠️ Karlo 15.09.2026 (st.119): `vrstaScope` sužava polje na JEDNU Vrstu
       // unutar podkategorije (npr. Plovila/Oprema za plovila nema rubriku Motor).
       // Pretraga je to poštovala od st.59, objava NIJE — pa je prodavaču i dalje
