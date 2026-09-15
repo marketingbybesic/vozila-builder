@@ -1478,6 +1478,8 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
       { value: "gumenjaci", label: "Gumenjaci" },
       { value: "jetski", label: "Jetski" },
       { value: "vanbrodski-motori", label: "Vanbrodski motori" },
+      // ⚠️ Karlo 15.09.2026 (st.118): dodana 6. vrsta "Oprema za plovila".
+      { value: "oprema-za-plovila", label: "Oprema za plovila" },
     ] },
   // Karlo 30.07: "Raspored kampera" → "Tip kampera", proširena lista.
   { key: "camperLayout", label: "Tip kampera", type: "multi", storage: "attr", group: "Vrsta", scope: ["kamperi"],

@@ -9,7 +9,7 @@
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, X, Car, Caravan, Truck, Bus, Container, Forklift,
-  Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan,
+  Tractor, Bike, Box, Disc3, Ship, Sailboat, Waves, Gauge, Fan, Anchor,
   Wrench, Package, Speaker, Cone, Wheat, Settings2, CircleDot, Droplets,
   House, Layers, Tent, TentTree, Zap, Backpack, CalendarDays,
   Route, Mountain, Rocket, History, Flag, MountainSnow, TreePine, Trash2,
@@ -34,6 +34,8 @@ export const BOAT_TYPE_ICON: Record<string, LucideIcon> = {
   gumenjaci: Waves,
   jetski: Gauge,
   "vanbrodski-motori": Fan,
+  // ⚠️ Karlo 15.09.2026 (st.118): nova vrsta — sidro kao generička oprema.
+  "oprema-za-plovila": Anchor,
 };
 
 /** Ikona može biti lucide ili naša SVG silueta — obje primaju `className`. */
