@@ -35,13 +35,38 @@ export function listingHasField(listing: Pick<Listing, "category" | "subcategory
 }
 
 /** Sva polja sheme relevantna za ovaj oglas (bez onih koja su samo filter pretrage). */
-export function relevantFields(listing: Pick<Listing, "category" | "subcategory">): FilterField[] {
+export function relevantFields(
+  listing: Pick<Listing, "category" | "subcategory"> & { attributes?: unknown }
+): FilterField[] {
   const def = getFilterDefs(listing.category);
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.128): prikaz oglasa je ponavljao isto polje i po
+   * 4 puta ("Širina gume" ×4) te prikazivao polja DRUGE Vrste ("Širina felge",
+   * "Broj rupa" na oglasu za gume). Dva uzroka:
+   *  1) filtriralo se samo po `scope`, ne i po Vrsti — prolazila je svaka
+   *     tireWidth varijanta (Ljetne/Zimske/Teretne/Moto…, st.58/66/73/78);
+   *  2) više zapisa dijeli ISTI `key`, pa ih je render sve ispisao.
+   * Sad se poštuje `vrstaScope`/`vrstaExclude` i zadržava PRVI zapis po ključu.
+   */
+  const attrs = (listing.attributes ?? {}) as Record<string, unknown>;
+  const rawVrsta = listing.subcategory === "plovila" ? attrs.boatType : attrs.vrsta;
+  const vrstaVal = Array.isArray(rawVrsta) ? rawVrsta[0] : rawVrsta;
+  const currentVrsta = typeof vrstaVal === "string" ? vrstaVal : undefined;
+
+  const seen = new Set<string>();
   return def.fields.filter((f) => {
     if (f.searchOnly) return false;
     if (f.scope && f.scope.length > 0) {
-      return listing.subcategory ? f.scope.includes(listing.subcategory) : false;
+      if (!(listing.subcategory && f.scope.includes(listing.subcategory))) return false;
     }
+    if (f.vrstaScope && f.vrstaScope.length > 0) {
+      if (!(currentVrsta && f.vrstaScope.includes(currentVrsta))) return false;
+    }
+    if (f.vrstaExclude && f.vrstaExclude.length > 0) {
+      if (currentVrsta && f.vrstaExclude.includes(currentVrsta)) return false;
+    }
+    if (seen.has(f.key)) return false;
+    seen.add(f.key);
     return true;
   });
 }

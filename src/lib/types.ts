@@ -71,6 +71,20 @@ export type Color = (typeof COLORS)[number];
 export const CONDITIONS = ["Rabljeno", "Novo", "Oldtimer"] as const;
 export type Condition = (typeof CONDITIONS)[number];
 
+/**
+ * ⚠️ Karlo 16.09.2026 (st.128): Dijelovi i oprema nude "Novo / Polovno /
+ * Obnovljeno" (st.26), ali server je validirao samo `CONDITIONS` pa je objava
+ * pucala s "Invalid option: expected one of Rabljeno|Novo|Oldtimer".
+ * Greška je postojala od st.26, samo je bila SAKRIVENA: `condition` je imao
+ * zadanu vrijednost "Rabljeno", pa je prolazila i kad prodavač ne bi kliknuo
+ * ništa. Čim je st.127 tražio svjestan odabir, problem je izašao na vidjelo.
+ * Stupac u bazi je `text`, pa nema migracije — širi se samo validacija.
+ */
+export const PARTS_CONDITIONS = ["Novo", "Polovno", "Obnovljeno"] as const;
+/** Sve dopuštene vrijednosti `condition` (vozila + dijelovi), za zod validaciju. */
+export const ALL_CONDITIONS = ["Rabljeno", "Novo", "Oldtimer", "Polovno", "Obnovljeno"] as const;
+export type AnyCondition = (typeof ALL_CONDITIONS)[number];
+
 export const SELLER_TYPES = ["Privatni", "Trgovac"] as const;
 export type SellerType = (typeof SELLER_TYPES)[number];
 
@@ -93,7 +107,8 @@ export const Listing = z.object({
   make: z.string(),
   model: z.string(),
   variant: z.string().optional(),
-  year: z.number().int().min(1950).max(2030),
+  // st.128: usklađeno s objavom (oldtimeri do 1900, vidi st.110/124).
+  year: z.number().int().min(1900).max(2030),
   priceEur: z.number().int().positive(),
   originalPriceEur: z.number().int().positive().optional(),
   km: z.number().int().nonnegative(),
@@ -104,7 +119,7 @@ export const Listing = z.object({
   bodyType: z.enum(ALL_BODY_TYPES),
   drive: z.enum(DRIVES),
   color: z.enum(COLORS),
-  condition: z.enum(CONDITIONS),
+  condition: z.enum(ALL_CONDITIONS),
   engineCc: z.number().int().nonnegative(),
   powerKw: z.number().int().nonnegative(),
   doors: z.number().int().min(2).max(5),
@@ -180,7 +195,7 @@ export type ListingFilters = {
   seats?: string[];
   color?: Color[];
   euroNorm?: string[];
-  condition?: Condition[];
+  condition?: AnyCondition[];
   sellerType?: SellerType[];
   county?: string;
   sort?: SortOption;

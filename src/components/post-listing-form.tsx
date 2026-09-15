@@ -25,7 +25,8 @@ import {
   CONDITIONS,
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
-import { oemBrandPartHiddenForVrsta, makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta, isTireFullFormVrsta } from "@/lib/dijelovi-vrsta";
+import { relevantFields } from "@/lib/listing-fields";
+import { oemBrandPartHiddenForVrsta, makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta, isTireFullFormVrsta, modelHiddenForVrsta } from "@/lib/dijelovi-vrsta";
 import { MODEL_NOT_LISTED, modelOptionsFor, makeOptionsGrouped } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -313,6 +314,15 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     return typeof raw === "string" ? raw : undefined;
   })();
 
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.128): Model se NE prikazuje ni kad ga Vrsta ne
+   * koristi (Ljetne/Zimske gume, felge, Ulja…) — "u pretragama ga ne koristimo".
+   * Pretraga i sidebar to znaju preko `modelHiddenForVrsta`; objava dosad nije.
+   * Kad Modela nema, njegovu ulogu preuzima "Izvedba" (mehanizam iz st.124).
+   */
+  const showsModel = showsModelField(s.category, s.subcategory)
+    && !modelHiddenForVrsta(s.category, s.subcategory, currentVrsta);
+
   const makeOptions: Opt[] = useMemo(() => {
     /**
      * ⚠️ Karlo 15.09.2026 (st.127): Vrsta-specifični popis marki MORA stajati
@@ -563,7 +573,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
        * Ondje gdje Modela nema, njegovu ulogu preuzima "Izvedba" (ionako je
        * jedino tekstualno polje koje ulazi u naslov oglasa).
        */
-      if (showsModelField(s.category, s.subcategory)) {
+      if (showsModel) {
         if (!s.model) m.push("Model");
       } else if (!s.variant.trim()) {
         m.push("Izvedba");
@@ -671,10 +681,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
          * (`make model variant · godina` u supabase-adapteru).
          * Bez ovoga bi objava pukla na serveru i nakon popravka validacije.
          */
-        model: showsModelField(s.category, s.subcategory) ? s.model : (s.model || s.variant.trim()),
+        model: showsModel ? s.model : (s.model || s.variant.trim()),
         // Kad Izvedba SLUŽI kao model (gore), ne šalji je i kao variant — inače
         // bi naslov glasio "Adria Sun Living S 70 SL Sun Living S 70 SL".
-        variant: (showsModelField(s.category, s.subcategory) ? s.variant : "") || undefined,
+        variant: (showsModel ? s.variant : "") || undefined,
         year: s.year,
         priceEur: s.priceEur,
         // — tipizirani stupci: za kategorije bez polja pošalji valjani default —
@@ -694,7 +704,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         description: s.description,
         // Oprema/atributi → akcija prima `features` (string[]); zadrži kompatibilnost
         // šaljući flat listu odabranih attr-multi vrijednosti, a strukturu u attributes.
-        features: collectFeatureLabels(s.attributes),
+        features: collectFeatureLabels(s.attributes, specFields),
         attributes,
         images: s.photos,
       });
@@ -1178,7 +1188,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               )}
               {/* ⚠️ Karlo 26.08.2026: kamioni — prodavač upisuje model slobodno. */}
-              {!showsModelField(s.category, s.subcategory) ? null : (modelOptions.length > 0 && !freeTextModelField(s.category, s.subcategory)) ? (
+              {!showsModel ? null : (modelOptions.length > 0 && !freeTextModelField(s.category, s.subcategory)) ? (
                 <div className="space-y-2">
                   <SelectField
                     label="Model"
@@ -1223,11 +1233,11 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                      ⚠️ Karlo 15.09.2026 (st.124): gdje Modela nema, Izvedba
                      preuzima njegovu ulogu i postaje OBAVEZNA. */
                   label="Izvedba (tekst u naslovu oglasa)"
-                  required={!showsModelField(s.category, s.subcategory)}
+                  required={!showsModel}
                   value={s.variant}
                   onChange={(v) => set("variant", v)}
                   placeholder={
-                    showsModelField(s.category, s.subcategory)
+                    showsModel
                       ? "npr. 2.0 TDI Style DSG"
                       : "npr. Sun Living S 70 SL"
                   }
@@ -1543,7 +1553,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                     city: s.city || undefined,
                     county: s.county || undefined,
                     description: s.description || undefined,
-                    features: collectFeatureLabels(s.attributes),
+                    features: collectFeatureLabels(s.attributes, specFields),
                     images: s.photos,
                   });
                   if (!res.ok) {
@@ -1574,14 +1584,27 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
 }
 
 // Skupi sve odabrane attr-multi/-select labele u flat listu (za `features`).
-function collectFeatureLabels(attrs: Attrs): string[] {
+/**
+ * ⚠️ Karlo 16.09.2026 (st.128): prije je ovo guralo SVE vrijednosti atributa u
+ * `features` — pa su ondje završavali goli brojevi i šifre ("225", "40", "18",
+ * "aluminijske-felge", "5"). To nije oprema nego tehnički podaci koji se ionako
+ * prikazuju u vlastitim rubrikama.
+ * Sad ulazi samo prava oprema: višestruki odabiri (`multi`) i uključene kvačice
+ * (`toggle`), s ČITLJIVOM oznakom iz sheme umjesto šifre.
+ */
+function collectFeatureLabels(attrs: Attrs, fields: FilterField[]): string[] {
+  const byKey = new Map(fields.map((f) => [f.key, f]));
   const out: string[] = [];
-  for (const v of Object.values(attrs)) {
-    if (Array.isArray(v)) out.push(...v);
-    else if (typeof v === "string" && v) out.push(v);
-    else if (v === true) { /* toggle bez labele — preskoči */ }
+  for (const [k, v] of Object.entries(attrs)) {
+    const f = byKey.get(k);
+    if (!f) continue;
+    if (f.type === "multi" && Array.isArray(v)) {
+      for (const one of v) out.push(f.options?.find((o) => o.value === one)?.label ?? one);
+    } else if (f.type === "toggle" && v === true) {
+      out.push(f.label);
+    }
   }
-  return out;
+  return Array.from(new Set(out));
 }
 
 function FormHeader({ title, desc, icon }: { title: string; desc: string; icon?: React.ReactNode }) {
@@ -1895,6 +1918,10 @@ function ReviewPreview({
   state: State; makeLabel: string;
   categoryLabel: string; subcategoryLabel: string; filterDef: CategoryFilters;
 }) {
+  // st.128: ista polja koja vidi i objavljeni oglas (poštuje scope i Vrstu).
+  const previewFields = relevantFields({
+    category: s.category, subcategory: s.subcategory || undefined, attributes: s.attributes,
+  } as Parameters<typeof relevantFields>[0]);
   const price = s.priceEur ? formatPrice(Number(s.priceEur)) : "—";
 
   // Nacrt u obliku koji očekuje prikaz. Polja koja pravi oglas dobiva tek pri
@@ -1924,7 +1951,7 @@ function ReviewPreview({
     city: s.city,
     county: s.county,
     description: s.description,
-    features: collectFeatureLabels(s.attributes),
+    features: collectFeatureLabels(s.attributes, previewFields),
     images: s.photos,
     attributes: s.attributes,
     views: 0,

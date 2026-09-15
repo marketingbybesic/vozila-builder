@@ -12,6 +12,7 @@ import {
   DRIVES,
   COLORS,
   CONDITIONS,
+  ALL_CONDITIONS,
   VEHICLE_CATEGORIES,
 } from "@/lib/types";
 
@@ -37,7 +38,7 @@ const CreateListing = z.object({
   bodyType: z.enum(ALL_BODY_TYPES),
   drive: z.enum(DRIVES),
   color: z.enum(COLORS),
-  condition: z.enum(CONDITIONS),
+  condition: z.enum(ALL_CONDITIONS),
   engineCc: z.coerce.number().int().nonnegative().default(0),
   powerKw: z.coerce.number().int().nonnegative(),
   doors: z.coerce.number().int().min(2).max(5).default(5),
@@ -166,7 +167,8 @@ const UpdateListing = z.object({
   make: z.string().min(1).optional(),
   model: z.string().min(1).optional(),
   variant: z.string().optional(),
-  year: z.coerce.number().int().min(1950).max(2030).optional(),
+  // st.128: kao u CreateListing (oldtimeri do 1900).
+  year: z.coerce.number().int().min(1900).max(2030).optional(),
   priceEur: z.coerce.number().int().positive().optional(),
   km: z.coerce.number().int().nonnegative().optional(),
   fuel: z.enum(FUEL_TYPES).optional(),
@@ -174,7 +176,7 @@ const UpdateListing = z.object({
   bodyType: z.enum(ALL_BODY_TYPES).optional(),
   drive: z.enum(DRIVES).optional(),
   color: z.enum(COLORS).optional(),
-  condition: z.enum(CONDITIONS).optional(),
+  condition: z.enum(ALL_CONDITIONS).optional(),
   engineCc: z.coerce.number().int().nonnegative().optional(),
   powerKw: z.coerce.number().int().nonnegative().optional(),
   doors: z.coerce.number().int().min(2).max(5).optional(),
