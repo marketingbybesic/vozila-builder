@@ -1003,10 +1003,23 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                       const keep: State["attributes"] = {};
                       for (const [k, val] of Object.entries(p.attributes)) {
                         if (k === "vrsta" || k === "boatType") continue; // 2. nivo uvijek pada
-                        const f = filterDef.fields.find((x) => x.key === k);
-                        // nepoznata polja i ona bez scopea (vrijede svugdje) ostaju
-                        if (!f || !f.scope || f.scope.length === 0) { keep[k] = val; continue; }
-                        if (f.scope.includes(v)) keep[k] = val;
+                        // ⚠️ Isti `key` može imati VIŠE zapisa s različitim
+                        // scopeom: `operatingHours` je od st.122 razdvojen na
+                        // obavezni/neobavezni (ISTE opcije), dok `machineType`
+                        // ima 4 zapisa s RAZLIČITIM popisima tipova. Zato nije
+                        // dovoljno pitati "vrijedi li ključ u novoj rubrici" —
+                        // provjeravamo vrijedi li i sama VRIJEDNOST ondje.
+                        const defs = filterDef.fields.filter((x) => x.key === k);
+                        if (defs.length === 0 || defs.some((f) => !f.scope || f.scope.length === 0)) { keep[k] = val; continue; }
+                        const inNew = defs.filter((f) => f.scope!.includes(v));
+                        if (inNew.length === 0) continue; // polje ne postoji u novoj rubrici
+                        // ako polje ima ponuđene opcije, zadrži vrijednost samo
+                        // ako je i dalje na popisu (Traktor nije tip viličara)
+                        const opts = inNew.flatMap((f) => f.options ?? []);
+                        if (opts.length === 0) { keep[k] = val; continue; }
+                        const vals = Array.isArray(val) ? val : [val];
+                        const ok = vals.every((x) => opts.some((o) => o.value === x));
+                        if (ok) keep[k] = val;
                       }
                       return { ...p, attributes: keep };
                     });
