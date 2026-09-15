@@ -1271,7 +1271,7 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   // njihove stranice nego složene po istoj logici i prilagođene HR tržištu
   // (npr. "vinogradarski/voćarski stroj" je ovdje relevantniji nego u SLO).
   // Ako Karlo želi 1:1 avto.net popis, treba mi njihov screenshot dropdowna.
-  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+  { key: "machineType", label: "Tip", type: "select", storage: "attr", group: "Vrsta",
     scope: ["poljoprivredni-strojevi"],
     options: [
       v("Traktor"),
@@ -1291,7 +1291,7 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
       { value: "vinogradarski", label: "Vinogradarski / voćarski stroj" },
       { value: "ostalo", label: "Ostalo" },
     ] },
-  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+  { key: "machineType", label: "Tip", type: "select", storage: "attr", group: "Vrsta",
     scope: ["vilicari"],
     options: [
       { value: "celni-dizel", label: "Čelni viličar — dizel" },
@@ -1307,7 +1307,7 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
       { value: "radna-platforma", label: "Radna platforma" },
       { value: "ostalo", label: "Ostalo" },
     ] },
-  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+  { key: "machineType", label: "Tip", type: "select", storage: "attr", group: "Vrsta",
     scope: ["gradevinski-strojevi"],
     options: [
       { value: "bager-gusjenicar", label: "Bager gusjeničar" },
@@ -1329,7 +1329,7 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
     ] },
   // Ostale podkategorije (šumarski, komunalni) zadržavaju opću listu.
   // ⚠️ Karlo 02.09.2026 (st.55): "najam" maknuta — izričito zatraženo.
-  { key: "machineType", label: "Tip", type: "multi", storage: "attr", group: "Vrsta",
+  { key: "machineType", label: "Tip", type: "select", storage: "attr", group: "Vrsta",
     scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [
       v("Traktor"), v("Kombajn"), v("Bager"), v("Utovarivač"),

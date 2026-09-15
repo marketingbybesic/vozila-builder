@@ -988,6 +988,28 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                     set("subcategory", v);
                     // promjena podkategorije poništava izbor 2. nivoa
                     setAttr("vrsta", undefined);
+                    /**
+                     * ⚠️ Karlo 15.09.2026 (st.125): promjena podkategorije mora
+                     * poništiti i SVA specifikacijska polja koja pripadaju
+                     * staroj podkategoriji. Primjer iz prijave: Mehanizacija →
+                     * odabereš Tip (`machineType`), promijeniš podkategoriju i
+                     * Tip ostane — a svaka podkategorija ima SVOJ popis tipova
+                     * (4 odvojena `machineType` zapisa), pa je zadržana
+                     * vrijednost iz tuđeg popisa. Isto vrijedi za sva druga
+                     * scope-ana polja (Nosivost kod viličara, Kapacitet žlice…).
+                     * Čistimo generički, ne samo `machineType`.
+                     */
+                    setS((p) => {
+                      const keep: State["attributes"] = {};
+                      for (const [k, val] of Object.entries(p.attributes)) {
+                        if (k === "vrsta" || k === "boatType") continue; // 2. nivo uvijek pada
+                        const f = filterDef.fields.find((x) => x.key === k);
+                        // nepoznata polja i ona bez scopea (vrijede svugdje) ostaju
+                        if (!f || !f.scope || f.scope.length === 0) { keep[k] = val; continue; }
+                        if (f.scope.includes(v)) keep[k] = val;
+                      }
+                      return { ...p, attributes: keep };
+                    });
                     // ⚠️ Karlo 22.08.2026: podkategorija mijenja i popis marki
                     // (minimoto/gokart/ATV/UTV…) — odabrana marka koje u novom
                     // popisu nema mora se očistiti, inače prodavač objavi oglas
