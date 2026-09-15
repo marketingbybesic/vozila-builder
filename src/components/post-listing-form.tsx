@@ -524,7 +524,21 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     }
     if (step === 2) {
       if (!s.make) m.push("Marka");
-      if (!s.model) m.push("Model");
+      /**
+       * ⚠️ Karlo 15.09.2026 (st.124): 11 podkategorija NEMA polje Model
+       * (`showsModelField` = false: kamperi, kamp prikolice, mobilne kućice,
+       * moduli, šatorske prikolice, krovni šatori, najam, e-bicikli/e-skuteri
+       * na obje lokacije). Validacija je ipak bezuvjetno tražila "Model", pa je
+       * gumb "Nastavi" ostajao ZAUVIJEK onemogućen — objava u tim rubrikama
+       * bila je nemoguća, a poruka je tražila polje kojeg na ekranu nema.
+       * Ondje gdje Modela nema, njegovu ulogu preuzima "Izvedba" (ionako je
+       * jedino tekstualno polje koje ulazi u naslov oglasa).
+       */
+      if (showsModelField(s.category, s.subcategory)) {
+        if (!s.model) m.push("Model");
+      } else if (!s.variant.trim()) {
+        m.push("Izvedba");
+      }
       if (!s.year) m.push("Godina proizvodnje");
       if (!s.condition) m.push("Stanje");
       return m;
@@ -621,8 +635,18 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         category: s.category,
         subcategory: s.subcategory || undefined,
         make: makeOptions.find((m) => m.value === s.make)?.label ?? s.make,
-        model: s.model,
-        variant: s.variant || undefined,
+        /**
+         * ⚠️ Karlo 15.09.2026 (st.124): u 11 podkategorija Model ne postoji
+         * (`showsModelField` = false), a server ga traži (`model: z.string()
+         * .min(1)`). Ondje šaljemo "Izvedbu" kao model — to je jedino polje
+         * kojim prodavač opisuje artikl i ionako ulazi u naslov oglasa
+         * (`make model variant · godina` u supabase-adapteru).
+         * Bez ovoga bi objava pukla na serveru i nakon popravka validacije.
+         */
+        model: showsModelField(s.category, s.subcategory) ? s.model : (s.model || s.variant.trim()),
+        // Kad Izvedba SLUŽI kao model (gore), ne šalji je i kao variant — inače
+        // bi naslov glasio "Adria Sun Living S 70 SL Sun Living S 70 SL".
+        variant: (showsModelField(s.category, s.subcategory) ? s.variant : "") || undefined,
         year: s.year,
         priceEur: s.priceEur,
         // — tipizirani stupci: za kategorije bez polja pošalji valjani default —
@@ -1104,11 +1128,18 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 <TextField
                   /* Karlo 31.07: "(opcionalno)" nije govorilo ČEMU polje služi.
                      Vrijednost završava u naslovu oglasa (buildListing slaže
-                     marka + model + izvedba), pa oznaka to sad i kaže. */
+                     marka + model + izvedba), pa oznaka to sad i kaže.
+                     ⚠️ Karlo 15.09.2026 (st.124): gdje Modela nema, Izvedba
+                     preuzima njegovu ulogu i postaje OBAVEZNA. */
                   label="Izvedba (tekst u naslovu oglasa)"
+                  required={!showsModelField(s.category, s.subcategory)}
                   value={s.variant}
                   onChange={(v) => set("variant", v)}
-                  placeholder="npr. 2.0 TDI Style DSG"
+                  placeholder={
+                    showsModelField(s.category, s.subcategory)
+                      ? "npr. 2.0 TDI Style DSG"
+                      : "npr. Sun Living S 70 SL"
+                  }
                 />
               )}
               <SelectField

@@ -26,7 +26,10 @@ const CreateListing = z.object({
   make: z.string().min(1),
   model: z.string().min(1),
   variant: z.string().optional(),
-  year: z.coerce.number().int().min(1950).max(2030),
+  // ⚠️ Karlo 15.09.2026 (st.124, usput): st.110 je otvorio izbornik godina do
+  // 1900 zbog oldtimera, ali server je i dalje odbijao sve ispod 1950 — oglas
+  // bi pukao tek na kraju objave. Donja granica usklađena s formom.
+  year: z.coerce.number().int().min(1900).max(2030),
   priceEur: z.coerce.number().int().positive(),
   km: z.coerce.number().int().nonnegative(),
   fuel: z.enum(FUEL_TYPES),
