@@ -1709,7 +1709,12 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     vrstaExclude: ["oprema-za-plovila"] },
   { ...NUM_OWNERS_FIELD, shared: false, group: "Povijest", scope: ["e-skuteri", "e-bicikli"] },
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Garancija izbačena iz Ponuda za najam.
-  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["plovila", "kamping-oprema"] },
+  // ⚠️ Karlo 15.09.2026 (st.123): dodani "e-skuteri" i "e-bicikli" — st.115 je
+  // Garanciju dao SVIM Moto podkategorijama (uklj. e-skuter/e-bicikl), ali ne i
+  // njihovim blizancima ovdje, pa su se rubrike razišle. Pravilo od 25.08.:
+  // E-romobil i E-bicikl moraju biti IDENTIČNI na obje lokacije.
+  { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo",
+    scope: ["plovila", "kamping-oprema", "e-skuteri", "e-bicikli"] },
   // Karlo 30.07: nova rubrika "Stanje vozila" — traži se za KAMPERE.
   { key: "hideDamaged", label: "Vozilo oštećeno", type: "select", storage: "attr", searchOnly: true,
     group: "Stanje vozila", placeholder: "Prikaži", options: SHOW_HIDE_OPTIONS,
@@ -1725,7 +1730,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
 
   // Polja "Stanje vozila" (dijeljena lista) — samo za E-romobil, isti obrazac
   // kao UTV u gospodarskoj (`SELLER_STATE_FIELDS.map(... scope: ["utv"])`).
-  ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-skuteri"] })),
+  // ⚠️ Karlo 15.09.2026 (st.123): "Trkaći auto" izbačen — st.113 ga je maknuo iz
+  // MOTO_FIELDS, ali NE i iz ovih preslika, pa je moto/e-skuter imao 6 kvačica,
+  // a prosti-cas/e-skuteri 7. Pravilo od 25.08. traži da su identične.
+  ...SELLER_STATE_FIELDS.filter((f) => f.key !== "raceCar").map((f) => ({ ...f, scope: ["e-skuteri"] })),
   // ⚠️ Karlo 25.08.2026: E-romobil u Slobodnom vremenu mora imati IDENTIČNA
   // polja kao moto/e-skuter — ova su preslikana iz MOTO_FIELDS, scope samo
   // "e-skuteri" da ne procure na kampere/plovila.
@@ -1750,7 +1758,8 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // MOTO_FIELDS sa scope samo "e-bicikli".
   // ⚠️ Karlo 26.08.2026 (st. 15): rubrike Motor i Dodatne opcije maknute s OBJE
   // lokacije, pa su preslikana polja uklonjena — ostaju samo ova ispod.
-  ...SELLER_STATE_FIELDS.map((f) => ({ ...f, scope: ["e-bicikli"] })),
+  // ⚠️ st.123: isto kao kod e-skuteri — bez "Trkaći auto" (vidi gore).
+  ...SELLER_STATE_FIELDS.filter((f) => f.key !== "raceCar").map((f) => ({ ...f, scope: ["e-bicikli"] })),
 ];
 
 // ⚠️ Karlo 05.09.2026 (st.66-68): Vrste unutar Dijelovi/Gume i felge s PUNOM
