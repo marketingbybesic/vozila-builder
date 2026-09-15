@@ -472,7 +472,11 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       auto: ["fuel", "transmission", "bodyType", "km", "powerKw"],
       moto: ["fuel", "powerKw"],
       gospodarska: ["fuel", "transmission", "powerKw"],
-      mehanizacija: ["fuel", "powerKw"],
+      /* ⚠️ Karlo 15.09.2026 (st.122): "Snaga motora (kW)" je proširena na SVE
+         podkategorije mehanizacije, ali obaveznom ostaje samo tamo gdje je i
+         dosad bila (šumarski/komunalni) — inače bi prodavač priključka ili onaj
+         tko iznajmljuje stroj ostao zaglavljen. Isti dogovor kao Radni sati. */
+      mehanizacija: ["fuel"],
       "prosti-cas": [],
       dijelovi: [],
     };

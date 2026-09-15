@@ -1247,6 +1247,17 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
 ];
 
 // ── MEHANIZACIJA (machinery) — auto.net stub, our taxonomy ─────────────
+/**
+ * ⚠️ Karlo 15.09.2026 (st.122): sve podkategorije Mehanizacije. Polja koja
+ * moraju vrijediti za CIJELU kategoriju (Snaga motora, Radni sati, Stanje
+ * očuvanosti) koriste ovaj popis umjesto nabrajanja — nova podkategorija
+ * dodaje se na jedno mjesto.
+ */
+const MEHANIZACIJA_ALL_SUBS = [
+  "poljoprivredni-strojevi", "vilicari", "sumarski-strojevi", "komunalni-strojevi",
+  "gradevinski-strojevi", "najam", "mehanizacija-ostalo",
+];
+
 const MEHANIZACIJA_FIELDS: FilterField[] = [
   COMMON_PRICE, COMMON_YEAR, COMMON_COUNTY, COMMON_SELLER, COMMON_AGE,
 
@@ -1355,13 +1366,39 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   { key: "transmission", label: "Mjenjač", type: "multi", storage: "column", group: "Motor",
     scope: ["sumarski-strojevi", "komunalni-strojevi"],
     options: [v("Ručni"), v("Automatski"), { value: "hidrostatski", label: "Hidrostatski" }] },
-  { key: "powerKw", label: "Snaga", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor",
-    scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  // ⚠️ Karlo 15.09.2026 (st.122): "Snaga motora (kW)" i "Radni sati" moraju
+  // postojati u SVIM podkategorijama mehanizacije — prije samo kod šumarskih i
+  // komunalnih, pa prodavač traktora/bagera nije imao gdje upisati snagu ni
+  // sate (nalaz iz st.121). `range` bez `steps` = u objavi ručni brojčani unos
+  // (NumberField, "da sami upisu"), u pretrazi Od/Do.
+  // Obaveznost kao i dosad: šumarski/komunalni da, ostali ne (vidi Radni sati).
+  { key: "powerKw", label: "Snaga motora (kW)", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor",
+    scope: ["sumarski-strojevi", "komunalni-strojevi"], publishRequired: true },
+  { key: "powerKw", label: "Snaga motora (kW)", type: "range", unit: "kW", min: 0, max: 600, step: 5, storage: "column", group: "Motor",
+    scope: ["poljoprivredni-strojevi", "vilicari", "gradevinski-strojevi", "najam", "mehanizacija-ostalo"] },
   { key: "powerHp", label: "Snaga", type: "range", unit: "KS", min: 0, max: 800, step: 5, storage: "attr", group: "Motor",
     scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
+  // ⚠️ Obaveznost ostaje SAMO tamo gdje je i dosad bila (šumarski/komunalni).
+  // Drugdje polje postoji ali ne blokira objavu — inače bi prodavač priključka
+  // ili onaj tko iznajmljuje stroj ostao zaglavljen na koraku 3 (Dinova odluka).
   { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije", publishRequired: true,
     scope: ["sumarski-strojevi", "komunalni-strojevi"] },
+  { key: "operatingHours", label: "Radni sati", type: "range", unit: "h", min: 0, max: 30000, step: 100, storage: "attr", group: "Specifikacije",
+    scope: ["poljoprivredni-strojevi", "vilicari", "gradevinski-strojevi", "najam", "mehanizacija-ostalo"] },
+  // ⚠️ Karlo 15.09.2026 (st.122): novo polje "Stanje očuvanosti" — 6 stupnjeva,
+  // izbornik. Odvojeno od `condition` (Novo/Rabljeno) i od `hideDamaged`/
+  // `hideBroken` (filtri pretrage) — ovo je prodavačeva ocjena stanja stroja.
+  { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Specifikacije",
+    scope: MEHANIZACIJA_ALL_SUBS,
+    options: [
+      { value: "odlicno", label: "Odlično" },
+      { value: "dobro", label: "Dobro" },
+      { value: "srednje", label: "Srednje" },
+      { value: "lose", label: "Loše" },
+      { value: "jako-lose", label: "Jako loše" },
+      { value: "karambolirano", label: "Karambolirano / u kvaru" },
+    ] },
   { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije",
     scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
