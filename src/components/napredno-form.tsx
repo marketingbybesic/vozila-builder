@@ -210,7 +210,12 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
   // "goli string ili niz" oblik kao gore) — koristi se za polja koja se
   // odnose SAMO na jednu specifičnu Vrstu unutar podkategorije (vidi
   // vrstaScope na FilterField), ne na cijelu podkategoriju kao `scope`.
-  const currentVrsta = Array.isArray(vrstaValue) ? vrstaValue[0] : vrstaValue;
+  // ⚠️ Karlo 15.09.2026 (st.119): Plovila nemaju `vrsta` (nema djece u
+  // taksonomiji) — Vrsta im je `boatType`. Fallback da `vrstaExclude` i
+  // preimenovanje "Stanje opreme" rade i ondje.
+  const vrstaEffective = (vrstaValue ?? (subcategory === "plovila" ? attrs.boatType : undefined)) as
+    | string | string[] | boolean | undefined;
+  const currentVrsta = Array.isArray(vrstaEffective) ? vrstaEffective[0] : vrstaEffective;
   // ⚠️ Karlo 09.09.2026 (st.104): Ulja i tekućine — kod ulaska u podkategoriju
   // BEZ odabrane Vrste, automatski odaberi "Ulja, maziva i aditivi" (otvara
   // taj izbornik/formu odmah, bez čekanja ručnog odabira). Ostale podkategorije
@@ -885,7 +890,10 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
             <MultiSelect label="Stanje predmeta" values={condition} onChange={setCondition}
               options={[{ value: "Novo", label: "Novo" }, { value: "Polovno", label: "Polovno" }, { value: "Obnovljeno", label: "Obnovljeno" }]} placeholder="Sve" />
           ) : (
-            <MultiSelect label="Stanje vozila" values={condition} onChange={setCondition}
+            /* ⚠️ Karlo 15.09.2026 (st.119): Plovila/Oprema za plovila — naziv
+               "Stanje opreme" (opcije Rabljeno/Novo ostaju iste). */
+            <MultiSelect label={currentVrsta === "oprema-za-plovila" ? "Stanje opreme" : "Stanje vozila"}
+              values={condition} onChange={setCondition}
               options={[{ value: "Rabljeno", label: "Rabljeno" }, { value: "Novo", label: "Novo" }]} placeholder="Sve" />
           )}
         </div>

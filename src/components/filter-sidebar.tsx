@@ -142,7 +142,11 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
   // "goli string ili niz" oblik kao napredno-form.tsx currentVrsta). Odabir
   // iz sheme: multi Vrsta polja spremaju "a.vrsta" kao zarezom odvojen niz,
   // select Vrsta polja (Ulja i tekućine, st.99) golu vrijednost.
-  const vrstaRaw = current["a.vrsta"] ?? "";
+  // ⚠️ Karlo 15.09.2026 (st.119): Plovila nemaju `children` u taksonomiji, pa
+  // nemaju ni `a.vrsta` — njihova Vrsta je `a.boatType` (Tip plovila). Bez ovog
+  // fallbacka `vrstaExclude`/preimenovanje za "Opremu za plovila" nikad ne bi
+  // okinuli na pretrazi.
+  const vrstaRaw = (current["a.vrsta"] || (subcategory === "plovila" ? current["a.boatType"] : "")) ?? "";
   const currentVrsta = vrstaRaw.includes(",") ? vrstaRaw.split(",")[0] : vrstaRaw;
   const isTireFullForm = isTireFullFormVrsta(category, subcategory, currentVrsta);
   const isUljaMazivaLike = isUljaMazivaLikeVrsta(currentVrsta);
@@ -394,7 +398,8 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           <MultiSelect label="Stanje predmeta" values={arr("condition")} onChange={(v) => setMulti("condition", v)}
             options={toOpts(["Novo", "Polovno", "Obnovljeno"])} placeholder="Sve" />
         ) : (
-          <MultiSelect label="Stanje vozila" values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
+          /* ⚠️ Karlo 15.09.2026 (st.119): Oprema za plovila → "Stanje opreme". */
+          <MultiSelect label={currentVrsta === "oprema-za-plovila" ? "Stanje opreme" : "Stanje vozila"} values={arr("condition")} onChange={(v) => setMulti("condition", v)} options={toOpts(CONDITIONS.filter((c) => c !== "Oldtimer"))} placeholder="Sve" />
         )}
       </div>
 

@@ -118,6 +118,17 @@ export type FilterField = {
    * Felge, TPMS...) koje ostaju bez tog seta dok se ne zatraži drugačije.
    */
   vrstaScope?: string[];
+  /**
+   * ⚠️ Karlo 15.09.2026 (st.119): obrnuto od `vrstaScope` — polje se skriva
+   * SAMO kad je navedena Vrsta odabrana; u svim ostalim slučajevima (uklj.
+   * "Vrsta nije odabrana") ostaje vidljivo.
+   *
+   * Zašto ne `vrstaScope`: ono prikazuje polje samo uz TOČNO odabranu Vrstu, pa
+   * bi na pretrazi Plovila (gdje kupac tipično NE odabere Tip plovila) nestala
+   * i rubrika Motor i Dimenzije — 10 polja palo bi na 1. Za "makni X samo kod
+   * Vrste Y" treba isključivanje, ne uključivanje.
+   */
+  vrstaExclude?: string[];
 };
 
 export type CategoryFilters = {
@@ -1471,6 +1482,8 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // Tip — po subkategoriji (domenska analiza)
   // ⚠️ Karlo 29.08.2026 (st.22): lista svedena na točno ovih 5 — Gliser,
   // Kabinski, Jahta i Radni brod maknuti.
+  // ⚠️ st.118 dodaje 6. opciju "Oprema za plovila" koja NIJE plovilo — polja
+  // koja vrijede samo za plovila nose `vrstaExclude: ["oprema-za-plovila"]`.
   { key: "boatType", label: "Tip plovila", type: "multi", storage: "attr", group: "Vrsta", scope: ["plovila"],
     options: [
       { value: "motorni", label: "Motorni" },
@@ -1506,6 +1519,7 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "sleeps", label: "Broj ležišta", type: "range", storage: "attr",
     group: "Dimenzije i upotrebljivost",
     scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "satorske-prikolice", "krovni-satori", "plovila", "najam"],
+    vrstaExclude: ["oprema-za-plovila"],
     steps: [1, 2, 3, 4, 5, 6, 7, 8] },
   // Dužina: kamperi kreću od 5 m, kamp prikolice od 3 m (manje su).
   { key: "lengthM", label: "Dužina", type: "range", unit: "m", storage: "attr",
@@ -1516,14 +1530,16 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     steps: [3, 4, 5, 6, 7, 8, 9, 10] },
   { key: "lengthM", label: "Dužina", type: "range", unit: "m", min: 2, max: 18, step: 0.1,
     storage: "attr", group: "Dimenzije i upotrebljivost",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"] },
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"],
+    vrstaExclude: ["oprema-za-plovila"] },
   // KAMPERI: "Širina" zamijenjena "Brojem sjedala" (Karlov zahtjev).
   { key: "seats", label: "Broj sjedala", type: "range", storage: "attr",
     group: "Dimenzije i upotrebljivost", scope: ["kamperi"],
     steps: [2, 3, 4, 5, 6] },
   { key: "widthM", label: "Širina", type: "range", unit: "m", min: 1.5, max: 5, step: 0.1,
     storage: "attr", group: "Dimenzije i upotrebljivost",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"] },
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"],
+    vrstaExclude: ["oprema-za-plovila"] },
   // "Visina" izbačena iz kampera i kamp prikolica (ostaje ostalima).
   { key: "heightM", label: "Visina", type: "range", unit: "m", min: 1.5, max: 4, step: 0.1,
     storage: "attr", group: "Dimenzije i upotrebljivost",
@@ -1538,7 +1554,8 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // "Težina" izbačena iz kampera i kamp prikolica.
   { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 7500, step: 50,
     storage: "attr", group: "Dimenzije i upotrebljivost",
-    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"] },
+    scope: ["mobilne-kucice", "moduli-za-kamper", "satorske-prikolice", "krovni-satori", "plovila", "najam"],
+    vrstaExclude: ["oprema-za-plovila"] },
   // "Broj osovina" izbačen iz kamp prikolica (ostaje šatorskim).
   { key: "axles", label: "Broj osovina", type: "select", storage: "attr",
     group: "Dimenzije i upotrebljivost", scope: ["satorske-prikolice"],
@@ -1566,10 +1583,14 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // Motor plovila — samo plovila (domenska analiza)
   // ⚠️ Karlo 31.08.2026: "Tip motora", "Snaga motora (kW)", "Materijal trupa"
   // i "Registriran / upisan" maknuti u cijelosti — Karlo eksplicitno tražio.
+  // ⚠️ Karlo 15.09.2026 (st.119): rubrika Motor NE vrijedi za Vrstu "Oprema za
+  // plovila" (sidro/tenda nemaju radne sate motora) — `vrstaScope` nabraja 5
+  // vrsta PLOVILA, pa oprema ispada. Nova vrsta plovila = dodaj je i ovdje.
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
+    vrstaExclude: ["oprema-za-plovila"],
     options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"] },
-  { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"] },
+  { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"], vrstaExclude: ["oprema-za-plovila"] },
+  { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"], vrstaExclude: ["oprema-za-plovila"] },
 
   // E-bicikli / e-skuteri (domenska analiza)
   { key: "motorPowerW", label: "Snaga motora", type: "range", unit: "W", min: 0, max: 20000, step: 100, storage: "attr", group: "Električna", scope: ["e-bicikli"] },
@@ -1628,7 +1649,9 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
     ],
     // ⚠️ Karlo 26.08.2026: Vlasništvo se NE prikazuje kod mobilnih kućica.
     // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Vlasništvo izbačen iz Ponuda za najam.
-    scope: ["kamperi", "kamp-prikolice", "plovila", "prosti-cas-ostalo"] },
+    // ⚠️ st.119: oprema za plovila nema Vlasništvo (vrstaExclude).
+    scope: ["kamperi", "kamp-prikolice", "plovila", "prosti-cas-ostalo"],
+    vrstaExclude: ["oprema-za-plovila"] },
   // ⚠️ Karlo 29.08.2026 (st.16/17): E-romobil i E-bicikl izjednačeni s Motom —
   // iste 3 opcije i grupa "Povijest" (Moto tu rubriku ima, prosti-cas inače ne).
   { key: "ownership", label: "Vlasništvo", type: "multi", storage: "attr", group: "Povijest",
@@ -1642,9 +1665,11 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // je ovo polje samo za sebe stvorilo. Karlo 29.08.2026 (st.16): E-romobil
   // izuzet iz ovog popisa — izjednačen s Motom (grupa "Povijest") u zapisu ispod.
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Broj vlasnika izbačen iz Ponuda za najam.
+  // ⚠️ st.119: oprema za plovila nema Broj vlasnika (vrstaExclude).
   { ...NUM_OWNERS_FIELD, shared: false, group: "Ostalo",
     scope: ["kamperi", "kamp-prikolice", "mobilne-kucice", "moduli-za-kamper", "satorske-prikolice",
-      "krovni-satori", "plovila", "prosti-cas-ostalo"] },
+      "krovni-satori", "plovila", "prosti-cas-ostalo"],
+    vrstaExclude: ["oprema-za-plovila"] },
   { ...NUM_OWNERS_FIELD, shared: false, group: "Povijest", scope: ["e-skuteri", "e-bicikli"] },
   // ⚠️ Karlo 29.08.2026 (st.20): "najam" maknut — Garancija izbačena iz Ponuda za najam.
   { key: "warranty", label: "Garancija", type: "toggle", storage: "attr", group: "Ostalo", scope: ["plovila", "kamping-oprema"] },
@@ -2211,6 +2236,11 @@ export function filterDynamicFields(
     // po odabranoj "Vrsta" unutar podkategorije (ne po samoj podkategoriji).
     if (f.vrstaScope && f.vrstaScope.length > 0) {
       return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
+    }
+    // ⚠️ Karlo 15.09.2026 (st.119): `vrstaExclude` — skrij SAMO kad je ta Vrsta
+    // odabrana. Kad Vrsta nije odabrana, polje ostaje (za razliku od vrstaScope).
+    if (f.vrstaExclude && f.vrstaExclude.length > 0) {
+      if (typeof currentVrsta === "string" && f.vrstaExclude.includes(currentVrsta)) return false;
     }
     return true;
   });

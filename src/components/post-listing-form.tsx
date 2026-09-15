@@ -344,13 +344,38 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     filterDef.fields.find((f) => {
       if (f.key !== key) return false;
       if (f.scope && f.scope.length > 0) {
-        return s.subcategory ? f.scope.includes(s.subcategory) : false;
+        if (!(s.subcategory && f.scope.includes(s.subcategory))) return false;
+      }
+      // st.119: vidi `specFields` — isto sužavanje po Vrsti i za hardkodirana polja.
+      if (f.vrstaScope && f.vrstaScope.length > 0) {
+        const raw = s.subcategory === "plovila" ? s.attributes.boatType : s.attributes.vrsta;
+        const cv = Array.isArray(raw) ? raw[0] : raw;
+        return typeof cv === "string" && f.vrstaScope.includes(cv);
+      }
+      if (f.vrstaExclude && f.vrstaExclude.length > 0) {
+        const raw = s.subcategory === "plovila" ? s.attributes.boatType : s.attributes.vrsta;
+        const cv = Array.isArray(raw) ? raw[0] : raw;
+        if (typeof cv === "string" && f.vrstaExclude.includes(cv)) return false;
       }
       return true;
     });
   const hasField = (key: string) => fieldDef(key) !== undefined;
   /** Oznaka iz sheme (mehanizacija zove VIN "Broj šasije / serijski broj"). */
   const labelOf = (key: string, fallback: string) => fieldDef(key)?.label ?? fallback;
+
+  /**
+   * ⚠️ Karlo 15.09.2026 (st.119): "Vrsta" nije svugdje isti atribut.
+   * - Podkategorije s djecom u taksonomiji (Dijelovi, Oprema za kampere)
+   *   biraju Vrstu u KORAKU 1 → `attributes.vrsta` (jedna vrijednost).
+   * - PLOVILA nemaju `children`, pa nemaju taj izbornik; njihova Vrsta je
+   *   `boatType` (multi-select u koraku 3, vrijednost je NIZ).
+   * Uzimamo prvu odabranu vrijednost jer `vrstaScope` radi nad jednom.
+   */
+  const currentVrsta = ((): string | undefined => {
+    const raw = s.subcategory === "plovila" ? s.attributes.boatType : s.attributes.vrsta;
+    if (Array.isArray(raw)) return raw[0];
+    return typeof raw === "string" ? raw : undefined;
+  })();
 
   // Spec polja koja se renderiraju u koraku 2 (schema-driven), uz scope filtriranje.
   const specFields = useMemo(
@@ -360,11 +385,22 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // nemaju smisla u objavi — prodavač ne bira hoće li se oglas prikazivati.
       if (f.searchOnly) return false;
       if (f.scope && f.scope.length > 0) {
-        return s.subcategory ? f.scope.includes(s.subcategory) : false;
+        if (!(s.subcategory && f.scope.includes(s.subcategory))) return false;
+      }
+      // ⚠️ Karlo 15.09.2026 (st.119): `vrstaScope` sužava polje na JEDNU Vrstu
+      // unutar podkategorije (npr. Plovila/Oprema za plovila nema rubriku Motor).
+      // Pretraga je to poštovala od st.59, objava NIJE — pa je prodavaču i dalje
+      // tražila radne sate motora za sidro. Ista logika kao `filterDynamicFields`.
+      if (f.vrstaScope && f.vrstaScope.length > 0) {
+        return typeof currentVrsta === "string" && f.vrstaScope.includes(currentVrsta);
+      }
+      // st.119: skrij samo kad je ta Vrsta odabrana (vidi `vrstaExclude`).
+      if (f.vrstaExclude && f.vrstaExclude.length > 0) {
+        if (typeof currentVrsta === "string" && f.vrstaExclude.includes(currentVrsta)) return false;
       }
       return true;
     }),
-    [filterDef, s.subcategory]
+    [filterDef, s.subcategory, currentVrsta]
   );
   const specGroups = useMemo(() => groupFields(specFields), [specFields]);
 
@@ -940,6 +976,20 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
           <div className="space-y-5">
             <FormHeader title="Osnovno" desc="Marka, model i godina" />
             <div className="grid sm:grid-cols-2 gap-4">
+              {/* ⚠️ Karlo 15.09.2026 (st.119): Oprema za plovila — ISPRED Marke
+                  polje "Naslov". Kod opreme marka+model često ne kažu što se
+                  prodaje ("Lewmar V700" vs "Sidreno vitlo Lewmar V700"), pa
+                  prodavač upisuje naslov sam. Vrijednost ide u `variant`, koji
+                  supabase-adapter već slaže u naslov oglasa
+                  (`make model variant · godina`) — bez izmjene servera/baze. */}
+              {currentVrsta === "oprema-za-plovila" && (
+                <TextField
+                  label="Naslov"
+                  value={s.variant}
+                  onChange={(v) => set("variant", v)}
+                  placeholder="npr. Sidreno vitlo Lewmar V700"
+                />
+              )}
               {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — prodavač upisuje marku
                   slobodno, bez ponuđenog fiksnog popisa. */}
               {freeTextMakeField(s.category, s.subcategory) ? (
@@ -1000,15 +1050,20 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   placeholder={s.make ? "Upiši model" : "Prvo odaberi marku"}
                 />
               )}
-              <TextField
-                /* Karlo 31.07: "(opcionalno)" nije govorilo ČEMU polje služi.
-                   Vrijednost završava u naslovu oglasa (buildListing slaže
-                   marka + model + izvedba), pa oznaka to sad i kaže. */
-                label="Izvedba (tekst u naslovu oglasa)"
-                value={s.variant}
-                onChange={(v) => set("variant", v)}
-                placeholder="npr. 2.0 TDI Style DSG"
-              />
+              {/* ⚠️ st.119: kod Opreme za plovila isti `variant` već crta polje
+                  "Naslov" iznad — bez ovog uvjeta bila bi dva polja nad istom
+                  vrijednošću (drugo bi pregazilo prvo). */}
+              {currentVrsta !== "oprema-za-plovila" && (
+                <TextField
+                  /* Karlo 31.07: "(opcionalno)" nije govorilo ČEMU polje služi.
+                     Vrijednost završava u naslovu oglasa (buildListing slaže
+                     marka + model + izvedba), pa oznaka to sad i kaže. */
+                  label="Izvedba (tekst u naslovu oglasa)"
+                  value={s.variant}
+                  onChange={(v) => set("variant", v)}
+                  placeholder="npr. 2.0 TDI Style DSG"
+                />
+              )}
               <SelectField
                 label="Godina proizvodnje"
                 value={s.year}
@@ -1057,7 +1112,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
             </div>
             {/* ⚠️ Karlo 31.08.2026 (st.26): Auto dijelovi — "Stanje" → "Stanje
                 predmeta" (Novo/Polovno/Obnovljeno umjesto CONDITIONS). */}
-            <Field label={usesPartsLayout ? "Stanje predmeta" : "Stanje"}>
+            {/* ⚠️ Karlo 15.09.2026 (st.119): Oprema za plovila → "Stanje opreme". */}
+            <Field label={usesPartsLayout ? "Stanje predmeta" : currentVrsta === "oprema-za-plovila" ? "Stanje opreme" : "Stanje"}>
               <div className="grid grid-cols-3 gap-2">
                 {(usesPartsLayout
                   ? (["Novo", "Polovno", "Obnovljeno"] as const)
