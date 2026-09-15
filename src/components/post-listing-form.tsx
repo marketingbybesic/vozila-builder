@@ -62,6 +62,11 @@ const SKIP_KEYS = new Set([
   // nad stringom zvao .map → "this page couldn't load" za kamping opremu i
   // SVE dijelove. Korak 3 je ne smije ponoviti.
   "vrsta",
+  // ⚠️ Karlo 15.09.2026 (st.120): isto vrijedi za `boatType` — od sada se bira
+  // u koraku 1 kao JEDNA vrijednost (string). Da je ostao i u koraku 3, bio bi
+  // prikazan dvaput, a PillMultiSelect bi nad stringom zvao .map → pad stranice
+  // (identičan mod pada kao kod `vrsta` iz st.21).
+  "boatType",
 ]);
 
 type Attrs = Record<string, string | string[] | boolean | undefined>;
@@ -318,6 +323,18 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     const sub = (categoryDef?.subcategories ?? []).find((sc) => sc.slug === s.subcategory);
     return (sub?.children ?? []).map((c) => ({ value: c.slug, label: c.name }));
   }, [categoryDef, s.subcategory]);
+
+  /**
+   * ⚠️ Karlo 15.09.2026 (st.120): Plovila nemaju `children` u taksonomiji, ali
+   * imaju Vrstu — `boatType` iz sheme. Opcije se čitaju IZ SHEME (ne prepisuju
+   * ručno), pa dodavanje nove vrste u `category-filters.ts` automatski stiže i
+   * u korak 1 objave.
+   */
+  const boatTypeOptions: Opt[] = useMemo(() => {
+    if (s.subcategory !== "plovila") return [];
+    const f = filterDef.fields.find((x) => x.key === "boatType");
+    return (f?.options ?? []).map((o) => ({ value: o.value, label: o.label }));
+  }, [filterDef, s.subcategory]);
   // Karlo 27.07: modeli dolaze iz baze TE kategorije (auto/moto/gospodarska).
   // Kategorije bez baze i dalje padaju na slobodan tekstualni unos.
   const modelOptions: Opt[] = useMemo(
@@ -496,6 +513,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // prodavač preskoči izbor, `attributes.vrsta` ostane prazan i oglas se
       // NIKAD ne pojavi u toj podrubrici (isti razlog kao i za podkategoriju).
       if (childOptions.length > 0 && !s.attributes.vrsta) m.push("Vrsta artikla");
+      // st.120: Plovila — Tip plovila je obavezan u koraku 1 (isti razlog kao
+      // Vrsta artikla: bez njega oglas ne ulazi u svoju podrubriku pretrage).
+      if (boatTypeOptions.length > 0 && !s.attributes.boatType) m.push("Tip plovila");
       return m;
     }
     if (step === 2) {
@@ -966,6 +986,29 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   options={childOptions}
                   value={(s.attributes.vrsta as string) ?? ""}
                   onChange={(v) => setAttr("vrsta", v || undefined)}
+                />
+              </div>
+            )}
+
+            {/* ⚠️ Karlo 15.09.2026 (st.120): PLOVILA biraju Tip plovila ODMAH u
+                koraku 1. Prije je to bio multi-select tek u koraku 3, pa forma
+                u koraku 2 još nije znala radi li se o opremi — zbog čega polje
+                "Naslov" iz st.119 nikad nije bilo vidljivo.
+                Vrijednost i dalje ide u `boatType` (ključ po kojem pretraga
+                filtrira), ne u `vrsta`. Jedan odabir, ne više njih. */}
+            {boatTypeOptions.length > 0 && (
+              <div className="space-y-3 animate-fade-in">
+                <div className="text-xs uppercase tracking-widest font-semibold text-[var(--color-muted)]">
+                  Tip plovila
+                </div>
+                <SubcategoryButtons
+                  options={boatTypeOptions}
+                  value={(() => {
+                    const bt = s.attributes.boatType;
+                    if (Array.isArray(bt)) return bt[0] ?? "";
+                    return typeof bt === "string" ? bt : "";
+                  })()}
+                  onChange={(v) => setAttr("boatType", v || undefined)}
                 />
               </div>
             )}

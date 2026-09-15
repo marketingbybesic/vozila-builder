@@ -246,9 +246,10 @@ export function EditListingForm({ listing }: { listing: Listing & { status?: str
     // opcija odmah vidljivo), ne padajući izbornik iza klika.
     if (f.key === "boatType") {
       return (
+        /* ⚠️ Karlo 15.09.2026 (st.120): samo jedan Tip plovila. */
         <PillMultiSelect key={f.key} label={f.label} values={values}
           onChange={(vs) => setAttr(f.key, vs)} options={f.options ?? []}
-          iconFor={(v) => BOAT_TYPE_ICON[v]} />
+          iconFor={(v) => BOAT_TYPE_ICON[v]} single />
       );
     }
     return (

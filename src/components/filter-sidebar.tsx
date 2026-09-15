@@ -290,8 +290,9 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
     }
     if (f.key === "boatType") {
       return (
+        /* ⚠️ Karlo 15.09.2026 (st.120): samo jedan Tip plovila. */
         <PillMultiSelect key={f.key} label={f.label} values={arr(`a.${f.key}`)} onChange={(v) => setMulti(`a.${f.key}`, v)}
-          options={f.options ?? []} iconFor={(v) => BOAT_TYPE_ICON[v]} />
+          options={f.options ?? []} iconFor={(v) => BOAT_TYPE_ICON[v]} single />
       );
     }
     // multi

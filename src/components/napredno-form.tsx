@@ -663,6 +663,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
           onChange={(v) => setAttr(f.key, v)}
           options={f.options ?? []}
           iconFor={(v) => BOAT_TYPE_ICON[v]}
+          /* ⚠️ Karlo 15.09.2026 (st.120): samo jedan Tip plovila. */
+          single
         />
       );
     }

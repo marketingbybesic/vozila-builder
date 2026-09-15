@@ -473,15 +473,26 @@ export function ColorPicker({
  * multiselect popise gdje se opcije žele vidjeti bez otvaranja.
  */
 export function PillMultiSelect({
-  label, required, optional, values, onChange, options, iconFor,
+  label, required, optional, values, onChange, options, iconFor, single,
 }: {
   label?: string; required?: boolean; optional?: boolean; values: string[]; onChange: (v: string[]) => void;
   options: Opt[];
   /** Karlo 30.08.2026: ikona po vrijednosti (npr. Tip plovila) — opcionalno. */
   iconFor?: (value: string) => LucideIcon | undefined;
+  /**
+   * ⚠️ Karlo 15.09.2026 (st.120): samo JEDAN odabir (Tip plovila). Izgled
+   * ostaje isti (pilule + ikone iz st.22a/22b), mijenja se samo ponašanje:
+   * novi odabir zamjenjuje stari, a kvačica postaje radio-kružić.
+   */
+  single?: boolean;
 }) {
-  const toggle = (v: string) =>
+  const toggle = (v: string) => {
+    if (single) {
+      onChange(values.includes(v) ? [] : [v]);
+      return;
+    }
     onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  };
   return (
     <div>
       {label && <Label required={required} optional={optional}>{label}</Label>}
@@ -508,7 +519,9 @@ export function PillMultiSelect({
             >
               <span
                 className={
-                  "size-4.5 shrink-0 rounded-md border grid place-items-center transition-colors " +
+                  "size-4.5 shrink-0 border grid place-items-center transition-colors " +
+                  /* st.120: single = radio (krug), multi = checkbox (kvadratić) */
+                  (single ? "rounded-full " : "rounded-md ") +
                   (active
                     ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
                     : "bg-[var(--color-accent)]/15")
