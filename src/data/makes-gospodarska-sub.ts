@@ -218,24 +218,54 @@ export const GOSPODARSKA_UTV_MAKES: CarMake[] = [
 
 // --- Avtobusi (avto.net nema vlastitu formu — kurirano, PRIJAVLJENO Karlu) -
 const AUTOBUSI_RAW: CarMake[] = [
-  // Karlo 22.08.2026: njegov popis autobusa — dodani AVTOBUS, BMC, FIAT;
-  // maknut Solaris (nije na popisu, 0 oglasa u bazi).
-  M("avtobus", "AVTOBUS", "—"),
+  // ⚠️ Karlo 15.09.2026: "nek su upisane SAMO ove marke" — popis je ZAMJENA,
+  // ne dopuna. Maknut AVTOBUS (bio dodan na Karlovu uputu 22.08., sad ga nema
+  // na novom popisu; 0 oglasa u bazi → bez rizika dohvatljivosti).
+  // Ford je u diktatu bio naveden DVAPUT — ostaje jedan zapis.
+  // Modeli postojećih marki ZADRŽANI (Karlo je diktirao samo marke, a modeli
+  // nose 24 aktivna oglasa: MB Tourismo/Sprinter, Setra S 515).
+  M("autosan", "Autosan", "Poljska"),
   M("bmc", "BMC", "Turska"),
+  M("berkhof", "Berkhof", "Nizozemska"),
+  M("beulas", "Beulas", "Španjolska"),
+  M("bova", "Bova", "Nizozemska"),
+  M("castrosua", "Castrosua", "Španjolska"),
+  M("contrac", "Contrac", "Njemačka"),
+  M("daf", "DAF", "Nizozemska"),
+  M("den-oudsten", "Den Oudsten", "Nizozemska"),
+  M("droegmoeller", "Droegmoeller", "Njemačka"),
+  M("evobus", "Evobus", "Njemačka"),
   M("fiat", "FIAT", "Italija"),
   M("ford", "Ford", "SAD"),
+  M("higer", "Higer", "Kina"),
+  M("ikarus", "Ikarus", "Mađarska"),
+  M("irisbus", "Irisbus", "Francuska"),
+  M("isuzu", "Isuzu", "Japan"),
+  M("italbus", "Italbus", "Italija"),
   M("iveco", "Iveco", "Italija", ["Crossway", "Urbanway"]),
+  M("kassbohrer", "Kassbohrer", "Njemačka"),
+  M("king-long", "King Long", "Kina"),
+  M("magirus-deutz", "Magirus Deutz", "Njemačka"),
   M("man", "MAN", "Njemačka", ["Lion's City", "Lion's Coach", "Lion's Regio"]),
+  M("marbus", "Marbus", "—"),
   M("mercedes-benz", "Mercedes-Benz", "Njemačka", ["Citaro", "Tourismo", "Intouro", "Sprinter City"]),
+  M("mitsubishi", "Mitsubishi", "Japan"),
   M("neoplan", "Neoplan", "Njemačka"),
   M("otokar", "Otokar", "Turska"),
+  M("probus", "Probus", "—"),
+  M("quantron", "Quantron", "Njemačka"),
   M("renault", "Renault", "Francuska"),
+  M("rosero", "Rosero", "Italija"),
   M("scania", "Scania", "Švedska", ["Irizar", "Touring", "Interlink"]),
   M("setra", "Setra", "Njemačka", ["S 415", "S 416", "S 417", "S 431", "S 515", "ComfortClass", "TopClass"]),
+  M("steyr", "Steyr", "Austrija"),
   M("tam", "TAM", "Slovenija"),
   M("temsa", "Temsa", "Turska"),
+  M("toyota", "Toyota", "Japan"),
   M("vanhool", "VanHool", "Belgija"),
+  M("vdl", "VDL", "Nizozemska"),
   M("volvo", "Volvo", "Švedska", ["7900", "9700", "9900"]),
+  M("vw", "VW", "Njemačka"),
   M("ostalo", "Ostalo", "—"),
 ];
 export const GOSPODARSKA_AUTOBUSI_MAKES: CarMake[] = [
