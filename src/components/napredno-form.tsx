@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MAKES, makeOptionsGrouped, modelOptionsFor } from "@/data/makes";
 import { popularMotoSlugsFor } from "@/data/makes-moto";
+import { makeLabelForVrsta } from "@/lib/dijelovi-vrsta";
 import { LISTINGS } from "@/data/listings";
 import { applyFilters } from "@/lib/filter";
 import type { ListingFilters } from "@/lib/types";
@@ -909,7 +910,8 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               kao SVE_MARKE gore). */}
           {freeTextMakeField(category, subcategory) || currentVrsta === "autokozmetika-njega" ? (
             <TextField
-              label="Marka"
+              /* st.134: i slobodan upis poštuje Vrsta-naziv (Oprema za plovila = "Za Marku"). */
+              label={makeLabelForVrsta(usesPartsLayout, isLjetneGume, currentVrsta as string | undefined)}
               value={!makeFocus && !make ? SVE_MARKE : make}
               onChange={(v) => { const nv = v === SVE_MARKE ? "" : v; setMake(nv); setModel(""); }}
               onFocus={() => setMakeFocus(true)}
@@ -942,7 +944,9 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
               // — vizualno identična oznaka, isti gumb).
               // ⚠️ Karlo 09.09.2026 (st.106): Ulja, maziva i aditivi — natrag na
               // "Marka" (bira proizvođača ulja, ne markU vozila kojem odgovara).
-              label={currentVrsta === "ulja-maziva-aditivi" ? "Marka" : currentVrsta === "aluminijske-felge" || currentVrsta === "celicne-felge" || currentVrsta === "kompleti-gume-felge" || currentVrsta === "ratkape" ? "Za Marku" : usesPartsLayout && !isLjetneGume ? "Za marku" : "Marka"}
+              /* ⚠️ st.134: bio INLINE duplikat `makeLabelForVrsta` — razišao bi se pri
+                 sljedećoj izmjeni (i jest: Oprema za plovila). Sad zove helper. */
+              label={makeLabelForVrsta(usesPartsLayout, isLjetneGume, currentVrsta as string | undefined)}
               value={make} onChange={(v) => { setMake(v); setModel(""); }} options={makeOptions} placeholder="Sve marke" />
           )}
           {/* ⚠️ Karlo 26.08.2026: kamioni — slobodan upis modela (prazno = svi).

@@ -411,7 +411,8 @@ export function FilterSidebar({ mobile, onClose, compact }: Props) {
           vozila — isto slobodan upis, Vrsta-razina uvjet (`makeIsFreeTextForVrsta`). */}
       {freeTextMakeField(category, subcategory) || makeIsFreeTextForVrsta(currentVrsta) ? (
         <TextField
-          label="Marka"
+          /* st.134: i slobodan upis poštuje Vrsta-naziv (Oprema za plovila = "Za Marku"). */
+          label={makeLabelForVrsta(usesPartsLayout, isTireFullForm, currentVrsta)}
           value={makeFocus ? makeDraft : (current.make || SVE_MARKE)}
           onChange={(v) => {
             setMakeDraft(v);

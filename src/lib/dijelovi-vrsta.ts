@@ -88,6 +88,10 @@ export function makeListIsFlatForVrsta(category: string, subcategory: string, cu
 /** Naziv polja "Marka" — mijenja se po Vrsti (Marka / Za marku / Za Marku). */
 export function makeLabelForVrsta(usesPartsLayout: boolean, isTireFullForm: boolean, currentVrsta: string | undefined): string {
   if (currentVrsta === "ulja-maziva-aditivi") return "Marka";
+  // ⚠️ Karlo 16.09.2026 (st.134): Plovila / Oprema za plovila — "Za Marku"
+  // (oprema se kupuje ZA plovilo, kao i felge ZA vozilo), velikim M kako je
+  // Karlo napisao i kako već stoji kod felgi.
+  if (currentVrsta === "oprema-za-plovila") return "Za Marku";
   if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return "Za Marku";
   if (usesPartsLayout && !isTireFullForm) return "Za marku";
   return "Marka";

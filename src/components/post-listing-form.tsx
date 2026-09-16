@@ -1187,7 +1187,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   slobodno, bez ponuđenog fiksnog popisa. */}
               {freeTextMakeField(s.category, s.subcategory) ? (
                 <TextField
-                  label="Marka"
+                  /* st.134: i slobodan upis poštuje Vrsta-naziv (Oprema za plovila = "Za Marku"). */
+                  label={makeLabelForVrsta(usesPartsLayout, isTireFullFormVrsta(s.category, s.subcategory, currentVrsta), currentVrsta)}
                   value={s.make}
                   onChange={(v) => { set("make", v); set("model", ""); setModelPick(""); }}
                   /* ⚠️ Karlo 01.09.2026 (st.45): Servisna oprema — primjeri
