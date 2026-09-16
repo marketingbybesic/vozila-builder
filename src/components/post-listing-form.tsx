@@ -350,6 +350,13 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
    */
   const hideMake = s.category === "dijelovi" && s.subcategory === "gume" && currentVrsta === "ratkape";
 
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.139): kod GUMA (ne felgi) godina proizvodnje je DOT
+   * oznaka s bočnice i NIJE obavezna — prodavač je često ne zna napamet.
+   * Felge/ratkape godinu uopće nemaju (`hideYear`, st.136).
+   */
+  const yearIsDot = s.category === "dijelovi" && s.subcategory === "gume" && !hideYear;
+
   const partsTitleFirst =
     (s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "")
     || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema")
@@ -634,7 +641,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // st.130: kad naslov ponude stoji ispred Marke, obavezan je i kad Model
       // postoji (u Dijelovima je to ono što kupac zapravo traži).
       if (titleBeforeMake && showsModel && !s.variant.trim()) m.push(titleFieldLabel);
-      if (!hideYear && !s.year) m.push("Godina proizvodnje");
+      if (!hideYear && !yearIsDot && !s.year) m.push("Godina proizvodnje");
       return m;
     }
     if (step === 3) {
@@ -753,7 +760,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         variant: (showsModel ? s.variant : "") || undefined,
         // st.136: felge nemaju godinu, a server je traži (`year` je NOT NULL i
         // zod ga zahtijeva) — šaljemo tekuću godinu kao neutralnu popunu.
-        year: hideYear ? String(new Date().getFullYear()) : s.year,
+        // st.136/139: felge godinu nemaju, a kod guma je DOT neobavezan — server
+        // je i dalje traži (NOT NULL), pa u oba slučaja šaljemo tekuću godinu.
+        year: (hideYear || !s.year) ? String(new Date().getFullYear()) : s.year,
         priceEur: s.priceEur,
         // — tipizirani stupci: za kategorije bez polja pošalji valjani default —
         km: hasField("km") ? (s.km || 0) : 0,
@@ -1353,7 +1362,8 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               )}
               {!hideYear && (
               <SelectField
-                label="Godina proizvodnje"
+                label={yearIsDot ? "Godina proizvodnje (DOT)" : "Godina proizvodnje"}
+                optional={yearIsDot}
                 value={s.year}
                 onChange={(v) => set("year", v)}
                 placeholder="Odaberi godinu"
