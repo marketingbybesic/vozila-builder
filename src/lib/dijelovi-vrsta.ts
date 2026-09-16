@@ -132,3 +132,37 @@ export function stanjePredmetaHiddenForVrsta(currentVrsta: string | undefined): 
 export function usesDenseCijenaSteps(category: string, subcategory: string, currentVrsta: string | undefined): boolean {
   return category === "dijelovi" && (subcategory === "multimedija" || subcategory === "gume" || isUljaMazivaLikeVrsta(currentVrsta));
 }
+
+/**
+ * ⚠️ Karlo 16.09.2026 (st.130/131/132): rubrike u kojima "Naziv ponude" (polje
+ * `variant`) NIJE dodatak nego GLAVNI podatak — to je ono što korisnik prodaje.
+ * Ondje naziv ide PRVI: u formi ispred Marke (st.130/131) i u NASLOVU objavljenog
+ * oglasa (st.132: "mora biti u objavljenom oglasu u naslovu na prvom mjestu tako
+ * da oglas ima smisla").
+ *
+ * "Gume i felge" su izričito izuzete — ondje je Marka (proizvođač gume) glavni
+ * podatak, pa naslov ostaje standardni `marka model izvedba`.
+ *
+ * Koristi se i na klijentu (objava) i na serveru (supabase-adapter pri
+ * sastavljanju naslova), zato živi ovdje a ne u komponenti.
+ */
+export function offerTitleFirst(category: string, subcategory: string | undefined): boolean {
+  if (category === "dijelovi") return Boolean(subcategory) && subcategory !== "gume";
+  return category === "prosti-cas" && subcategory === "kamping-oprema";
+}
+
+/**
+ * Naslov oglasa. Za rubrike iz `offerTitleFirst` naziv ponude ide na početak
+ * ("Tenda Fiamma F45s — Fiamma F45s"), inače standardno `marka model izvedba`.
+ */
+export function buildListingTitle(input: {
+  category?: string; subcategory?: string;
+  make: string; model: string; variant?: string; year: number | string;
+}): string {
+  const { make, model, variant, year } = input;
+  const rest = `${make} ${model}`.trim();
+  if (offerTitleFirst(input.category ?? "", input.subcategory) && variant?.trim()) {
+    return `${variant.trim()}${rest ? ` — ${rest}` : ""} · ${year}.`;
+  }
+  return `${make} ${model}${variant ? " " + variant : ""} · ${year}.`;
+}

@@ -13,6 +13,7 @@ import type {
   AdminKpis,
   ThreadWithLatest,
 } from "./types";
+import { buildListingTitle } from "@/lib/dijelovi-vrsta";
 import { slugify } from "@/lib/utils";
 import { applyFilters, paginate } from "@/lib/filter";
 import {
@@ -372,7 +373,16 @@ export const supabaseAdapter: DbAdapter = {
     const countRow = await dbq.select({ c: sql<number>`count(*)::int` }).from(listings);
     const count = (countRow[0]?.c ?? 0) + 1;
     const slug = `${slugify(`${input.make}-${input.model}-${input.year}-${input.city}`)}-lst-${String(count).padStart(4, "0")}`;
-    const title = `${input.make} ${input.model}${input.variant ? " " + input.variant : ""} · ${input.year}.`;
+    /**
+     * ⚠️ Karlo 16.09.2026 (st.132): u Dijelovima (osim Gume i felge) i kod Opreme
+     * za kampere naslov MORA počinjati nazivom ponude — to je ono što se prodaje
+     * ("tako da oglas ima smisla"). Pravilo je u `buildListingTitle` jer ga dijele
+     * i objava i ovaj server-side sastavljač.
+     */
+    const title = buildListingTitle({
+      category: input.category, subcategory: input.subcategory,
+      make: input.make, model: input.model, variant: input.variant, year: input.year,
+    });
     const rows = await dbq
       .insert(listings)
       .values({

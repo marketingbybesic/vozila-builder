@@ -26,7 +26,8 @@ import {
 } from "@/lib/types";
 import { CATEGORIES, getCategory, makesDbFor, makesForSub, showsModelField, freeTextModelField, freeTextMakeField } from "@/data/categories";
 import { relevantFields } from "@/lib/listing-fields";
-import { oemBrandPartHiddenForVrsta, makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta, isTireFullFormVrsta, modelHiddenForVrsta } from "@/lib/dijelovi-vrsta";
+import { buildListingTitle, offerTitleFirst,
+  oemBrandPartHiddenForVrsta, makeListForVrsta, makeListIsFlatForVrsta, makeLabelForVrsta, isTireFullFormVrsta, modelHiddenForVrsta } from "@/lib/dijelovi-vrsta";
 import { MODEL_NOT_LISTED, modelOptionsFor, makeOptionsGrouped } from "@/data/makes";
 import {
   getFilterDefs, groupFields, type FilterField, type CategoryFilters,
@@ -1941,6 +1942,8 @@ function ReviewPreview({
   state: State; makeLabel: string;
   categoryLabel: string; subcategoryLabel: string; filterDef: CategoryFilters;
 }) {
+  // st.132: naziv ponude je glavni podatak u ovim rubrikama (isto pravilo kao server).
+  const titleBeforeMake = offerTitleFirst(s.category, s.subcategory || undefined);
   // st.128: ista polja koja vidi i objavljeni oglas (poštuje scope i Vrstu).
   const previewFields = relevantFields({
     category: s.category, subcategory: s.subcategory || undefined, attributes: s.attributes,
@@ -1952,7 +1955,9 @@ function ReviewPreview({
   const preview = {
     id: "preview",
     slug: "preview",
-    title: `${makeLabel} ${s.model}`.trim(),
+    // st.132: isti redoslijed kao u objavljenom oglasu.
+    title: buildListingTitle({ category: s.category, subcategory: s.subcategory,
+      make: makeLabel, model: s.model, variant: s.variant, year: s.year || 0 }),
     category: s.category,
     subcategory: s.subcategory || undefined,
     make: makeLabel,
@@ -1994,9 +1999,22 @@ function ReviewPreview({
           {subcategoryLabel && <Badge variant="neutral">{subcategoryLabel}</Badge>}
           {s.condition && <Badge variant="outline">{s.condition}</Badge>}
         </div>
+        {/* ⚠️ st.132: gdje je naziv ponude glavni podatak, ide PRVI i u pregledu —
+            inače bi pregled pokazivao drugi naslov nego objavljeni oglas. */}
         <h3 className="font-display text-3xl tracking-tight leading-tight">
-          {makeLabel || "—"} {s.model}
-          {s.variant && <span className="italic text-[var(--color-ink-soft)] font-normal"> {s.variant}</span>}
+          {titleBeforeMake && s.variant ? (
+            <>
+              {s.variant}
+              {(makeLabel || s.model) && (
+                <span className="italic text-[var(--color-ink-soft)] font-normal"> — {makeLabel} {s.model}</span>
+              )}
+            </>
+          ) : (
+            <>
+              {makeLabel || "—"} {s.model}
+              {s.variant && <span className="italic text-[var(--color-ink-soft)] font-normal"> {s.variant}</span>}
+            </>
+          )}
         </h3>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           {s.city || "—"}, {s.county || "—"}
