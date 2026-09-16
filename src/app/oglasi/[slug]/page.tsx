@@ -19,6 +19,7 @@ import {
   formatDate,
 } from "@/lib/utils";
 import { cardSummary, isVehicle } from "@/lib/listing-fields";
+import { offerTitleFirst } from "@/lib/dijelovi-vrsta";
 import { ListingDetailView, SpecItem } from "@/components/listing-detail-view";
 import {
   Phone,
@@ -45,6 +46,14 @@ export async function generateStaticParams() {
   }
 }
 
+/** st.133: kratki naslov bez godine — naziv ponude prvi ondje gdje je glavni podatak. */
+function headline(l: { category: string; subcategory?: string; make: string; model: string; variant?: string }): string {
+  if (offerTitleFirst(l.category, l.subcategory) && l.variant?.trim()) {
+    return `${l.variant.trim()} — ${l.make} ${l.model}`.trim();
+  }
+  return `${l.make} ${l.model}`.trim();
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -58,10 +67,11 @@ export async function generateMetadata({
   // kao na kartici (lib/listing-fields.ts), koji je prilagođen kategoriji.
   const summary = cardSummary(listing).join(" · ");
   return {
-    title: `${listing.make} ${listing.model} ${listing.year}. — ${formatPrice(listing.priceEur)}`,
+    // st.133: i SEO naslov prati isto pravilo (naziv ponude prvi gdje je glavni).
+    title: `${headline(listing)} ${listing.year}. — ${formatPrice(listing.priceEur)}`,
     description: `${listing.title}${summary ? ` · ${summary}` : ""} · ${listing.city}. ${listing.description.slice(0, 140)}`,
     openGraph: {
-      title: `${listing.make} ${listing.model} ${listing.year}.`,
+      title: `${headline(listing)} ${listing.year}.`,
       description: `${formatPrice(listing.priceEur)}${summary ? ` · ${summary}` : ""} · ${listing.city}`,
       // Oglas bez slike davao je `url: undefined` → neispravan og:image.
       images: listing.images?.[0] ? [{ url: listing.images[0] }] : undefined,
@@ -108,10 +118,24 @@ export default async function ListingDetailPage({
                 <Badge variant="outline">{listing.condition}</Badge>
                 <Badge variant="outline">{listing.sellerType}</Badge>
               </div>
+              {/* ⚠️ Karlo 16.09.2026 (st.133): naslov oglasa je do sada slagan OVDJE
+                  kao `marka model izvedba`, neovisno o `listing.title` iz baze — pa
+                  je st.132 popravio pregled i spremljeni naslov, ali JAVNI oglas je
+                  i dalje pokazivao naziv ponude na kraju. Sad i ovaj naslov poštuje
+                  isto pravilo (`offerTitleFirst`). */}
               <h1 className="font-display text-3xl md:text-4xl tracking-tight leading-tight">
-                {listing.make} {listing.model}
-                {listing.variant && (
-                  <span className="text-[var(--color-ink-soft)] font-normal italic"> {listing.variant}</span>
+                {offerTitleFirst(listing.category, listing.subcategory) && listing.variant ? (
+                  <>
+                    {listing.variant}
+                    <span className="text-[var(--color-ink-soft)] font-normal italic"> — {listing.make} {listing.model}</span>
+                  </>
+                ) : (
+                  <>
+                    {listing.make} {listing.model}
+                    {listing.variant && (
+                      <span className="text-[var(--color-ink-soft)] font-normal italic"> {listing.variant}</span>
+                    )}
+                  </>
                 )}
               </h1>
               <div className="mt-2 text-sm text-[var(--color-muted)] flex flex-wrap items-center gap-x-4 gap-y-1">
