@@ -752,6 +752,32 @@ export const TIRE_BRAND_MAKES: CarMake[] = [
 ];
 
 /**
+ * ⚠️ Karlo 16.09.2026 (st.136): PROIZVOĐAČI ALU/ČELIČNIH FELGI — Karlov popis,
+ * točnim redoslijedom kako ga je diktirao (nije abecedno sortiran).
+ * Zadnja stavka iz njegova popisa ("Marke nema na spisku") mapirana je na
+ * standardni `ostalo` slug — isti obrazac kao "Ostalo" kod guma.
+ */
+const RIM_BRAND_NAMES = [
+  "ABT Sportsline","AC Schnitzer","AEZ","Alessio","Alpina","Aluet","Alutec","AMG","Antera","Anzio",
+  "Artec","ASA","ATD Wheels","ATS","ATP","Autec","Azev","Axle","AWS","Barracuda",
+  "BBS","Binno","Borbet","Brabus","Breyton","Brock","BWA","Cartime","Carlsson","Carmani",
+  "CMS","Cobra","Concaver","Dezent","Diversen","Dotz","Drag","ELITE Wheels","Enkei","Enzo",
+  "Eta Beta","EVO Corse","Exip","Exclusive Line","Fondmetal","Fox","Forza Wheels","Gemballa","GMP","Hamann",
+  "Hartge","Intra","Inter Action","it-Wheels","Irmscher","Japan Racing","Keskin","King","Klutch","Kosei",
+  "Largo","League","Lenso","Lowenhart","Lorinser","MAE","MAK","MAM","Mattig","MB Design",
+  "MEC Design","Mille Miglia","MiM","Momo","Monaco","MS Design","MSW","Mugelo","Novitec","Novus",
+  "Oettinger","Original","Orobica Line","Oxigin","OXXO","OZ Racing","Platin","Proline","Racing Dynamics","Radius",
+  "RC Design","Reds","Replica","RH","Rial","Rieger","Rinspeed","Ronal","Rondell","Rosso",
+  "Rota","RS","RSL","S Wheels","Schmidt","Smoor","Soleil","Sparco","Speedline","Stilauto",
+  "SuperMetal","Techart","Toora","Tomason","Tracer","TSW","Varrstoen","Vossen","WSP Italy","Xtreme",
+  "Z Performance","Zender",
+];
+export const RIM_BRAND_MAKES: CarMake[] = [
+  ...RIM_BRAND_NAMES.map((n) => ({ slug: SLUG(n), name: n, country: "—", models: [] })),
+  { slug: "ostalo", name: "Marke nema na spisku", country: "—", models: [] },
+];
+
+/**
  * ⚠️ Karlo 05.09.2026 (st.72): Teretne i C gume dobivaju VLASTITI popis
  * proizvođača guma (169 brendova, TOČNIM redoslijedom kako je diktirao) —
  * djelomično se preklapa s TIRE_BRAND_MAKES, ali nije identičan (druge marke

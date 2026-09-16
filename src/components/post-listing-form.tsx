@@ -333,6 +333,14 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
    * ⚠️ Karlo 16.09.2026 (st.131): isto i za Slobodno vrijeme / Oprema za kampere
    * i kamping — ta rubrika ionako dijeli `usesPartsLayout` s Dijelovima (st.30).
    */
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.136): Alu/čelične felge, kompleti i ratkape nemaju
+   * "godinu proizvodnje" — prodaje se komad, ne vozilo. Polje se skriva i NE
+   * traži se za nastavak.
+   */
+  const hideYear = s.category === "dijelovi" && s.subcategory === "gume"
+    && ["aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape"].includes(currentVrsta ?? "");
+
   const partsTitleFirst =
     (s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "")
     || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema");
@@ -472,7 +480,13 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
     }),
     [filterDef, s.subcategory, currentVrsta]
   );
-  const specGroups = useMemo(() => groupFields(specFields), [specFields]);
+  /** st.136: polje se crta ručno u koraku 2, pa ga korak 3 mora preskočiti. */
+  const fitsMakesField = specFields.find((f) => f.key === "fitsMakes");
+  // st.136: `fitsMakes` se crta ručno u koraku 2 — korak 3 ga izuzima da ne bude dvaput.
+  const specGroups = useMemo(
+    () => groupFields(specFields.filter((f) => f.key !== "fitsMakes")),
+    [specFields]
+  );
 
   /**
    * Promjena stanja (Novo / Rabljeno / Oldtimer) pomiče i zadani broj vlasnika.
@@ -597,7 +611,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       // st.130: kad naslov ponude stoji ispred Marke, obavezan je i kad Model
       // postoji (u Dijelovima je to ono što kupac zapravo traži).
       if (titleBeforeMake && showsModel && !s.variant.trim()) m.push(titleFieldLabel);
-      if (!s.year) m.push("Godina proizvodnje");
+      if (!hideYear && !s.year) m.push("Godina proizvodnje");
       return m;
     }
     if (step === 3) {
@@ -704,7 +718,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         // Kad Izvedba SLUŽI kao model (gore), ne šalji je i kao variant — inače
         // bi naslov glasio "Adria Sun Living S 70 SL Sun Living S 70 SL".
         variant: (showsModel ? s.variant : "") || undefined,
-        year: s.year,
+        // st.136: felge nemaju godinu, a server je traži (`year` je NOT NULL i
+        // zod ga zahtijeva) — šaljemo tekuću godinu kao neutralnu popunu.
+        year: hideYear ? String(new Date().getFullYear()) : s.year,
         priceEur: s.priceEur,
         // — tipizirani stupci: za kategorije bez polja pošalji valjani default —
         km: hasField("km") ? (s.km || 0) : 0,
@@ -1268,6 +1284,20 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   }
                 />
               )}
+              {/* ⚠️ Karlo 16.09.2026 (st.136): "Za Marku (označite za koje marke
+                  pašu)" ide ISPOD Izvedbe u koraku 2, ne u Dimenzijama (korak 3).
+                  Polje je u shemi zbog pretrage; ovdje se crta ručno, a korak 3
+                  ga preskače (vidi `STEP2_ATTR_KEYS`). */}
+              {fitsMakesField && (
+                <MultiSelect
+                  label={fitsMakesField.label}
+                  values={Array.isArray(s.attributes.fitsMakes) ? s.attributes.fitsMakes : []}
+                  onChange={(v) => setAttr("fitsMakes", v.length ? v : undefined)}
+                  options={fitsMakesField.options ?? []}
+                  placeholder="Odaberi marke"
+                />
+              )}
+              {!hideYear && (
               <SelectField
                 label="Godina proizvodnje"
                 value={s.year}
@@ -1283,6 +1313,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   return Array.from({ length: now - 1900 + 1 }, (_, i) => now - i).map((y) => ({ value: String(y), label: `${y}.` }));
                 })()}
               />
+              )}
               {/* Karlo 31.07: prva registracija ide ODMAH ISPOD godine proizvodnje —
                   mjesec iz padajućeg, godina ručno. */}
               {hasField("firstRegistration") && (

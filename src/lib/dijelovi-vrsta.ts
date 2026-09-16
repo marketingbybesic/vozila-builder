@@ -14,9 +14,8 @@
 
 import {
   TIRE_BRAND_MAKES, TERETNE_C_TIRE_BRAND_MAKES, MOTO_GUME_TIRE_BRAND_MAKES,
-  QUAD_ATV_UTV_TIRE_BRAND_MAKES, ULJA_MAZIVA_BRAND_MAKES,
+  QUAD_ATV_UTV_TIRE_BRAND_MAKES, ULJA_MAZIVA_BRAND_MAKES, RIM_BRAND_MAKES,
 } from "@/data/categories";
-import { MAKES } from "@/data/makes";
 import type { CarMake } from "@/lib/types";
 
 // ⚠️ Karlo 02.09.2026 (st.58) → 05.09.2026 (st.66-68) → 07.09.2026 (st.78):
@@ -62,14 +61,16 @@ export function makeListForVrsta(currentVrsta: string | undefined): CarMake[] | 
   if (currentVrsta === "moto-atv-gume") return MOTO_GUME_TIRE_BRAND_MAKES;
   if (currentVrsta === "quad-atv-utv-gume") return QUAD_ATV_UTV_TIRE_BRAND_MAKES;
   if (currentVrsta === "ulja-maziva-aditivi") return ULJA_MAZIVA_BRAND_MAKES;
-  if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return MAKES;
+  // ⚠️ Karlo 16.09.2026 (st.136): felge biraju PROIZVOĐAČA FELGE (BBS, OZ Racing…),
+  // ne marku vozila. Marka vozila se od st.136 bira zasebno u polju
+  // "Za Marku (označite za koje marke pašu)" (atribut `fitsMakes`).
+  if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return RIM_BRAND_MAKES;
   if (TERETNE_C_STYLE_VRSTE.includes(currentVrsta ?? "")) return TERETNE_C_TIRE_BRAND_MAKES;
   // ⚠️ Karlo 15.09.2026 (st.127): preostale "pune forme" gume (Ljetne, Zimske,
   // Cjelogodišnje) dobivaju opći popis PROIZVOĐAČA GUMA (228 brendova). Bez
   // ovoga su padale na podkategorijski popis = marke VOZILA (Abarth, Audi…),
   // 204 stavke — Karlo prijavio za Ljetne gume.
-  // Felge NAMJERNO nisu ovdje: njihovo "Za Marku" znači marku VOZILA za koje
-  // felge pašu, pa im `MAKES` iz grane gore ostaje ispravan.
+  // Felge su obrađene u grani IZNAD (RIM_BRAND_MAKES od st.136).
   if (TIRE_FULL_FORM_VRSTE.includes(currentVrsta ?? "")) return TIRE_BRAND_MAKES;
   return null;
 }
@@ -80,7 +81,8 @@ export function makeListForVrsta(currentVrsta: string | undefined): CarMake[] | 
  * popise, sve ostalo (uklj. opći Auto dijelovi popis marki vozila) grupira.
  */
 export function makeListIsFlatForVrsta(category: string, subcategory: string, currentVrsta: string | undefined): boolean {
-  if (isTireFullFormVrsta(category, subcategory, currentVrsta) && !FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return true;
+  // st.136: i felge su sad plosnat popis proizvođača (prije su bile marke vozila = grupirano).
+  if (isTireFullFormVrsta(category, subcategory, currentVrsta)) return true;
   if (currentVrsta === "ulja-maziva-aditivi") return true;
   return false;
 }
@@ -92,7 +94,9 @@ export function makeLabelForVrsta(usesPartsLayout: boolean, isTireFullForm: bool
   // (oprema se kupuje ZA plovilo, kao i felge ZA vozilo), velikim M kako je
   // Karlo napisao i kako već stoji kod felgi.
   if (currentVrsta === "oprema-za-plovila") return "Za Marku";
-  if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return "Za Marku";
+  // st.136: felge -> naziv proizvođača felge ("Marka alufelgi" za alu, inače "Marka felge").
+  if (currentVrsta === "aluminijske-felge") return "Marka alufelgi";
+  if (FELGE_ZA_MARKU_VRSTE.includes(currentVrsta ?? "")) return "Marka felge";
   if (usesPartsLayout && !isTireFullForm) return "Za marku";
   return "Marka";
 }

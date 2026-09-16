@@ -2136,6 +2136,17 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // (st.86, dok popis nije bio poznat) u padajući izbornik. Decimalni zarez
   // ("31,5", "36,5", "37,5", "42,5", "52,5") normaliziran u točku, dosljedno
   // s konvencijom potvrđenom u st.60/61.
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.136): kod felgi "Marka" je od sada PROIZVOĐAČ felge
+   * (BBS, OZ Racing…, `RIM_BRAND_MAKES`), pa marka VOZILA za koje felge pašu
+   * dobiva vlastito polje. Višestruki odabir — jedan set felgi obično pristaje
+   * na više marki (isti razmak rupa). Opcije = isti popis marki vozila koji je
+   * polje "Za Marku" koristilo prije st.136.
+   */
+  { key: "fitsMakes", label: "Za Marku (označite za koje marke pašu)", type: "multi",
+    storage: "attr", group: "Dimenzije", scope: ["gume"],
+    vrstaScope: ["aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape"],
+    options: (CATEGORIES.find((c) => c.slug === "auto")?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })) },
   { key: "tireSpeedIndex", label: "ET Oznaka", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: [
       "-10","-9","-8","-7","-6","-5","-4","-3","-2","-1","0","1","2","3","4","5","6","7","8","9","10",
