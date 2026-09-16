@@ -343,7 +343,11 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
 
   const partsTitleFirst =
     (s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "")
-    || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema");
+    || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema")
+    // ⚠️ Karlo 16.09.2026 (st.137): i RATKAPE (Vrsta unutar Gume i felge) —
+    // Izvedba postaje naziv ponude i ide na vrh, kao kod Dijelova (st.130).
+    // Ostale Vrste u "Gume i felge" ostaju nedirane.
+    || (s.category === "dijelovi" && s.subcategory === "gume" && currentVrsta === "ratkape");
   const titleBeforeMake = partsTitleFirst || currentVrsta === "oprema-za-plovila";
   const titleFieldLabel = partsTitleFirst ? "Naziv ponude" : "Naslov";
 
@@ -482,9 +486,17 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   );
   /** st.136: polje se crta ručno u koraku 2, pa ga korak 3 mora preskočiti. */
   const fitsMakesField = specFields.find((f) => f.key === "fitsMakes");
+  const fitsModelField = specFields.find((f) => f.key === "fitsModel");
+  /** st.137: modeli osobnih auta za marku odabranu u `fitsMakes`. */
+  const fitsModelOptions: Opt[] = useMemo(() => {
+    const slug = typeof s.attributes.fitsMakes === "string" ? s.attributes.fitsMakes : "";
+    if (!slug) return [];
+    const m = (makesDbFor("auto") ?? []).find((x) => x.slug === slug);
+    return modelOptionsFor(m?.models ?? []);
+  }, [s.attributes.fitsMakes]);
   // st.136: `fitsMakes` se crta ručno u koraku 2 — korak 3 ga izuzima da ne bude dvaput.
   const specGroups = useMemo(
-    () => groupFields(specFields.filter((f) => f.key !== "fitsMakes")),
+    () => groupFields(specFields.filter((f) => f.key !== "fitsMakes" && f.key !== "fitsModel")),
     [specFields]
   );
 
@@ -1288,13 +1300,33 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   pašu)" ide ISPOD Izvedbe u koraku 2, ne u Dimenzijama (korak 3).
                   Polje je u shemi zbog pretrage; ovdje se crta ručno, a korak 3
                   ga preskače (vidi `STEP2_ATTR_KEYS`). */}
-              {fitsMakesField && (
+              {fitsMakesField && (fitsMakesField.type === "select" ? (
+                /* st.137: kod ratkapa je JEDNA marka (da Model ima smisla). */
+                <SelectField
+                  label={fitsMakesField.label}
+                  value={typeof s.attributes.fitsMakes === "string" ? s.attributes.fitsMakes : ""}
+                  onChange={(v) => { setAttr("fitsMakes", v || undefined); setAttr("fitsModel", undefined); }}
+                  options={fitsMakesField.options ?? []}
+                  placeholder="Odaberi marku"
+                />
+              ) : (
                 <MultiSelect
                   label={fitsMakesField.label}
                   values={Array.isArray(s.attributes.fitsMakes) ? s.attributes.fitsMakes : []}
                   onChange={(v) => setAttr("fitsMakes", v.length ? v : undefined)}
                   options={fitsMakesField.options ?? []}
                   placeholder="Odaberi marke"
+                />
+              ))}
+              {/* ⚠️ st.137: Model uz "Za Marku" — modeli osobnih auta za odabranu
+                  marku. Opcije se računaju ovdje (shema ih ne može znati unaprijed). */}
+              {fitsModelField && (
+                <SelectField
+                  label={fitsModelField.label}
+                  value={typeof s.attributes.fitsModel === "string" ? s.attributes.fitsModel : ""}
+                  onChange={(v) => setAttr("fitsModel", v || undefined)}
+                  options={fitsModelOptions}
+                  placeholder={fitsModelOptions.length ? "Odaberi model" : "Prvo odaberi marku"}
                 />
               )}
               {!hideYear && (

@@ -1850,6 +1850,13 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve",
       "za-vilicare", "servisna-oprema", "ulja-tekucine", "dijelovi-ostalo"],
     options: CONDITION_GRADE_OPTIONS },
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.137): RATKAPE dobivaju "Stanje očuvanosti" na 3. koraku.
+   * Gume i felge su u st.130 bile izuzete kao podkategorija, pa se ovdje uključuje
+   * SAMO ta jedna Vrsta (`vrstaScope`), ne cijela rubrika.
+   */
+  { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Detalji",
+    scope: ["gume"], vrstaScope: ["ratkape"], options: CONDITION_GRADE_OPTIONS },
 
   // ⚠️ Karlo 03.09.2026 (st.59): rubrika "Gume" → "Dimenzije", scope-ana SAMO
   // na Vrstu "Ljetne gume" (vrstaScope), ne na cijelu podkategoriju Gume i
@@ -2145,8 +2152,20 @@ const DIJELOVI_FIELDS: FilterField[] = [
    */
   { key: "fitsMakes", label: "Za Marku (označite za koje marke pašu)", type: "multi",
     storage: "attr", group: "Dimenzije", scope: ["gume"],
-    vrstaScope: ["aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape"],
+    vrstaScope: ["aluminijske-felge", "celicne-felge", "kompleti-gume-felge"],
     options: (CATEGORIES.find((c) => c.slug === "auto")?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })) },
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.137): RATKAPE dobivaju uz "Za Marku" i polje "Model"
+   * (modeli osobnih auta). Model ima smisla samo uz JEDNU marku (Golf pripada
+   * VW-u), pa je ovdje `select` umjesto `multi` — odluka kroz pitanje (Dino).
+   * Ostale felge zadržavaju višestruki odabir (zapis iznad).
+   */
+  { key: "fitsMakes", label: "Za Marku (za koju marku paše)", type: "select",
+    storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ratkape"],
+    options: (CATEGORIES.find((c) => c.slug === "auto")?.makes ?? []).map((m) => ({ value: m.slug, label: m.name })) },
+  { key: "fitsModel", label: "Model", type: "select",
+    storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["ratkape"],
+    options: [] },
   { key: "tireSpeedIndex", label: "ET Oznaka", type: "select", storage: "attr", group: "Dimenzije", scope: ["gume"], vrstaScope: ["aluminijske-felge", "celicne-felge"],
     options: [
       "-10","-9","-8","-7","-6","-5","-4","-3","-2","-1","0","1","2","3","4","5","6","7","8","9","10",
