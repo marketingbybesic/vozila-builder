@@ -329,8 +329,12 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
    * Isti mehanizam kao "Naslov" za Opremu za plovila (st.119): vrijednost ide u
    * `variant`, koji adapter već slaže u naslov oglasa.
    * Gume i felge su izričito izuzete — ondje Marka (proizvođač gume) ostaje prva.
+   * ⚠️ Karlo 16.09.2026 (st.131): isto i za Slobodno vrijeme / Oprema za kampere
+   * i kamping — ta rubrika ionako dijeli `usesPartsLayout` s Dijelovima (st.30).
    */
-  const partsTitleFirst = s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "";
+  const partsTitleFirst =
+    (s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "")
+    || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema");
   const titleBeforeMake = partsTitleFirst || currentVrsta === "oprema-za-plovila";
   const titleFieldLabel = partsTitleFirst ? "Naziv ponude" : "Naslov";
 

@@ -1504,6 +1504,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   // njena postojeća lista (vrstaFromChildren("prosti-cas")).
   { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji", scope: ["kamping-oprema"] },
   { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji", scope: ["kamping-oprema"] },
+  // ⚠️ Karlo 16.09.2026 (st.131): "Stanje očuvanosti" i ovdje, isti izbornik kao
+  // Dijelovi (st.130) i Mehanizacija (st.122) — dijeljene opcije.
+  { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Detalji",
+    scope: ["kamping-oprema"], options: CONDITION_GRADE_OPTIONS },
 
   // Karlo 30.07: podrubrika "Vrsta" duplirala je gornju Podkategoriju →
   // ostaje samo za podkategorije koje nemaju vlastiti "Tip".
