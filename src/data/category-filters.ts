@@ -63,9 +63,12 @@ function vrstaFromChildren(categorySlug: string): FilterField[] {
       label: "Vrsta",
       // ⚠️ Karlo 08.09.2026 (st.99): Ulja i tekućine — Vrsta postaje
       // single-select ("u Vrsta moze samo jedna opcija da se bira a ne vise
-      // njih odjednom"), ostatak Napredne pretrage nedirano. Svugdje drugdje
-      // Vrsta ostaje multi-select (nepromijenjeno ponašanje).
-      type: (sub.slug === "ulja-tekucine" ? "select" : "multi") as "select" | "multi",
+      // njih odjednom").
+      // ⚠️ Karlo 16.09.2026 (st.129): isto prošireno na CIJELU kategoriju
+      // Dijelovi i oprema — "kad izaberes bilo koju podkategoriju u Vrsta mora
+      // biti opcija odabira samo jedne vrste". Slobodno vrijeme (kamping-oprema)
+      // NIJE dirano — ondje Vrstu bira slikoviti izbornik iz st.36.
+      type: (categorySlug === "dijelovi" ? "select" : "multi") as "select" | "multi",
       storage: "attr" as const,
       group: "Vrsta",
       scope: [sub.slug],
