@@ -627,7 +627,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       if (showsModel) {
         if (!s.model) m.push("Model");
       } else if (!s.variant.trim()) {
-        m.push("Izvedba");
+        // st.138: poruka mora imenovati polje koje je NA EKRANU ("Naziv ponude"
+        // ondje gdje je preimenovano), inače traži nešto što prodavač ne vidi.
+        m.push(titleBeforeMake ? titleFieldLabel : "Izvedba");
       }
       // st.130: kad naslov ponude stoji ispred Marke, obavezan je i kad Model
       // postoji (u Dijelovima je to ono što kupac zapravo traži).
