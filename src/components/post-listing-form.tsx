@@ -1362,8 +1362,10 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               )}
               {!hideYear && (
               <SelectField
+                /* ⚠️ Karlo 16.09.2026 (st.141): kod DOT-a se NE ispisuje
+                   "(nije obavezno)" — polje i dalje NIJE obavezno (validacija
+                   na retku ~644 preskače `yearIsDot`), samo oznaka nestaje. */
                 label={yearIsDot ? "Godina proizvodnje (DOT)" : "Godina proizvodnje"}
-                optional={yearIsDot}
                 value={s.year}
                 onChange={(v) => set("year", v)}
                 placeholder="Odaberi godinu"
