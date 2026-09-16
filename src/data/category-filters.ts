@@ -1640,7 +1640,10 @@ const PROSTI_CAS_FIELDS: FilterField[] = [
   { key: "numEngines", label: "Broj motora", type: "select", storage: "attr", group: "Motor", scope: ["plovila"],
     vrstaExclude: ["oprema-za-plovila"],
     options: [1,2,3,4].map((n) => ({ value: String(n), label: `${n}` })) },
-  { key: "engineHp", label: "Snaga motora (HP)", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"], vrstaExclude: ["oprema-za-plovila"] },
+  // ⚠️ Karlo 16.09.2026 (st.135): label je sadržavao "(HP)", a `RangeInput`
+  // (polje bez `steps`) ionako dopisuje jedinicu na oznaku → "Snaga motora (HP) (HP)".
+  // Jedinica ostaje u `unit`, iz labela maknuta.
+  { key: "engineHp", label: "Snaga motora", type: "range", unit: "HP", min: 0, max: 600, step: 5, storage: "attr", group: "Motor", scope: ["plovila"], vrstaExclude: ["oprema-za-plovila"] },
   { key: "engineHours", label: "Radni sati motora", type: "range", unit: "h", min: 0, max: 5000, step: 50, storage: "attr", group: "Motor", scope: ["plovila"], vrstaExclude: ["oprema-za-plovila"] },
 
   // E-bicikli / e-skuteri (domenska analiza)
