@@ -323,6 +323,17 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const showsModel = showsModelField(s.category, s.subcategory)
     && !modelHiddenForVrsta(s.category, s.subcategory, currentVrsta);
 
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.130): u Dijelovima (OSIM "Gume i felge") naslov
+   * ponude ide PRVI, ispred Marke — "to je naslov oglasa i sta korisnik prodaje".
+   * Isti mehanizam kao "Naslov" za Opremu za plovila (st.119): vrijednost ide u
+   * `variant`, koji adapter već slaže u naslov oglasa.
+   * Gume i felge su izričito izuzete — ondje Marka (proizvođač gume) ostaje prva.
+   */
+  const partsTitleFirst = s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "";
+  const titleBeforeMake = partsTitleFirst || currentVrsta === "oprema-za-plovila";
+  const titleFieldLabel = partsTitleFirst ? "Naziv ponude" : "Naslov";
+
   const makeOptions: Opt[] = useMemo(() => {
     /**
      * ⚠️ Karlo 15.09.2026 (st.127): Vrsta-specifični popis marki MORA stajati
@@ -578,6 +589,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       } else if (!s.variant.trim()) {
         m.push("Izvedba");
       }
+      // st.130: kad naslov ponude stoji ispred Marke, obavezan je i kad Model
+      // postoji (u Dijelovima je to ono što kupac zapravo traži).
+      if (titleBeforeMake && showsModel && !s.variant.trim()) m.push(titleFieldLabel);
       if (!s.year) m.push("Godina proizvodnje");
       return m;
     }
@@ -1151,12 +1165,17 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                   prodavač upisuje naslov sam. Vrijednost ide u `variant`, koji
                   supabase-adapter već slaže u naslov oglasa
                   (`make model variant · godina`) — bez izmjene servera/baze. */}
-              {currentVrsta === "oprema-za-plovila" && (
+              {titleBeforeMake && (
                 <TextField
-                  label="Naslov"
+                  label={titleFieldLabel}
+                  required
                   value={s.variant}
                   onChange={(v) => set("variant", v)}
-                  placeholder="npr. Sidreno vitlo Lewmar V700"
+                  placeholder={
+                    currentVrsta === "oprema-za-plovila"
+                      ? "npr. Sidreno vitlo Lewmar V700"
+                      : "npr. Alternator Bosch 140A za Golf 7"
+                  }
                 />
               )}
               {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — prodavač upisuje marku
@@ -1225,7 +1244,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
               {/* ⚠️ st.119: kod Opreme za plovila isti `variant` već crta polje
                   "Naslov" iznad — bez ovog uvjeta bila bi dva polja nad istom
                   vrijednošću (drugo bi pregazilo prvo). */}
-              {currentVrsta !== "oprema-za-plovila" && (
+              {!titleBeforeMake && (
                 <TextField
                   /* Karlo 31.07: "(opcionalno)" nije govorilo ČEMU polje služi.
                      Vrijednost završava u naslovu oglasa (buildListing slaže

@@ -1256,6 +1256,20 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
  * očuvanosti) koriste ovaj popis umjesto nabrajanja — nova podkategorija
  * dodaje se na jedno mjesto.
  */
+/**
+ * ⚠️ Karlo 15.09.2026 (st.122) → 16.09.2026 (st.130): "Stanje očuvanosti" dijele
+ * Mehanizacija i Dijelovi i oprema. Opcije stoje na JEDNOM mjestu da se dvije
+ * kategorije ne raziđu pri sljedećoj izmjeni.
+ */
+const CONDITION_GRADE_OPTIONS = [
+  { value: "odlicno", label: "Odlično" },
+  { value: "dobro", label: "Dobro" },
+  { value: "srednje", label: "Srednje" },
+  { value: "lose", label: "Loše" },
+  { value: "jako-lose", label: "Jako loše" },
+  { value: "karambolirano", label: "Karambolirano / u kvaru" },
+];
+
 const MEHANIZACIJA_ALL_SUBS = [
   "poljoprivredni-strojevi", "vilicari", "sumarski-strojevi", "komunalni-strojevi",
   "gradevinski-strojevi", "najam", "mehanizacija-ostalo",
@@ -1394,14 +1408,7 @@ const MEHANIZACIJA_FIELDS: FilterField[] = [
   // `hideBroken` (filtri pretrage) — ovo je prodavačeva ocjena stanja stroja.
   { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Specifikacije",
     scope: MEHANIZACIJA_ALL_SUBS,
-    options: [
-      { value: "odlicno", label: "Odlično" },
-      { value: "dobro", label: "Dobro" },
-      { value: "srednje", label: "Srednje" },
-      { value: "lose", label: "Loše" },
-      { value: "jako-lose", label: "Jako loše" },
-      { value: "karambolirano", label: "Karambolirano / u kvaru" },
-    ] },
+    options: CONDITION_GRADE_OPTIONS },
   { key: "weightKg", label: "Težina", type: "range", unit: "kg", min: 0, max: 50000, step: 100, storage: "attr", group: "Specifikacije",
     scope: ["sumarski-strojevi", "komunalni-strojevi"] },
 
@@ -1825,6 +1832,17 @@ const DIJELOVI_FIELDS: FilterField[] = [
   // sad auto-dijelovi postavlja standard za sve podkategorije).
   { key: "oem", label: "OEM / kataloški broj", type: "text", storage: "attr", group: "Detalji" },
   { key: "brandPart", label: "Proizvođač dijela", type: "text", storage: "attr", group: "Detalji" },
+
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.130): "Stanje očuvanosti" (isti izbornik kao u
+   * Mehanizaciji, st.122) za SVE podkategorije Dijelova OSIM "Gume i felge" —
+   * izričito izuzete ("ne diraj podkategoriju Gume i felge").
+   */
+  { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Detalji",
+    scope: ["auto-dijelovi", "auto-dodatna-oprema", "multimedija", "moto-dijelovi",
+      "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve",
+      "za-vilicare", "servisna-oprema", "ulja-tekucine", "dijelovi-ostalo"],
+    options: CONDITION_GRADE_OPTIONS },
 
   // ⚠️ Karlo 03.09.2026 (st.59): rubrika "Gume" → "Dimenzije", scope-ana SAMO
   // na Vrstu "Ljetne gume" (vrstaScope), ne na cijelu podkategoriju Gume i
