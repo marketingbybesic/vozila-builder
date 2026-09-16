@@ -47,8 +47,9 @@ export async function generateStaticParams() {
 }
 
 /** st.133: kratki naslov bez godine — naziv ponude prvi ondje gdje je glavni podatak. */
-function headline(l: { category: string; subcategory?: string; make: string; model: string; variant?: string }): string {
-  if (offerTitleFirst(l.category, l.subcategory) && l.variant?.trim()) {
+function headline(l: { category: string; subcategory?: string; make: string; model: string; variant?: string; attributes?: unknown }): string {
+  const vr = typeof (l.attributes as Record<string, unknown> | undefined)?.vrsta === "string" ? (l.attributes as Record<string, string>).vrsta : undefined;
+  if (offerTitleFirst(l.category, l.subcategory, vr) && l.variant?.trim()) {
     return `${l.variant.trim()} — ${l.make} ${l.model}`.trim();
   }
   return `${l.make} ${l.model}`.trim();
@@ -124,7 +125,7 @@ export default async function ListingDetailPage({
                   i dalje pokazivao naziv ponude na kraju. Sad i ovaj naslov poštuje
                   isto pravilo (`offerTitleFirst`). */}
               <h1 className="font-display text-3xl md:text-4xl tracking-tight leading-tight">
-                {offerTitleFirst(listing.category, listing.subcategory) && listing.variant ? (
+                {offerTitleFirst(listing.category, listing.subcategory, typeof (listing.attributes as Record<string, unknown> | undefined)?.vrsta === "string" ? (listing.attributes as Record<string, string>).vrsta : undefined) && listing.variant ? (
                   <>
                     {listing.variant}
                     <span className="text-[var(--color-ink-soft)] font-normal italic"> — {listing.make} {listing.model}</span>

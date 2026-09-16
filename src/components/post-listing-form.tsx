@@ -341,6 +341,15 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
   const hideYear = s.category === "dijelovi" && s.subcategory === "gume"
     && ["aluminijske-felge", "celicne-felge", "kompleti-gume-felge", "ratkape"].includes(currentVrsta ?? "");
 
+  /**
+   * ⚠️ Karlo 16.09.2026 (st.138): RATKAPE nemaju "Marka felge" — kupac ih traži
+   * po vozilu, ne po proizvođaču poklopca. Polje se skriva i ne traži za nastavak.
+   * `make` je NOT NULL na serveru (`z.string().min(1)`), pa se pri slanju
+   * popunjava markom VOZILA iz "Za Marku" — tako oglas ostaje dohvatljiv
+   * filtrom marke, umjesto da se upiše prazno ili smeće.
+   */
+  const hideMake = s.category === "dijelovi" && s.subcategory === "gume" && currentVrsta === "ratkape";
+
   const partsTitleFirst =
     (s.category === "dijelovi" && s.subcategory !== "gume" && s.subcategory !== "")
     || (s.category === "prosti-cas" && s.subcategory === "kamping-oprema")
@@ -604,7 +613,7 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
       return m;
     }
     if (step === 2) {
-      if (!s.make) m.push("Marka");
+      if (!hideMake && !s.make) m.push("Marka");
       /**
        * ⚠️ Karlo 15.09.2026 (st.124): 11 podkategorija NEMA polje Model
        * (`showsModelField` = false: kamperi, kamp prikolice, mobilne kućice,
@@ -717,7 +726,17 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
         //   ne škodi — zod strip-a nepoznate ključeve, a buduća verzija ih čita) —
         category: s.category,
         subcategory: s.subcategory || undefined,
-        make: makeOptions.find((m) => m.value === s.make)?.label ?? s.make,
+        /**
+         * st.138: ratkape nemaju polje Marke, a server ga traži. Šaljemo marku
+         * VOZILA iz "Za Marku" (čitljiv naziv, ne slug) — tako oglas ostaje
+         * dohvatljiv filtrom marke. Fallback "Ostalo" ako marka nije odabrana.
+         */
+        make: hideMake
+          ? ((() => {
+              const slug = typeof s.attributes.fitsMakes === "string" ? s.attributes.fitsMakes : "";
+              return (fitsMakesField?.options ?? []).find((o) => o.value === slug)?.label || "Ostalo";
+            })())
+          : (makeOptions.find((m) => m.value === s.make)?.label ?? s.make),
         /**
          * ⚠️ Karlo 15.09.2026 (st.124): u 11 podkategorija Model ne postoji
          * (`showsModelField` = false), a server ga traži (`model: z.string()
@@ -1212,8 +1231,9 @@ export function PostListingForm({ profile }: { profile?: Profile }) {
                 />
               )}
               {/* ⚠️ Karlo 30.08.2026 (st.23): Plovila — prodavač upisuje marku
-                  slobodno, bez ponuđenog fiksnog popisa. */}
-              {freeTextMakeField(s.category, s.subcategory) ? (
+                  slobodno, bez ponuđenog fiksnog popisa.
+                  ⚠️ st.138: ratkape nemaju polje Marke (vidi `hideMake`). */}
+              {hideMake ? null : freeTextMakeField(s.category, s.subcategory) ? (
                 <TextField
                   /* st.134: i slobodan upis poštuje Vrsta-naziv (Oprema za plovila = "Za Marku"). */
                   label={makeLabelForVrsta(usesPartsLayout, isTireFullFormVrsta(s.category, s.subcategory, currentVrsta), currentVrsta)}
@@ -2007,7 +2027,8 @@ function ReviewPreview({
   categoryLabel: string; subcategoryLabel: string; filterDef: CategoryFilters;
 }) {
   // st.132: naziv ponude je glavni podatak u ovim rubrikama (isto pravilo kao server).
-  const titleBeforeMake = offerTitleFirst(s.category, s.subcategory || undefined);
+  const titleBeforeMake = offerTitleFirst(s.category, s.subcategory || undefined,
+    typeof s.attributes.vrsta === "string" ? s.attributes.vrsta : undefined);
   // st.128: ista polja koja vidi i objavljeni oglas (poštuje scope i Vrstu).
   const previewFields = relevantFields({
     category: s.category, subcategory: s.subcategory || undefined, attributes: s.attributes,
@@ -2021,6 +2042,7 @@ function ReviewPreview({
     slug: "preview",
     // st.132: isti redoslijed kao u objavljenom oglasu.
     title: buildListingTitle({ category: s.category, subcategory: s.subcategory,
+      currentVrsta: typeof s.attributes.vrsta === "string" ? s.attributes.vrsta : undefined,
       make: makeLabel, model: s.model, variant: s.variant, year: s.year || 0 }),
     category: s.category,
     subcategory: s.subcategory || undefined,

@@ -154,8 +154,13 @@ export function usesDenseCijenaSteps(category: string, subcategory: string, curr
  * Koristi se i na klijentu (objava) i na serveru (supabase-adapter pri
  * sastavljanju naslova), zato živi ovdje a ne u komponenti.
  */
-export function offerTitleFirst(category: string, subcategory: string | undefined): boolean {
-  if (category === "dijelovi") return Boolean(subcategory) && subcategory !== "gume";
+export function offerTitleFirst(category: string, subcategory: string | undefined, currentVrsta?: string): boolean {
+  if (category === "dijelovi") {
+    // ⚠️ st.137/138: "Gume i felge" su izuzete kao rubrika, ALI Vrsta "ratkape"
+    // je od st.137 title-first (naziv ponude je ondje glavni podatak).
+    if (subcategory === "gume") return currentVrsta === "ratkape";
+    return Boolean(subcategory);
+  }
   return category === "prosti-cas" && subcategory === "kamping-oprema";
 }
 
@@ -164,13 +169,14 @@ export function offerTitleFirst(category: string, subcategory: string | undefine
  * ("Tenda Fiamma F45s — Fiamma F45s"), inače standardno `marka model izvedba`.
  */
 export function buildListingTitle(input: {
-  category?: string; subcategory?: string;
+  category?: string; subcategory?: string; currentVrsta?: string;
   make: string; model: string; variant?: string; year: number | string;
 }): string {
   const { make, model, variant, year } = input;
-  const rest = `${make} ${model}`.trim();
-  if (offerTitleFirst(input.category ?? "", input.subcategory) && variant?.trim()) {
+  // st.138: `model` zna biti prazan (ratkape) — bez trima bi ostao dvostruki razmak.
+  const rest = [make, model].filter((x) => x && x.trim()).join(" ").trim();
+  if (offerTitleFirst(input.category ?? "", input.subcategory, input.currentVrsta) && variant?.trim()) {
     return `${variant.trim()}${rest ? ` — ${rest}` : ""} · ${year}.`;
   }
-  return `${make} ${model}${variant ? " " + variant : ""} · ${year}.`;
+  return `${[rest, variant?.trim()].filter(Boolean).join(" ")} · ${year}.`;
 }

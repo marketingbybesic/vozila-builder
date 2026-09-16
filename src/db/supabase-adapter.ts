@@ -381,6 +381,8 @@ export const supabaseAdapter: DbAdapter = {
      */
     const title = buildListingTitle({
       category: input.category, subcategory: input.subcategory,
+      currentVrsta: typeof (input.attributes as Record<string, unknown> | undefined)?.vrsta === "string"
+        ? (input.attributes as Record<string, string>).vrsta : undefined,
       make: input.make, model: input.model, variant: input.variant, year: input.year,
     });
     const rows = await dbq
