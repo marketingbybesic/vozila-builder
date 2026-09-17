@@ -48,6 +48,10 @@ export const metadata: Metadata = {
     title: "Vozila.hr",
     description: "Oglasi rabljenih i novih vozila u Hrvatskoj.",
   },
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

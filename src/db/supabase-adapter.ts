@@ -40,10 +40,14 @@ function client() {
   if (!url) {
     throw new Error("DATABASE_URL is required when DB_DRIVER=supabase. Set it in .env.local or Vercel env vars.");
   }
+  // Prerender 1.298 oglasa je rusio pooler ("EMAXCONN ... limit: 200", build 17.09.):
+  // build digne worker po jezgri, svaki sa svojim poolom, pa se zbroje preko limita.
+  // Runtime ostaje na 10; samo build steze na 2 po workeru.
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
   _client = postgres(url, {
     prepare: false,         // required for Supabase pooler (PgBouncer transaction mode)
-    max: 10,
-    idle_timeout: 20,
+    max: isBuild ? 2 : 10,
+    idle_timeout: isBuild ? 5 : 20,
     connect_timeout: 10,
   });
   return _client;

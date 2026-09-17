@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
 
 const FOOTER_NAV = [
@@ -48,9 +49,14 @@ export function SiteFooter() {
         <div className="flex flex-col md:flex-row gap-8 md:gap-6">
           {/* Logo + tagline */}
           <div className="md:w-48 shrink-0">
-            <Link href="/" className="inline-flex items-baseline">
-              <span className="font-display text-xl font-semibold text-white">vozila</span>
-              <span className="font-display text-xl font-semibold text-[var(--color-accent)]">.hr</span>
+            <Link href="/" className="inline-flex" aria-label="Vozila.hr početna">
+              <Image
+                src="/logo-white.webp"
+                alt="Vozila.hr"
+                width={264}
+                height={72}
+                className="h-7 w-auto"
+              />
             </Link>
             {/* Slogan (Dino 04.08.2026) — stoji ispod logotipa. */}
             <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--color-accent)]">

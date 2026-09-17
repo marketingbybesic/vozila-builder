@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -41,24 +42,15 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-line)] bg-[var(--color-bg)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-bg)]/65">
       <Container className="flex h-16 items-center gap-4">
         <Link href="/" className="flex items-center gap-2 group shrink-0" aria-label="Vozila.hr početna">
-          {/* ⚠️ Slogan (Dino 04.08.2026) stoji ISPOD logotipa → `flex-col`.
-              Vidljiv i na mobilnom (Dino, 2. runda). Zaglavlje je visoko 64 px,
-              pa `leading-none` na oba retka drži cjelinu unutar te visine.
-              Na mobilnom je razmak između slova manji (`tracking-[0.14em]`) da
-              slogan ne bude širi od logotipa iznad njega. */}
-          <div className="relative flex flex-col">
-            <div className="leading-none">
-              <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-ink)]">
-                vozila
-              </span>
-              <span className="font-display text-2xl font-semibold tracking-tight text-[var(--color-accent-dark)]">
-                .hr
-              </span>
-            </div>
-            <span className="mt-0.5 text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[var(--color-muted)] leading-none whitespace-nowrap">
-              Kupi, prodaj i vozi
-            </span>
-          </div>
+          {/* Slogan (Dino 04.08.2026) je dio logotipa — slika ga već sadrži. */}
+          <Image
+            src="/logo-slogan.webp"
+            alt="Vozila.hr — Kupi, prodaj i vozi"
+            width={249}
+            height={96}
+            priority
+            className="h-9 sm:h-10 w-auto"
+          />
         </Link>
 
 
