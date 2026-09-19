@@ -187,5 +187,8 @@ export const AUTO_BODY_ICON: Record<string, (p: IconProps) => React.ReactElement
   Kombi: IconKombi,
   Kamionet: IconKamionet,
   "Šasija s kabinom": IconSasijaKabinom,
-  "Šasija s nadgradnjom": IconSasijaNadgradnjom,
+  // Karlo 19.09.2026 (st.149): "nadgradnjom" -> "nadogradnjom" (label u
+  // category-filters.ts), ključ mora pratiti isti tekst da se ikona nastavi
+  // prepoznati (funkcija/export ime ostaju nepromijenjeni — interna).
+  "Šasija s nadogradnjom": IconSasijaNadgradnjom,
 };

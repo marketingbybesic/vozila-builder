@@ -977,7 +977,10 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     options: [
       v("Furgon"), v("Mali furgon"), v("Kombi"), { value: "kamionet", label: "Kamionet" },
       { value: "sasija-kabina", label: "Šasija s kabinom" },
-      { value: "sasija-nadgradnja", label: "Šasija s nadgradnjom" },
+      // ⚠️ Karlo 19.09.2026 (st.149): "nadgradnjom" → "nadogradnjom" (isti
+      // tipfeler kao 25.08. Nadogradnja). `value` (slug) ostaje netaknut —
+      // interni identifikator, nikad prikazan.
+      { value: "sasija-nadgradnja", label: "Šasija s nadogradnjom" },
       { value: "pickup", label: "Pick up" },
     ] },
   // ⚠️ Karlo 19.09.2026 (st.145): "Nosivost" nedostajala za Dostavna vozila

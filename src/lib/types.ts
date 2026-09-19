@@ -36,6 +36,10 @@ export type BodyType = (typeof BODY_TYPES)[number];
 /** Oblici karoserije gospodarskih vozila — samo za validaciju, ne za prikaz na naslovnici. */
 export const COMMERCIAL_BODY_TYPES = [
   "Furgon",
+  // ⚠️ Karlo 19.09.2026 (st.145): "Mali furgon" dodan u category-filters.ts
+  // kao nova opcija, ali NIJE dodan ovdje — bez ovoga zod odbija oglas i
+  // "Objavi oglas" tiho padne (uhvaćeno scripts/check-enum-drift.mts).
+  "Mali furgon",
   "Kombi",
   "kamionet",
   "sasija-kabina",
