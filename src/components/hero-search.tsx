@@ -36,6 +36,19 @@ export function HeroSearch() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
+    /**
+     * ⚠️ Karlo 19.09.2026 (st.142): oglas nađen preko "Brza pretraga auta" nije
+     * imao isti bočni filter kao onaj nađen preko napredne pretrage. Uzrok:
+     * ova forma nikad nije slala `category`/`subcategory` u URL, a
+     * `filterDynamicFields` (category-filters.ts) zahtijeva POSTAVLJEN
+     * `subcategory` prije nego prikaže ijedno scope-ano polje (Vrata, Sjedala,
+     * Tapacirung, Sigurnost, Multimedija, Udobnost, Vlasništvo…) — bez njega
+     * bočni filter padne s ~35 polja na ~13. `auto-oglasi` (Osobni auto) je
+     * ispravan default jer hero-search inače pretražuje MAKES iz cijele Auto
+     * kategorije, isto kao napredna pretraga → Auto → Osobni auto.
+     */
+    params.set("category", "auto");
+    params.set("subcategory", "auto-oglasi");
     if (make) params.set("make", make);
     if (model) params.set("model", model);
     if (priceMin) params.set("priceMin", priceMin);
