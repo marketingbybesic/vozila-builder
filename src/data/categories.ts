@@ -61,10 +61,12 @@ const AUTO_SUBS: Subcategory[] = [
   // sad je PRAVA podkategorija — obični osobni automobili. Slug ostaje
   // `auto-oglasi` da postojeći linkovi i bookmarkovi ne puknu.
   { slug: "auto-oglasi", name: "Osobni auto", icon: "car" },
-  { slug: "trkaci", name: "Trkaći auti", icon: "gauge" },
   { slug: "eko", name: "Eko (hibrid + EV)", icon: "leaf" },
   { slug: "luksuzni", name: "Luksuzni", icon: "gem" },
   { slug: "oldtimer", name: "Oldtimer", icon: "history" },
+  // ⚠️ Karlo 19.09.2026 (st.150): "Trkaći auti" premješteni iza Oldtimera
+  // (izričito zatraženo — bio na 2. mjestu, odmah iza Osobnog auta).
+  { slug: "trkaci", name: "Trkaći auti", icon: "gauge" },
   { slug: "ostecen-u-kvaru", name: "Oštećeni i u kvaru", icon: "alerttriangle" },
   { slug: "najam", name: "Ponude za najam", icon: "calendardays" },
   { slug: "auto-ostalo", name: "Ostalo", icon: "box" },
