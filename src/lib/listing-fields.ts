@@ -136,6 +136,16 @@ function attrLabel(field: FilterField, raw: unknown): string | null {
   const opt = field.options?.find((o) => o.value === s);
   if (opt) return opt.label;
   /**
+   * ⚠️ Karlo 19.09.2026 (st.148): oglas je prikazivao sirovi "VRSTA:
+   * motorna-ulja" — stara Vrsta opcija iz PRIJE st.99 (lista svedena na 2
+   * opcije), ostala u bazi na starom oglasu. Isti obrazac kao "prvi-vlasnik"
+   * gore (nizovi): polje S popisom opcija čiju vrijednost popis više ne
+   * poznaje je zaostatak ukinute opcije → preskoči, ne ispisuj sirovi ključ.
+   * Polje BEZ popisa (slobodan unos) ostaje kako je bilo — jedini podatak
+   * koji imamo.
+   */
+  if (field.options?.length) return null;
+  /**
    * Decimalni broj → hrvatski zapis sa ZAREZOM (Dino 04.08.2026).
    * Sprema se s točkom ("5.5"), prikazuje "5,5 l/100km".
    *
