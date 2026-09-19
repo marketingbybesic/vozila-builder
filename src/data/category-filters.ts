@@ -1855,11 +1855,14 @@ const DIJELOVI_FIELDS: FilterField[] = [
    * ⚠️ Karlo 16.09.2026 (st.130): "Stanje očuvanosti" (isti izbornik kao u
    * Mehanizaciji, st.122) za SVE podkategorije Dijelova OSIM "Gume i felge" —
    * izričito izuzete ("ne diraj podkategoriju Gume i felge").
+   * ⚠️ Karlo 19.09.2026 (st.146): "Ulja i tekućine" IZBAČENA odavde — ulje/
+   * tekućina je novo/zapakirano, nema smisla "stanje očuvanosti" (izlizanost/
+   * ogrebotine) kao za polovni dio. Ostalih 9 podkategorija nepromijenjeno.
    */
   { key: "conditionGrade", label: "Stanje očuvanosti", type: "select", storage: "attr", group: "Detalji",
     scope: ["auto-dijelovi", "auto-dodatna-oprema", "multimedija", "moto-dijelovi",
       "za-gospodarska", "za-gradevinske-strojeve", "za-poljoprivredne-strojeve",
-      "za-vilicare", "servisna-oprema", "ulja-tekucine", "dijelovi-ostalo"],
+      "za-vilicare", "servisna-oprema", "dijelovi-ostalo"],
     options: CONDITION_GRADE_OPTIONS },
   /**
    * ⚠️ Karlo 16.09.2026 (st.137): RATKAPE dobivaju "Stanje očuvanosti" na 3. koraku.
@@ -2255,6 +2258,23 @@ const DIJELOVI_FIELDS: FilterField[] = [
       "2T","4T",
       "ATF","DOT3","DOT4","DOT5.1","HLP","Ostalo",
     ].map((v) => ({ value: v, label: v })) },
+
+  /**
+   * ⚠️ Karlo 19.09.2026 (st.146): "Pakiranje" — zapremina spremnika/ambalaže
+   * (1L/4L/5L itd). Ranija `oilVolume` rubrika (brojčani raspon) je
+   * POTPUNO OBRISANA u st.108 ("mrtav kod"); ovo je nova, drugačija namjena
+   * (fiksne trgovačke veličine pakiranja, ne slobodan raspon), pa je novi
+   * ključ (`packagingLiters`), ne oživljavanje starog. Cijela podkategorija
+   * (obje Vrste: ulja/maziva I autokozmetika/njega) — oboje se prodaje u
+   * standardnim veličinama ambalaže, ne samo motorna ulja.
+   */
+  { key: "packagingLiters", label: "Pakiranje", type: "select", storage: "attr", group: "Detalji", scope: ["ulja-tekucine"],
+    options: [
+      { value: "0.25", label: "0,25 L" }, { value: "0.5", label: "0,5 L" }, { value: "1", label: "1 L" },
+      { value: "4", label: "4 L" }, { value: "5", label: "5 L" }, { value: "10", label: "10 L" },
+      { value: "20", label: "20 L" }, { value: "60", label: "60 L" }, { value: "200", label: "200 L" },
+      { value: "ostalo", label: "Ostalo" },
+    ] },
 
   // ⚠️ Karlo 02.09.2026 (st.56): "Vrsta uređaja" (mediaType) i "Povezivost"
   // (mediaConnectivity) POTPUNO UKLONJENI — bila su scope-ana isključivo na
