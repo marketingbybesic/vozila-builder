@@ -983,13 +983,24 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
       { value: "sasija-nadgradnja", label: "Šasija s nadogradnjom" },
       { value: "pickup", label: "Pick up" },
     ] },
-  // ⚠️ Karlo 19.09.2026 (st.145): "Nosivost" nedostajala za Dostavna vozila
-  // — postojala je samo za prikolice/viličare. Isti key (`payloadKg`) kao
-  // prikolice radi dosljednog filtriranja, ali s koracima realnim za
-  // dostavnjake (300 kg – 3.500 kg), ne za teretne prikolice (do 20+ t).
+  /**
+   * ⚠️ Karlo 19.09.2026 (st.145): "Nosivost" nedostajala za Dostavna vozila
+   * — postojala je samo za prikolice/viličare. Isti key (`payloadKg`) kao
+   * prikolice radi dosljednog filtriranja, ali s koracima realnim za
+   * dostavnjake (300 kg – 3.500 kg), ne za teretne prikolice (do 20+ t).
+   * ⚠️ Karlo 19.09.2026 (st.151): premješteno iz grupe "Vrsta" u "Motor" —
+   * "ispod Mjenjača u rubrici Motor i karoserija", ne uz Karoseriju gore.
+   * `motorRest` (napredno-form.tsx) automatski slaže sva "Motor"-grupirana
+   * polja u red ispod Gorivo/Mjenjač, pa ovo + gvwKg ispadaju "2 prozorčića"
+   * točno gdje je zatraženo, bez ikakve izmjene u komponenti. Dodan i
+   * "Max. ukupna masa" (gvwKg) uz Nosivost, izričito zatraženo.
+   */
   { key: "payloadKg", label: "Nosivost", type: "range", unit: "kg", storage: "attr",
-    group: "Vrsta", scope: ["dostavna"],
+    group: "Motor", scope: ["dostavna"],
     steps: [500, 1000, 1500, 2000, 2500, 3500] },
+  { key: "gvwKg", label: "Max. ukupna masa", type: "range", unit: "kg", storage: "attr",
+    group: "Motor", scope: ["dostavna"],
+    steps: [1500, 2000, 2800, 3500, 5000, 7500] },
 
   // ⚠️ Karlo 02.09.2026 (st.50): "Vrsta vozila" — novi izbornik ISPOD
   // Podkategorije za "Ponude za najam" (isti mehanizam kao Moto st.48). Iste
