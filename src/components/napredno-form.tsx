@@ -496,16 +496,35 @@ export function NaprednoForm({ embedded = false, onClose }: { embedded?: boolean
    */
   const urlCategory = sp.get("category") ?? "";
   const urlSubcategory = sp.get("subcategory") ?? "";
+  /**
+   * ⚠️ Karlo 19.09.2026 (st.143): ISTI bug kao st.4, samo za Vrstu. Dijelovi i
+   * oprema → Gume i felge → Ljetne gume, pa Home, pa isti put ali Aluminijske
+   * felge → forma je i dalje pokazivala Ljetne gume. Uzrok: `attrs` (nosi
+   * `vrsta`) se čita iz URL-a SAMO pri montiranju, a efekt iznad prati samo
+   * category/subcategory — dok su oni isti (obje Vrste su unutar
+   * dijelovi/gume), attrs ostaje netaknut. Kad Home ne uništi React
+   * komponentu (Router Cache je zadrži), klik na novu Vrstu ide kroz običnu
+   * Next Link navigaciju (istaRutaNav u category-nav.tsx preskače jer
+   * polazna ruta "/" ≠ "/oglasi/napredno"), pa se stanje ne resetira. Karlo
+   * eksplicitno: "svaki put kad izadjes na home resetiraj pretragu" — zato
+   * ovdje ne samo primjenjujemo novu Vrstu, nego BRIŠEMO stari `attrs` (čist
+   * kontekst), isto kao `changeCategory` već radi za kategoriju.
+   */
+  const urlVrsta = sp.get("a.vrsta") ?? "";
   useEffect(() => {
     if (urlCategory && urlCategory !== category) {
       // ista logika kao ručna promjena: nova kategorija = čist kontekst
       changeCategory(urlCategory);
       setSubcategory(urlSubcategory);
+      if (urlVrsta) setAttrs({ vrsta: urlVrsta });
     } else if (urlSubcategory !== subcategory && urlCategory === category) {
       setSubcategory(urlSubcategory);
+      setAttrs(urlVrsta ? { vrsta: urlVrsta } : {});
+    } else if (urlVrsta && urlVrsta !== (attrs.vrsta as string | undefined)) {
+      setAttrs({ vrsta: urlVrsta });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlCategory, urlSubcategory]);
+  }, [urlCategory, urlSubcategory, urlVrsta]);
 
   // hasField: prikaži hardkodiranu sekciju samo ako kategorija ima to polje.
   // Karlo 27.07: mora poštovati `scope` kao i dynamicFields — inače polje koje
