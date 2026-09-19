@@ -968,14 +968,25 @@ const GOSPODARSKA_FIELDS: FilterField[] = [
     ] },
 
   // Karlo 27.07: "Oblik karoserije" izbačen iz Kamiona (tip vozila ga zamjenjuje).
+  // ⚠️ Karlo 19.09.2026 (st.145): dodan "Mali furgon" — do sad je postojao
+  // samo "Furgon" (Sprinter/Transit klasa), bez razlike za manje dostavnjake
+  // (Caddy/Doblo/Berlingo klasa). Ikone za sve opcije popravljene u
+  // body-icons.tsx (svih 6 je dijelilo isti generički kamion, nerazlučivo).
   { key: "bodyType", label: "Karoserija", type: "multi", storage: "column", group: "Vrsta",
     scope: ["dostavna", "najam"],
     options: [
-      v("Furgon"), v("Kombi"), { value: "kamionet", label: "Kamionet" },
+      v("Furgon"), v("Mali furgon"), v("Kombi"), { value: "kamionet", label: "Kamionet" },
       { value: "sasija-kabina", label: "Šasija s kabinom" },
       { value: "sasija-nadgradnja", label: "Šasija s nadgradnjom" },
       { value: "pickup", label: "Pick up" },
     ] },
+  // ⚠️ Karlo 19.09.2026 (st.145): "Nosivost" nedostajala za Dostavna vozila
+  // — postojala je samo za prikolice/viličare. Isti key (`payloadKg`) kao
+  // prikolice radi dosljednog filtriranja, ali s koracima realnim za
+  // dostavnjake (300 kg – 3.500 kg), ne za teretne prikolice (do 20+ t).
+  { key: "payloadKg", label: "Nosivost", type: "range", unit: "kg", storage: "attr",
+    group: "Vrsta", scope: ["dostavna"],
+    steps: [500, 1000, 1500, 2000, 2500, 3500] },
 
   // ⚠️ Karlo 02.09.2026 (st.50): "Vrsta vozila" — novi izbornik ISPOD
   // Podkategorije za "Ponude za najam" (isti mehanizam kao Moto st.48). Iste

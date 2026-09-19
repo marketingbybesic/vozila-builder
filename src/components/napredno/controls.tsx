@@ -43,15 +43,15 @@ type IconComp = React.ComponentType<{ className?: string }>;
 
 /**
  * Ikona po obliku karoserije (radi za sve kategorije: auto/gospodarska/...).
- * AUTO tipovi (Limuzina/SUV/Coupe/...) sad koriste PRAVE bočne siluete iz
- * body-icons.tsx. Vehicle-type ikone (Truck/Bus/Caravan/Forklift) ostaju lucide.
+ * AUTO tipovi (Limuzina/SUV/Coupe/...) i DOSTAVNA tipovi (Furgon/Kombi/
+ * Kamionet/...) sad koriste PRAVE bočne siluete iz body-icons.tsx (st.145 —
+ * prije su sve dostavna opcije dijelile isti generički Truck, nerazlučivo).
+ * Vehicle-type ikone (Autobusi/Kamioni/Viličari...) ostaju lucide.
  */
 const BODY_ICON: Record<string, IconComp> = {
-  // auto — prave siluete
+  // auto + dostavna — prave siluete (body-icons.tsx)
   ...AUTO_BODY_ICON,
-  // gospodarska — lucide vehicle ikone (točne)
-  Furgon: Truck, Kombi: Truck, Kamionet: Truck, "Šasija s kabinom": Truck,
-  "Šasija s nadgradnjom": Container, "Pick up": Truck,
+  // gospodarska — vrste vozila, ne oblici karoserije — ostaju lucide
   Autobusi: Bus, Kamioni: Truck, "Dostavna vozila": Truck, "Teretne prikolice": Container,
   // generičke
   Kamper: Caravan, "Mobilne kućice": Caravan, Viličari: Forklift, Traktor: Tractor,

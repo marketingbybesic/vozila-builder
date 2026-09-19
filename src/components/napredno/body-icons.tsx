@@ -109,6 +109,65 @@ export const IconPickup = (p: IconProps) => (
   </Silhouette>
 );
 
+// ── DOSTAVNA (gospodarska) tipovi ──────────────────────────────────────
+// ⚠️ Karlo 19.09.2026 (st.145): svih 6 "Oblik karoserije" opcija za Dostavna
+// vozila je do sad dijelilo ISTI generički Truck lucide ikon (BODY_ICON u
+// controls.tsx) — nerazlučivo na oko, isti problem kao Limuzina/SUV/Coupe
+// prije ovog sustava (Karlo, 22.06). Iste proporcije/stil kao AUTO tipovi
+// gore (viewBox 48×24, isti kotači), samo visoka kockasta silueta dostavnjaka
+// umjesto niske automobilske.
+export const IconFurgon = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* visok zatvoreni kombi-sanduk — ravan krov od vjetrobrana do repa */}
+    <path d="M3 17 L6 17 C6 8 8 6 12 6 L38 6 C40 6 40 8 40 12 L40 17 M33 17 L17 17 M10 17 L6.5 17" />
+    <path d="M12 6 L12 17 M22 6 L22 17" />
+  </Silhouette>
+);
+
+export const IconMaliFurgon = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* isti oblik kao Furgon, kraći i niži (Caddy/Doblo klasa, ne Sprinter/Transit) */}
+    <path d="M5 17 L8 17 C8 10 10 8 13 8 L34 8 C37 8 38 10 38 13 L38 17 M31 17 L18 17 M12 17 L8.5 17" />
+    <path d="M13 8 L13 17 M22 8 L22 17" />
+  </Silhouette>
+);
+
+export const IconKombi = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* putnički dostavnjak — zaobljenija linija krova + bočni prozori */}
+    <path d="M3 17 L6 17 C6.5 9 9 6.5 13 6.3 L37 6.5 C39.5 6.7 40 9 40 12 L40 17 M33 17 L17 17 M10 17 L6.5 17" />
+    <path d="M13.5 9.3 L13.5 12.3 M20 9 L20 12.2 M26.5 8.9 L26.5 12.1 M33 9 L33 12" />
+  </Silhouette>
+);
+
+export const IconKamionet = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* odvojena kabina + niži ravan tovarni sanduk iza (za razliku od Pickupa: sanduk je viši, zatvoreniji) */}
+    <path d="M3 17 L6 17 C7 12 9 9.5 13 9.3 L19 9.2 L19.5 13 L39 13 C40 13 40 14.5 40 17 M33 17 L17 17 M10 17 L6.5 17" />
+    <path d="M13 9.3 L15 6.8 L19 6.8 L19.3 9.2" />
+    <path d="M39 13 L39 17" />
+  </Silhouette>
+);
+
+export const IconSasijaKabinom = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* SAMO kabina naprijed — golo šasijsko postolje otvoreno iza, bez nadgradnje */}
+    <path d="M3 17 L6 17 C7 12 9 9.5 13 9.3 L19 9.2 L19.5 13 L40 13" />
+    <path d="M13 9.3 L15 6.8 L19 6.8 L19.3 9.2" />
+    <path d="M22 15.3 L40 15.3" strokeDasharray="1.6 1.8" />
+  </Silhouette>
+);
+
+export const IconSasijaNadgradnjom = (p: IconProps) => (
+  <Silhouette {...p}>
+    {/* kabina naprijed + kockasta nadogradnja (kontejner) jasno odvojena razmakom */}
+    <path d="M3 17 L6 17 C7 12 9 9.5 13 9.3 L18.5 9.2 L19 13 L20.5 13" />
+    <path d="M13 9.3 L15 6.8 L18.5 6.8 L18.8 9.2" />
+    <path d="M23 7 L39 7 C40 7 40 8 40 9 L40 17 M33 17 L17 17 M10 17 L6.5 17" />
+    <path d="M23 7 L23 17" />
+  </Silhouette>
+);
+
 /** Mapa hrvatskih auto-labela → prava silueta. */
 export const AUTO_BODY_ICON: Record<string, (p: IconProps) => React.ReactElement> = {
   Limuzina: IconLimuzina,
@@ -120,4 +179,13 @@ export const AUTO_BODY_ICON: Record<string, (p: IconProps) => React.ReactElement
   Monovolumen: IconMonovolumen,
   Microcar: IconMicrocar,
   Pickup: IconPickup,
+  // Karlo 19.09.2026 (st.145): "Pick up" (Dostavna) treba ISTU siluetu kao
+  // "Pickup" (Auto) — dodan pod oba ključa jer se labele razlikuju razmakom.
+  "Pick up": IconPickup,
+  Furgon: IconFurgon,
+  "Mali furgon": IconMaliFurgon,
+  Kombi: IconKombi,
+  Kamionet: IconKamionet,
+  "Šasija s kabinom": IconSasijaKabinom,
+  "Šasija s nadgradnjom": IconSasijaNadgradnjom,
 };
